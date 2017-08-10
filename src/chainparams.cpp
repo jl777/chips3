@@ -121,7 +121,7 @@ public:
         int32_t z; uint32_t nonce; uint8_t *ptr = (uint8_t *)&consensus.hashGenesisBlock;
         for (nonce=27349363; nonce<500000000; nonce++)
         {
-            genesis = CreateGenesisBlock(1500000777, nonce, 0x1e7fffff, 1, 50 * COIN);
+            genesis = CreateGenesisBlock(1500000777, nonce, 0x1e007fff, 1, 50 * COIN);
             consensus.hashGenesisBlock = genesis.GetHash();
             if ( ptr[31] == 0 && ptr[30] == 0 && ptr[29] == 0 && (ptr[28] & 0x80) == 0)
                 break;
