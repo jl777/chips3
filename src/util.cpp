@@ -562,12 +562,15 @@ const fs::path &GetDataDir(bool fNetSpecific)
     // This can be called during exceptions by LogPrintf(), so we cache the
     // value so we don't have to do memory allocations after that.
     if (!path.empty())
+    {
+        printf("return non-empty path\n");
         return path;
-
+    }
     if (IsArgSet("-datadir")) {
         path = fs::system_complete(GetArg("-datadir", ""));
         if (!fs::is_directory(path)) {
             path = "";
+            printf("null datadir\n");
             return path;
         }
     } else {
@@ -577,7 +580,7 @@ const fs::path &GetDataDir(bool fNetSpecific)
         path /= BaseParams().DataDir();
 
     fs::create_directories(path);
-
+    printf("return path\n");
     return path;
 }
 
