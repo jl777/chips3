@@ -81,11 +81,22 @@ bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params&
 
     // Check range
     if (fNegative || bnTarget == 0 || fOverflow || bnTarget > UintToArith256(params.powLimit))
+    {
+        printf("overflow or bad target\n");
         return false;
-
+    }
     // Check proof of work matches claimed amount
     if (UintToArith256(hash) > bnTarget)
+    {
+        arith_uint256 tmp; int32_t i;
+        tmp = UintToArith256(hash);
+        for (i=31; i>=0; i--)
+            printf("%02x",((uint8_t *)&tmp)[i]);
+        printf(" hash vs target ");
+        for (i=31; i>=0; i--)
+            printf("%02x",((uint8_t *)&bnTarget)[i]);
+        printf("\n");
         return false;
-
+    }
     return true;
 }
