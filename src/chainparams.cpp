@@ -119,7 +119,7 @@ public:
         nPruneAfterHeight = 100000;
 
         int32_t z; uint32_t nonce; uint8_t *ptr = (uint8_t *)&consensus.hashGenesisBlock;
-        for (nonce=0; nonce<1000000; nonce++)
+        for (nonce=0; nonce<100000000; nonce++)
         {
             genesis = CreateGenesisBlock(1500000777, nonce, 0x1d00ffff, 1, 50 * COIN);
             consensus.hashGenesisBlock = genesis.GetHash();
