@@ -107,7 +107,7 @@ UniValue getnetworkhashps(const JSONRPCRequest& request)
 
 UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGenerate, uint64_t nMaxTries, bool keepScript)
 {
-    static const int nInnerLoopCount = 0x10000;
+    static const int nInnerLoopCount = 100000000;
     int nHeightEnd = 0;
     int nHeight = 0;
 
@@ -171,7 +171,7 @@ UniValue generatetoaddress(const JSONRPCRequest& request)
         );
 
     int nGenerate = request.params[0].get_int();
-    uint64_t nMaxTries = 1000000;
+    uint64_t nMaxTries = 100000000;
     if (!request.params[2].isNull()) {
         nMaxTries = request.params[2].get_int();
     }
