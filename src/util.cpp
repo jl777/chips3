@@ -563,14 +563,14 @@ const fs::path &GetDataDir(bool fNetSpecific)
     // value so we don't have to do memory allocations after that.
     if (!path.empty())
     {
-        printf("return non-empty path\n");
+        //printf("return non-empty path\n");
         return path;
     }
     if (IsArgSet("-datadir")) {
         path = fs::system_complete(GetArg("-datadir", ""));
         if (!fs::is_directory(path)) {
             path = "";
-            printf("null datadir\n");
+            //printf("null datadir\n");
             return path;
         }
     } else {
@@ -580,7 +580,7 @@ const fs::path &GetDataDir(bool fNetSpecific)
         path /= BaseParams().DataDir();
 
     fs::create_directories(path);
-    printf("return path.(%s)\n",path.string().c_str());
+    //printf("return path.(%s)\n",path.string().c_str());
     return path;
 }
 
