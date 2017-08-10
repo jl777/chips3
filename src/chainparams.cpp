@@ -119,11 +119,11 @@ public:
         nPruneAfterHeight = 100000;
 
         int32_t z; uint32_t nonce; uint8_t *ptr = (uint8_t *)&consensus.hashGenesisBlock;
-        for (nonce=0; nonce<1000000; nonce++)
+        for (nonce=38935524; nonce<1000000; nonce++)
         {
             genesis = CreateGenesisBlock(1500000777, nonce, 0x1e7fffff, 1, 50 * COIN);
             consensus.hashGenesisBlock = genesis.GetHash();
-            if ( ptr[31] == 0 && ptr[30] == 0 )
+            if ( ptr[31] == 0 && ptr[30] == 0 && ptr[29] == 0 )
                 break;
         }
         printf("nonce.%u\n",nonce);
@@ -134,7 +134,7 @@ public:
         for (z=31; z>=0; z--)
             printf("%02x",ptr[z]);
         printf(" <- merkle\n");
-        assert(consensus.hashGenesisBlock == uint256S("0x000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f"));
+        assert(consensus.hashGenesisBlock == uint256S("0x00000034dece6d9cf3083d794ffb1b8d94e9632536822c3a3fa3312ab2264f61"));
         assert(genesis.hashMerkleRoot == uint256S("0x4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b"));
 
         // Note that of those with the service bits flag, most only support a subset of possible options
