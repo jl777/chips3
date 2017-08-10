@@ -80,8 +80,8 @@ public:
         consensus.BIP65Height = 388381; // 000000000000000004c2b624ed5d7756c508d90fd0da2c7c679febfa6c4735f0
         consensus.BIP66Height = 363725; // 00000000000000000379eaa19dce8c9b722d46ae6a57c2f1a988119488b50931
         consensus.powLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-        consensus.nPowTargetTimespan = 14 * 24 * 60 * 60; // two weeks
-        consensus.nPowTargetSpacing = 10 * 60;
+        consensus.nPowTargetTimespan = 14 * 24 * 60;// * 60; // two weeks
+        consensus.nPowTargetSpacing = 10;// * 60;
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting = false;
         consensus.nRuleChangeActivationThreshold = 1916; // 95% of 2016
@@ -119,11 +119,11 @@ public:
         nPruneAfterHeight = 100000;
 
         int32_t z; uint32_t nonce; uint8_t *ptr = (uint8_t *)&consensus.hashGenesisBlock;
-        for (nonce=0; nonce<100000000; nonce++)
+        for (nonce=0; nonce<1000000; nonce++)
         {
-            genesis = CreateGenesisBlock(1500000777, nonce, 0x1d00ffff, 1, 50 * COIN);
+            genesis = CreateGenesisBlock(1500000777, nonce, 0x1e7fffff, 1, 50 * COIN);
             consensus.hashGenesisBlock = genesis.GetHash();
-            if ( ptr[31] == 0 && ptr[30] == 0 && ptr[29] == 0 )
+            if ( ptr[31] == 0 && ptr[30] == 0 )
                 break;
         }
         printf("nonce.%u\n",nonce);
