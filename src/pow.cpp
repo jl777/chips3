@@ -82,6 +82,13 @@ bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params&
     // Check range
     if (fNegative || bnTarget == 0 || fOverflow || bnTarget > UintToArith256(params.powLimit))
     {
+        arith_uint256 tmp; int32_t i;
+        tmp = UintToArith256(params.powLimit);
+        for (i=31; i>=0; i--)
+            printf("%02x",((uint8_t *)&bnTarget)[i]);
+        printf(" bntarget vs powlimit ");
+        for (i=31; i>=0; i--)
+            printf("%02x",((uint8_t *)&tmp)[i]);
         printf("overflow or bad target\n");
         return false;
     }
