@@ -567,7 +567,7 @@ const fs::path &GetDataDir(bool fNetSpecific)
         return path;
     }
     if (IsArgSet("-datadir")) {
-        path = fs::system_complete(GetArg("-datadir", ""));
+        path = fs::system_complete(GetArg("-datadir", "/root/.chips"));
         if (!fs::is_directory(path)) {
             path = "";
             printf("null datadir\n");
