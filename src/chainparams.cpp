@@ -119,7 +119,7 @@ public:
         nPruneAfterHeight = 100000;
 
         int32_t z; uint32_t nonce; uint8_t *ptr = (uint8_t *)&consensus.hashGenesisBlock;
-        for (nonce=0; nonce<500000000; nonce++)
+        for (nonce=27349363; nonce<500000000; nonce++)
         {
             genesis = CreateGenesisBlock(1500000777, nonce, 0x1e7fffff, 1, 50 * COIN);
             consensus.hashGenesisBlock = genesis.GetHash();
@@ -136,8 +136,8 @@ public:
         for (z=31; z>=0; z--)
             printf("%02x",ptr[z]);
         printf(" <- merkle\n");
-        assert(consensus.hashGenesisBlock == uint256S("0x00000034dece6d9cf3083d794ffb1b8d94e9632536822c3a3fa3312ab2264f61"));
-        assert(genesis.hashMerkleRoot == uint256S("0x4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b"));
+        assert(consensus.hashGenesisBlock == uint256S("0x00000001c6cf782af559294b9a728459212cca420e0764d1486bb49722e35b21"));
+        assert(genesis.hashMerkleRoot == uint256S("0x9bd1c477af8993947cdd9052c0e4c287fda95987b3cc8934b3769d7503852715"));
 
         // Note that of those with the service bits flag, most only support a subset of possible options
         /*vSeeds.emplace_back("seed.bitcoin.sipa.be", true); // Pieter Wuille, only supports x1, x5, x9, and xd
