@@ -580,7 +580,7 @@ const fs::path &GetDataDir(bool fNetSpecific)
         path /= BaseParams().DataDir();
 
     fs::create_directories(path);
-    printf("return path.(%s)\n",path.string());
+    printf("return path.(%s)\n",path.string().c_str());
     return path;
 }
 
