@@ -136,7 +136,7 @@ public:
         for (z=31; z>=0; z--)
             printf("%02x",ptr[z]);
         printf(" <- merkle\n");
-        assert(consensus.hashGenesisBlock == uint256S("0x00000001c6cf782af559294b9a728459212cca420e0764d1486bb49722e35b21"));
+        assert(consensus.hashGenesisBlock == uint256S("0x0000006e75f6aa0efdbf7db03132aa4e4d0c84951537a6f5a7c39a0a9d30e1e7"));
         assert(genesis.hashMerkleRoot == uint256S("0x9bd1c477af8993947cdd9052c0e4c287fda95987b3cc8934b3769d7503852715"));
 
         // Note that of those with the service bits flag, most only support a subset of possible options
