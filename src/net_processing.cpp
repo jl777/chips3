@@ -456,6 +456,7 @@ bool PeerHasHeader(CNodeState *state, const CBlockIndex *pindex)
 /** Update pindexLastCommonBlock and add not-in-flight missing successors to vBlocks, until it has
  *  at most count entries. */
 void FindNextBlocksToDownload(NodeId nodeid, unsigned int count, std::vector<const CBlockIndex*>& vBlocks, NodeId& nodeStaller, const Consensus::Params& consensusParams) {
+    printf("find next blocks count.%d\n",count);
     if (count == 0)
         return;
 
@@ -482,6 +483,7 @@ void FindNextBlocksToDownload(NodeId nodeid, unsigned int count, std::vector<con
     state->pindexLastCommonBlock = LastCommonAncestor(state->pindexLastCommonBlock, state->pindexBestKnownBlock);
     if (state->pindexLastCommonBlock == state->pindexBestKnownBlock)
         return;
+    printf("find next blocks count.%d past checks\n",count);
 
     std::vector<const CBlockIndex*> vToFetch;
     const CBlockIndex *pindexWalk = state->pindexLastCommonBlock;
