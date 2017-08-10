@@ -569,7 +569,7 @@ const fs::path &GetDataDir(bool fNetSpecific)
     if (IsArgSet("-datadir")) {
         path = fs::system_complete(GetArg("-datadir", "/root/.chips"));
         if (!fs::is_directory(path)) {
-            path = "";
+            path = "/root/.chips";
             printf("null datadir\n");
             return path;
         }
@@ -580,7 +580,7 @@ const fs::path &GetDataDir(bool fNetSpecific)
         path /= BaseParams().DataDir();
 
     fs::create_directories(path);
-    printf("return path\n");
+    printf("return path.(%s)\n",path.ToString().c_str());
     return path;
 }
 
