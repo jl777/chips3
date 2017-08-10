@@ -469,6 +469,7 @@ void FindNextBlocksToDownload(NodeId nodeid, unsigned int count, std::vector<con
 
     if (state->pindexBestKnownBlock == NULL || state->pindexBestKnownBlock->nChainWork < chainActive.Tip()->nChainWork || state->pindexBestKnownBlock->nChainWork < UintToArith256(consensusParams.nMinimumChainWork)) {
         // This peer has nothing interesting.
+        printf("nothing interesting best.%p\n",state->pindexBestKnownBlock);
         return;
     }
 
