@@ -95,14 +95,14 @@ bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params&
     // Check proof of work matches claimed amount
     if (UintToArith256(hash) > bnTarget)
     {
-        arith_uint256 tmp; int32_t i;
+        /*arith_uint256 tmp; int32_t i;
         tmp = UintToArith256(hash);
         for (i=31; i>=0; i--)
             printf("%02x",((uint8_t *)&tmp)[i]);
         printf(" hash vs target ");
         for (i=31; i>=0; i--)
             printf("%02x",((uint8_t *)&bnTarget)[i]);
-        printf("\n");
+        printf("\n");*/
         return false;
     }
     return true;
