@@ -235,8 +235,33 @@ public:
 
         genesis = CreateGenesisBlock(1296688602, 414098458, 0x1d00ffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
-        assert(consensus.hashGenesisBlock == uint256S("0x000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943"));
-        assert(genesis.hashMerkleRoot == uint256S("0x4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b"));
+
+	// [+] Decker
+        int32_t z; uint32_t nonce; uint8_t *ptr = (uint8_t *)&consensus.hashGenesisBlock;
+        for (nonce=9250234; nonce<500000000; nonce++)
+        {
+            genesis = CreateGenesisBlock(1500000777, nonce, 0x1e007fff, 1, 50 * COIN);
+            consensus.hashGenesisBlock = genesis.GetHash();
+            if ( ptr[31] == 0 && ptr[30] == 0 && ptr[29] == 0 && (ptr[28] & 0x80) == 0)
+                break;
+            if ( (nonce % 1000000) == 999999 )
+                fprintf(stderr,"%d ",nonce);
+        }
+        printf("nonce.%u\n",nonce);
+        for (z=31; z>=0; z--)
+            printf("%02x",ptr[z]);
+        printf(" <- genesis\n");
+        ptr = (uint8_t *)&genesis.hashMerkleRoot;
+        for (z=31; z>=0; z--)
+            printf("%02x",ptr[z]);
+        printf(" <- merkle\n");
+
+        //assert(consensus.hashGenesisBlock == uint256S("0x000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943"));
+        //assert(genesis.hashMerkleRoot == uint256S("0x4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b"));
+        assert(consensus.hashGenesisBlock == uint256S("0x0000006e75f6aa0efdbf7db03132aa4e4d0c84951537a6f5a7c39a0a9d30e1e7"));
+        assert(genesis.hashMerkleRoot == uint256S("0x9bd1c477af8993947cdd9052c0e4c287fda95987b3cc8934b3769d7503852715"));
+
+
 
         vFixedSeeds.clear();
         vSeeds.clear();
