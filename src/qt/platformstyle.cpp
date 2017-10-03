@@ -87,10 +87,14 @@ PlatformStyle::PlatformStyle(const QString &_name, bool _imagesOnButtons, bool _
         const QColor colorText(QApplication::palette().color(QPalette::WindowText));
         const int colorTextLightness = colorText.lightness();
         QColor colorbase;
+
+	colorbase = QColor(0, 94, 94); // Komodo Color
+	/*
         if (abs(colorHighlightBg.lightness() - colorTextLightness) < abs(colorHighlightFg.lightness() - colorTextLightness))
             colorbase = colorHighlightBg;
         else
             colorbase = colorHighlightFg;
+	*/
         singleColor = colorbase;
     }
     // Determine text color
