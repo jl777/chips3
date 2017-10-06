@@ -176,15 +176,29 @@ public:
                 {279000, uint256S("0x0000000000000001ae8c72a0b0c301f67e3afca10e819efa9041e458e9bd7e40")},
                 {295000, uint256S("0x00000000000000004d9b4ef50f0f9d686fd69db2e03af35a100370c64632a983")},
 				*/
+
+                {  7777, uint256S("0x00000006c5f3ba03a16bf47485529cf8c598e0d42705d21a0aa11fe7bfa1879b")},
+                { 37777, uint256S("0x00000041db70ab43c78f202effd4437046587c6720b20fbc083577c095240be4")},
+                { 97777, uint256S("0x00000000000000bb8534e7ac433b2d9d6586a4e9013fb40812a700ee6174fae8")},
+                {137777, uint256S("0x00000000000000358f2309327e7cf401a450e5e6cd44638898cd406701961417")},
+                {177777, uint256S("0x0000000000000147430d364189add944a595c6f8645183a7b737375e4be40b51")},
+                {207777, uint256S("0x000000000000000e08d5474ebf2982fae5202d78e95f005d6f59820bb204c6e2")},
+                {237777, uint256S("0x0000000000000043ebf0667e70db2718d4dc677bd0f7683a092659ec2300fd43")},
+                {257777, uint256S("0x0000000000000046f51946ac40b4137f81ab28034334a8373817a1f3cb360fe2")},
+                {307777, uint256S("0x000000000000001d19cebca2eca45ae2da3b3a2c96b69d4b5d8d7141eeb91cdd")},
+                {337777, uint256S("0x000000000000000ec4ac2ee7986632de74601b1100519bf3f31b8172078006e0")},
+                {377777, uint256S("0x000000000000002bb552a65c252af82ae648c2a5c9c65d14d05fe8c568118a8d")},
+                {406777, uint256S("0x000000000000004c776cbbf999a5c16b71bfec3c8e0f01e5fc963bd226b2ddc0")},
+
             }
         };
 
         chainTxData = ChainTxData{
-            // Data as of block 000000000000000000d97e53664d17967bd4ee50b23abb92e54a34eb222d15ae (height 478913).
-            0, // * UNIX timestamp of last known number of transactions
-            0,  // * total number of transactions between genesis and that timestamp
+            // Data as of 10/06/2017 @ 3:52pm (UTC) 
+            1507305126, // * UNIX timestamp of last known number of transactions
+            421558,  // * total number of transactions between genesis and that timestamp
                         //   (the tx=... number in the SetBestChain debug.log lines)
-            0         // * estimated number of transactions per second after that timestamp
+            0           // * estimated number of transactions per second after that timestamp
         };
     }
 };
