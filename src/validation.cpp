@@ -2914,6 +2914,172 @@ std::vector<unsigned char> GenerateCoinbaseCommitment(CBlock& block, const CBloc
     return commitment;
 }
 
+#define CRYPTO777_PUBSECPSTR "020e46e79a2a8d12b9b5d12c7a91adb4e454edfae43c0a0cb805427d2ac7613fd9"
+
+struct notarized_checkpoint
+{
+    uint256 notarized_hash,notarized_desttxid; int32_t nHeight,notarized_height;
+};
+struct notarized_checkpoint *NPOINTS;
+uint256 NOTARIZED_HASH,NOTARIZED_DESTTXID;
+int32_t NUM_NPOINTS,last_NPOINTSi,NOTARIZED_HEIGHT,CURRENT_HEIGHT;
+
+void komodo_notarized_update(struct komodo_state *sp,int32_t nHeight,int32_t notarized_height,uint256 notarized_hash,uint256 notarized_desttxid)
+{
+    struct notarized_checkpoint *np;
+    if ( notarized_height > nHeight )
+    {
+        fprintf(stderr,"komodo_notarized_update REJECT notarized_height %d > %d nHeight\n",notarized_height,nHeight);
+        return;
+    }
+        fprintf(stderr,"CHIPS komodo_notarized_update nHeight.%d notarized_height.%d\n",nHeight,notarized_height);
+    //portable_mutex_lock(&komodo_mutex);
+    NPOINTS = (struct notarized_checkpoint *)realloc(NPOINTS,(NUM_NPOINTS+1) * sizeof(*NPOINTS));
+    np = &NPOINTS[NUM_NPOINTS++];
+    memset(np,0,sizeof(*np));
+    np->nHeight = nHeight;
+    NOTARIZED_HEIGHT = np->notarized_height = notarized_height;
+    NOTARIZED_HASH = np->notarized_hash = notarized_hash;
+    NOTARIZED_DESTTXID = np->notarized_desttxid = notarized_desttxid;
+    //portable_mutex_unlock(&komodo_mutex);
+}
+
+int32_t komodo_notarizeddata(int32_t nHeight,uint256 *notarized_hashp,uint256 *notarized_desttxidp)
+{
+    struct notarized_checkpoint *np = 0; int32_t i=0,flag = 0; char symbol[16],dest[16]; struct komodo_state *sp;
+    if ( (sp= komodo_stateptr(symbol,dest)) != 0 )
+    {
+        if ( NUM_NPOINTS > 0 )
+        {
+            flag = 0;
+            if ( last_NPOINTSi < NUM_NPOINTS && last_NPOINTSi > 0 )
+            {
+                np = &NPOINTS[last_NPOINTSi-1];
+                if ( np->nHeight < nHeight )
+                {
+                    for (i=last_NPOINTSi; i<NUM_NPOINTS; i++)
+                    {
+                        if ( NPOINTS[i].nHeight >= nHeight )
+                        {
+                            //printf("flag.1 i.%d np->ht %d [%d].ht %d >= nHeight.%d, last.%d num.%d\n",i,np->nHeight,i,NPOINTS[i].nHeight,nHeight,last_NPOINTSi,NUM_NPOINTS);
+                            flag = 1;
+                            break;
+                        }
+                        np = &NPOINTS[i];
+                        last_NPOINTSi = i;
+                    }
+                }
+            }
+            if ( flag == 0 )
+            {
+                np = 0;
+                for (i=0; i<NUM_NPOINTS; i++)
+                {
+                    if ( NPOINTS[i].nHeight >= nHeight )
+                    {
+                        //printf("i.%d np->ht %d [%d].ht %d >= nHeight.%d\n",i,np->nHeight,i,NPOINTS[i].nHeight,nHeight);
+                        break;
+                    }
+                    np = &NPOINTS[i];
+                    last_NPOINTSi = i;
+                }
+            }
+        }
+        if ( np != 0 )
+        {
+            //char str[65],str2[65]; printf("[%s] notarized_ht.%d\n",ASSETCHAINS_SYMBOL,np->notarized_height);
+            if ( np->nHeight >= nHeight || (i < NUM_NPOINTS && np[1].nHeight < nHeight) )
+                fprintf(stderr,"warning: flag.%d i.%d np->ht %d [1].ht %d >= nHeight.%d\n",flag,i,np->nHeight,np[1].nHeight,nHeight);
+            *notarized_hashp = np->notarized_hash;
+            *notarized_desttxidp = np->notarized_desttxid;
+            return(np->notarized_height);
+        }
+    }
+    memset(notarized_hashp,0,sizeof(*notarized_hashp));
+    memset(notarized_desttxidp,0,sizeof(*notarized_desttxidp));
+    return(0);
+}
+
+int32_t komodo_checkpoint(int32_t *notarized_heightp,int32_t nHeight,uint256 hash)
+{
+    int32_t notarized_height; uint256 notarized_hash,notarized_desttxid; CBlockIndex *notary; CBlockIndex *pindex;
+    if ( (pindex= chainActive.Tip()) == 0 )
+        return(-1);
+    notarized_height = komodo_notarizeddata(pindex->nHeight,&notarized_hash,&notarized_desttxid);
+    *notarized_heightp = notarized_height;
+    if ( notarized_height >= 0 && notarized_height <= pindex->nHeight && (notary= mapBlockIndex[notarized_hash]) != 0 )
+    {
+        //printf("nHeight.%d -> (%d %s)\n",pindex->Tip()->nHeight,notarized_height,notarized_hash.ToString().c_str());
+        if ( notary->nHeight == notarized_height ) // if notarized_hash not in chain, reorg
+        {
+            if ( nHeight < notarized_height )
+            {
+                fprintf(stderr,"nHeight.%d < NOTARIZED_HEIGHT.%d\n",nHeight,notarized_height);
+                return(-1);
+            }
+            else if ( nHeight == notarized_height && memcmp(&hash,&notarized_hash,sizeof(hash)) != 0 )
+            {
+                fprintf(stderr,"nHeight.%d == NOTARIZED_HEIGHT.%d, diff hash\n",nHeight,notarized_height);
+                return(-1);
+            }
+        } else fprintf(stderr,"unexpected error notary_hash %s ht.%d at ht.%d\n",notarized_hash.ToString().c_str(),notarized_height,notary->nHeight);
+    } else if ( notarized_height > 0 && notarized_height != 73880 && notarized_height >= 170000 )
+        fprintf(stderr,"CHIPS couldnt find notarized.(%s %d) ht.%d\n",notarized_hash.ToString().c_str(),notarized_height,pindex->nHeight);
+    return(0);
+}
+
+//-pubkey 
+
+int32_t komodo_voutupdate(int32_t *isratificationp,int32_t notaryid,uint8_t *scriptbuf,int32_t scriptlen,int32_t height,uint256 txhash,int32_t i,int32_t j,uint64_t *voutmaskp,int32_t *specialtxp,int32_t *notarizedheightp,uint64_t value,int32_t notarized,uint64_t signedmask)
+{
+    static uint256 zero; static FILE *signedfp;
+    int32_t opretlen,nid,k,len = 0; uint256 kmdtxid,desttxid; uint8_t crypto777[33]; struct komodo_state *sp; char symbol[16],dest[16];
+    if ( (sp= komodo_stateptr(symbol,dest)) == 0 )
+        return(-1);
+    if ( scriptlen == 35 && scriptbuf[0] == 33 && scriptbuf[34] == 0xac )
+    {
+        decode_hex(crypto777,33,(char *)CRYPTO777_PUBSECPSTR);
+        /*for (k=0; k<33; k++)
+         printf("%02x",crypto777[k]);
+         printf(" crypto777 ");
+         for (k=0; k<scriptlen; k++)
+         printf("%02x",scriptbuf[k]);
+         printf(" <- script ht.%d i.%d j.%d cmp.%d\n",height,i,j,memcmp(crypto777,scriptbuf+1,33));*/
+        if ( memcmp(crypto777,scriptbuf+1,33) == 0 )
+        {
+            *specialtxp = 1;
+            //printf(">>>>>>>> ");
+        }
+    }
+    if ( scriptbuf[len++] == 0x6a )
+    {
+        if ( (opretlen= scriptbuf[len++]) == 0x4c )
+            opretlen = scriptbuf[len++];
+        else if ( opretlen == 0x4d )
+        {
+            opretlen = scriptbuf[len++];
+            opretlen += (scriptbuf[len++] << 8);
+        }
+        fprintf(stderr,"[%s] notarized.%d notarizedht.%d sp.Nht %d sp.ht %d opretlen.%d (%c %c %c)\n",notarized,*notarizedheightp,sp->NOTARIZED_HEIGHT,sp->CURRENT_HEIGHT,opretlen,scriptbuf[len+32*2+4],scriptbuf[len+32*2+4+1],scriptbuf[len+32*2+4+2]);
+        if ( j == 1 && opretlen >= 32*2+4 && strcmp("CHIPS",(char *)&scriptbuf[len+32*2+4]) == 0 )
+        {
+            len += iguana_rwbignum(0,&scriptbuf[len],32,(uint8_t *)&kmdtxid);
+            len += iguana_rwnum(0,&scriptbuf[len],sizeof(*notarizedheightp),(uint8_t *)notarizedheightp);
+            len += iguana_rwbignum(0,&scriptbuf[len],32,(uint8_t *)&desttxid);
+            if ( notarized != 0 && *notarizedheightp > NOTARIZED_HEIGHT && *notarizedheightp < height && (height < CURRENT_HEIGHT-1000 || komodo_verifynotarization("CHIPS","KMD",height,*notarizedheightp,kmdtxid,desttxid) == 0) )
+            {
+                NOTARIZED_HEIGHT = *notarizedheightp;
+                NOTARIZED_HASH = kmdtxid;
+                NOTARIZED_DESTTXID = desttxid;
+                komodo_stateupdate(height,0,0,0,zero,0,0,0,0,0,0,0,0,0,0);
+                len += 4;
+                fprintf(stderr,"CHIPS ht.%d NOTARIZED.%d %s.%s %sTXID.%s lens.(%d %d)\n",height,*notarizedheightp,"CHIPS",kmdtxid.ToString().c_str(),"KMD",desttxid.ToString().c_str(),opretlen,len);
+            }
+        }
+    }
+    return(*specialtxp);
+}
+
 /** Context-dependent validity checks.
  *  By "context", we mean only the previous block headers, but not the UTXO
  *  set; UTXO-related validity checks are done in ConnectBlock(). */
@@ -2932,9 +3098,12 @@ static bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationSta
         // Don't accept any forks from the main chain prior to last checkpoint.
         // GetLastCheckpoint finds the last checkpoint in MapCheckpoints that's in our
         // MapBlockIndex.
+        int32_t notarized_height;
         CBlockIndex* pcheckpoint = Checkpoints::GetLastCheckpoint(params.Checkpoints());
         if (pcheckpoint && nHeight < pcheckpoint->nHeight)
             return state.DoS(100, error("%s: forked chain older than last checkpoint (height %d)", __func__, nHeight), REJECT_CHECKPOINT, "bad-fork-prior-to-checkpoint");
+        else if ( komodo_checkpoint(&notarized_height,nHeight,hash) < 0 )
+            return state.DoS(100, error("%s: forked chain %d older than last notarized (height %d) vs %d", __func__,nHeight, notarized_height));
     }
 
     // Check timestamp against prev
