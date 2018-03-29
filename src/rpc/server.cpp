@@ -484,8 +484,10 @@ UniValue CRPCTable::execute(const JSONRPCRequest &request) const
     // Find method
     const CRPCCommand *pcmd = tableRPC[request.strMethod];
     if (!pcmd)
+    {
+        fprintf(stderr,"notfound.(%s)\n",request.strMethod.c_str());
         throw JSONRPCError(RPC_METHOD_NOT_FOUND, "Method not found");
-
+    }
     g_rpcSignals.PreCommand(*pcmd);
 
     try
