@@ -2914,6 +2914,7 @@ std::vector<unsigned char> GenerateCoinbaseCommitment(CBlock& block, const CBloc
     return commitment;
 }
 
+#ifdef notyet
 #define CRYPTO777_PUBSECPSTR "020e46e79a2a8d12b9b5d12c7a91adb4e454edfae43c0a0cb805427d2ac7613fd9"
 
 struct notarized_checkpoint
@@ -3079,6 +3080,8 @@ int32_t komodo_voutupdate(int32_t *isratificationp,int32_t notaryid,uint8_t *scr
     }
     return(*specialtxp);
 }
+#endif
+
 
 /** Context-dependent validity checks.
  *  By "context", we mean only the previous block headers, but not the UTXO
