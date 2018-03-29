@@ -1,26 +1,26 @@
-// Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2009-2017 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #if defined(HAVE_CONFIG_H)
-#include "config/bitcoin-config.h"
+#include <config/bitcoin-config.h>
 #endif
 
-#include "base58.h"
-#include "clientversion.h"
-#include "coins.h"
-#include "consensus/consensus.h"
-#include "core_io.h"
-#include "keystore.h"
-#include "policy/policy.h"
-#include "policy/rbf.h"
-#include "primitives/transaction.h"
-#include "script/script.h"
-#include "script/sign.h"
+#include <clientversion.h>
+#include <coins.h>
+#include <consensus/consensus.h>
+#include <core_io.h>
+#include <key_io.h>
+#include <keystore.h>
+#include <policy/policy.h>
+#include <policy/rbf.h>
+#include <primitives/transaction.h>
+#include <script/script.h>
+#include <script/sign.h>
 #include <univalue.h>
-#include "util.h"
-#include "utilmoneystr.h"
-#include "utilstrencodings.h"
+#include <util.h>
+#include <utilmoneystr.h>
+#include <utilstrencodings.h>
 
 #include <stdio.h>
 
@@ -77,18 +77,18 @@ static int AppInitRawTx(int argc, char* argv[])
         strUsage += HelpMessageOpt("in=TXID:VOUT(:SEQUENCE_NUMBER)", _("Add input to TX"));
         strUsage += HelpMessageOpt("locktime=N", _("Set TX lock time to N"));
         strUsage += HelpMessageOpt("nversion=N", _("Set TX version to N"));
-        strUsage += HelpMessageOpt("replaceable(=N)", _("Set RBF opt-in sequence number for input N (if not provided, opt-in all available inputs)"));
         strUsage += HelpMessageOpt("outaddr=VALUE:ADDRESS", _("Add address-based output to TX"));
-        strUsage += HelpMessageOpt("outpubkey=VALUE:PUBKEY[:FLAGS]", _("Add pay-to-pubkey output to TX") + ". " +
-            _("Optionally add the \"W\" flag to produce a pay-to-witness-pubkey-hash output") + ". " +
-            _("Optionally add the \"S\" flag to wrap the output in a pay-to-script-hash."));
         strUsage += HelpMessageOpt("outdata=[VALUE:]DATA", _("Add data-based output to TX"));
-        strUsage += HelpMessageOpt("outscript=VALUE:SCRIPT[:FLAGS]", _("Add raw script output to TX") + ". " +
-            _("Optionally add the \"W\" flag to produce a pay-to-witness-script-hash output") + ". " +
-            _("Optionally add the \"S\" flag to wrap the output in a pay-to-script-hash."));
         strUsage += HelpMessageOpt("outmultisig=VALUE:REQUIRED:PUBKEYS:PUBKEY1:PUBKEY2:....[:FLAGS]", _("Add Pay To n-of-m Multi-sig output to TX. n = REQUIRED, m = PUBKEYS") + ". " +
             _("Optionally add the \"W\" flag to produce a pay-to-witness-script-hash output") + ". " +
             _("Optionally add the \"S\" flag to wrap the output in a pay-to-script-hash."));
+        strUsage += HelpMessageOpt("outpubkey=VALUE:PUBKEY[:FLAGS]", _("Add pay-to-pubkey output to TX") + ". " +
+            _("Optionally add the \"W\" flag to produce a pay-to-witness-pubkey-hash output") + ". " +
+            _("Optionally add the \"S\" flag to wrap the output in a pay-to-script-hash."));
+        strUsage += HelpMessageOpt("outscript=VALUE:SCRIPT[:FLAGS]", _("Add raw script output to TX") + ". " +
+            _("Optionally add the \"W\" flag to produce a pay-to-witness-script-hash output") + ". " +
+            _("Optionally add the \"S\" flag to wrap the output in a pay-to-script-hash."));
+        strUsage += HelpMessageOpt("replaceable(=N)", _("Set RBF opt-in sequence number for input N (if not provided, opt-in all available inputs)"));
         strUsage += HelpMessageOpt("sign=SIGHASH-FLAGS", _("Add zero or more signatures to transaction") + ". " +
             _("This command requires JSON registers:") +
             _("prevtxs=JSON object") + ", " +
@@ -305,8 +305,8 @@ static void MutateTxAddOutPubKey(CMutableTransaction& tx, const std::string& str
     bool bScriptHash = false;
     if (vStrInputParts.size() == 3) {
         std::string flags = vStrInputParts[2];
-        bSegWit = (flags.find("W") != std::string::npos);
-        bScriptHash = (flags.find("S") != std::string::npos);
+        bSegWit = (flags.find('W') != std::string::npos);
+        bScriptHash = (flags.find('S') != std::string::npos);
     }
 
     if (bSegWit) {
@@ -367,8 +367,8 @@ static void MutateTxAddOutMultiSig(CMutableTransaction& tx, const std::string& s
     bool bScriptHash = false;
     if (vStrInputParts.size() == numkeys + 4) {
         std::string flags = vStrInputParts.back();
-        bSegWit = (flags.find("W") != std::string::npos);
-        bScriptHash = (flags.find("S") != std::string::npos);
+        bSegWit = (flags.find('W') != std::string::npos);
+        bScriptHash = (flags.find('S') != std::string::npos);
     }
     else if (vStrInputParts.size() > numkeys + 4) {
         // Validate that there were no more parameters passed
@@ -387,6 +387,10 @@ static void MutateTxAddOutMultiSig(CMutableTransaction& tx, const std::string& s
         scriptPubKey = GetScriptForWitness(scriptPubKey);
     }
     if (bScriptHash) {
+        if (scriptPubKey.size() > MAX_SCRIPT_ELEMENT_SIZE) {
+            throw std::runtime_error(strprintf(
+                        "redeemScript exceeds size limit: %d > %d", scriptPubKey.size(), MAX_SCRIPT_ELEMENT_SIZE));
+        }
         // Get the ID for the script, and then construct a P2SH destination for it.
         scriptPubKey = GetScriptForDestination(CScriptID(scriptPubKey));
     }
@@ -443,14 +447,23 @@ static void MutateTxAddOutScript(CMutableTransaction& tx, const std::string& str
     bool bScriptHash = false;
     if (vStrInputParts.size() == 3) {
         std::string flags = vStrInputParts.back();
-        bSegWit = (flags.find("W") != std::string::npos);
-        bScriptHash = (flags.find("S") != std::string::npos);
+        bSegWit = (flags.find('W') != std::string::npos);
+        bScriptHash = (flags.find('S') != std::string::npos);
+    }
+
+    if (scriptPubKey.size() > MAX_SCRIPT_SIZE) {
+        throw std::runtime_error(strprintf(
+                    "script exceeds size limit: %d > %d", scriptPubKey.size(), MAX_SCRIPT_SIZE));
     }
 
     if (bSegWit) {
         scriptPubKey = GetScriptForWitness(scriptPubKey);
     }
     if (bScriptHash) {
+        if (scriptPubKey.size() > MAX_SCRIPT_ELEMENT_SIZE) {
+            throw std::runtime_error(strprintf(
+                        "redeemScript exceeds size limit: %d > %d", scriptPubKey.size(), MAX_SCRIPT_ELEMENT_SIZE));
+        }
         scriptPubKey = GetScriptForDestination(CScriptID(scriptPubKey));
     }
 
@@ -538,7 +551,6 @@ static void MutateTxSign(CMutableTransaction& tx, const std::string& flagStr)
     // mergedTx will end up with all the signatures; it
     // starts as a clone of the raw tx:
     CMutableTransaction mergedTx(txVariants[0]);
-    bool fComplete = true;
     CCoinsView viewDummy;
     CCoinsViewCache view(&viewDummy);
 
@@ -550,12 +562,10 @@ static void MutateTxSign(CMutableTransaction& tx, const std::string& flagStr)
     for (unsigned int kidx = 0; kidx < keysObj.size(); kidx++) {
         if (!keysObj[kidx].isStr())
             throw std::runtime_error("privatekey not a std::string");
-        CBitcoinSecret vchSecret;
-        bool fGood = vchSecret.SetString(keysObj[kidx].getValStr());
-        if (!fGood)
+        CKey key = DecodeSecret(keysObj[kidx].getValStr());
+        if (!key.IsValid()) {
             throw std::runtime_error("privatekey not valid");
-
-        CKey key = vchSecret.GetKey();
+        }
         tempKeystore.AddKey(key);
     }
 
@@ -626,7 +636,6 @@ static void MutateTxSign(CMutableTransaction& tx, const std::string& flagStr)
         CTxIn& txin = mergedTx.vin[i];
         const Coin& coin = view.AccessCoin(txin.prevout);
         if (coin.IsSpent()) {
-            fComplete = false;
             continue;
         }
         const CScript& prevPubKey = coin.out.scriptPubKey;
@@ -641,14 +650,6 @@ static void MutateTxSign(CMutableTransaction& tx, const std::string& flagStr)
         for (const CTransaction& txv : txVariants)
             sigdata = CombineSignatures(prevPubKey, MutableTransactionSignatureChecker(&mergedTx, i, amount), sigdata, DataFromTransaction(txv, i));
         UpdateTransaction(mergedTx, i, sigdata);
-
-        if (!VerifyScript(txin.scriptSig, prevPubKey, &txin.scriptWitness, STANDARD_SCRIPT_VERIFY_FLAGS, MutableTransactionSignatureChecker(&mergedTx, i, amount)))
-            fComplete = false;
-    }
-
-    if (fComplete) {
-        // do nothing... for now
-        // perhaps store this for later optional JSON output
     }
 
     tx = mergedTx;

@@ -1,14 +1,14 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2009-2017 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #ifndef BITCOIN_TXDB_H
 #define BITCOIN_TXDB_H
 
-#include "coins.h"
-#include "dbwrapper.h"
-#include "chain.h"
+#include <coins.h>
+#include <dbwrapper.h>
+#include <chain.h>
 
 #include <map>
 #include <string>
@@ -46,7 +46,7 @@ struct CDiskTxPos : public CDiskBlockPos
 
     template <typename Stream, typename Operation>
     inline void SerializationOp(Stream& s, Operation ser_action) {
-        READWRITE(*(CDiskBlockPos*)this);
+        READWRITE(*static_cast<CDiskBlockPos*>(this));
         READWRITE(VARINT(nTxOffset));
     }
 

@@ -6,7 +6,7 @@
 #ifndef BITCOIN_WALLET_FEES_H
 #define BITCOIN_WALLET_FEES_H
 
-#include "amount.h"
+#include <amount.h>
 
 class CBlockPolicyEstimator;
 class CCoinControl;
@@ -25,6 +25,18 @@ CAmount GetRequiredFee(unsigned int nTxBytes);
  * and the required fee
  */
 CAmount GetMinimumFee(unsigned int nTxBytes, const CCoinControl& coin_control, const CTxMemPool& pool, const CBlockPolicyEstimator& estimator, FeeCalculation *feeCalc);
+
+/**
+ * Return the minimum required feerate taking into account the
+ * floating relay feerate and user set minimum transaction feerate
+ */
+CFeeRate GetRequiredFeeRate();
+
+/**
+ * Estimate the minimum fee rate considering user set parameters
+ * and the required fee
+ */
+CFeeRate GetMinimumFeeRate(const CCoinControl& coin_control, const CTxMemPool& pool, const CBlockPolicyEstimator& estimator, FeeCalculation *feeCalc);
 
 /**
  * Return the maximum feerate for discarding change.

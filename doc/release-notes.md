@@ -3,7 +3,7 @@ release-notes at release time)
 
 Bitcoin Core version *version* is now available from:
 
-  <https://bitcoin.org/bin/bitcoin-core-*version*/>
+  <https://bitcoincore.org/bin/bitcoin-core-*version*/>
 
 This is a new major version release, including new features, various bugfixes
 and performance improvements, as well as updated translations.
@@ -20,7 +20,7 @@ How to Upgrade
 ==============
 
 If you are running an older version, shut it down. Wait until it has completely
-shut down (which might take a few minutes for older versions), then run the 
+shut down (which might take a few minutes for older versions), then run the
 installer (on Windows) or just copy over `/Applications/Bitcoin-Qt` (on Mac)
 or `bitcoind`/`bitcoin-qt` (on Linux).
 
@@ -48,7 +48,7 @@ Compatibility
 ==============
 
 Bitcoin Core is extensively tested on multiple operating systems using
-the Linux kernel, macOS 10.8+, and Windows Vista and later. Windows XP is not supported.
+the Linux kernel, macOS 10.8+, and Windows 7 and newer (Windows XP is not supported).
 
 Bitcoin Core should also work on most other Unix-like systems but is not
 frequently tested on them.
@@ -56,35 +56,71 @@ frequently tested on them.
 Notable changes
 ===============
 
-Miner block size limiting deprecated
-------------------------------------
+RPC changes
+------------
 
-Though blockmaxweight has been preferred for limiting the size of blocks returned by
-getblocktemplate since 0.13.0, blockmaxsize remained as an option for those who wished
-to limit their block size directly. Using this option resulted in a few UI issues as
-well as non-optimal fee selection and ever-so-slightly worse performance, and has thus
-now been deprecated. Further, the blockmaxsize option is now used only to calculate an
-implied blockmaxweight, instead of limiting block size directly. Any miners who wish
-to limit their blocks by size, instead of by weight, will have to do so manually by
-removing transactions from their block template directly.
+### Low-level changes
 
-HD-wallets by default
+- The `createrawtransaction` RPC will now accept an array or dictionary (kept for compatibility) for the `outputs` parameter. This means the order of transaction outputs can be specified by the client.
+- The `fundrawtransaction` RPC will reject the previously deprecated `reserveChangeKey` option.
+- Wallet `getnewaddress` and `addmultisigaddress` RPC `account` named
+  parameters have been renamed to `label` with no change in behavior.
+- Wallet `getlabeladdress`, `getreceivedbylabel`, `listreceivedbylabel`, and
+  `setlabel` RPCs have been added to replace `getaccountaddress`,
+  `getreceivedbyaccount`, `listreceivedbyaccount`, and `setaccount` RPCs,
+  which are now deprecated. There is no change in behavior between the
+  new RPCs and deprecated RPCs.
+- Wallet `listreceivedbylabel`, `listreceivedbyaccount` and `listunspent` RPCs
+  add `label` fields to returned JSON objects that previously only had
+  `account` fields.
+- `sendmany` now shuffles outputs to improve privacy, so any previously expected behavior with regards to output ordering can no longer be relied upon.
+
+External wallet files
 ---------------------
-Due to a backward-incompatible change in the wallet database, wallets created
-with version 0.16.0 will be rejected by previous versions. Also, version 0.16.0
-will only create hierarchical deterministic (HD) wallets.
+
+The `-wallet=<path>` option now accepts full paths instead of requiring wallets
+to be located in the -walletdir directory.
+
+Newly created wallet format
+---------------------------
+
+If `-wallet=<path>` is specified with a path that does not exist, it will now
+create a wallet directory at the specified location (containing a wallet.dat
+data file, a db.log file, and database/log.?????????? files) instead of just
+creating a data file at the path and storing log files in the parent
+directory. This should make backing up wallets more straightforward than
+before because the specified wallet path can just be directly archived without
+having to look in the parent directory for transaction log files.
+
+For backwards compatibility, wallet paths that are names of existing data files
+in the `-walletdir` directory will continue to be accepted and interpreted the
+same as before.
 
 Low-level RPC changes
-----------------------
-- The "currentblocksize" value in getmininginfo has been removed.
-- The deprecated RPC `getinfo` was removed. It is recommended that the more specific RPCs are used:
-  * `getblockchaininfo`
-  * `getnetworkinfo`
-  * `getwalletinfo`
-  * `getmininginfo`
+---------------------
 
-- `dumpwallet` no longer allows overwriting files. This is a security measure
-  as well as prevents dangerous user mistakes.
+- When bitcoin is not started with any `-wallet=<path>` options, the name of
+  the default wallet returned by `getwalletinfo` and `listwallets` RPCs is
+  now the empty string `""` instead of `"wallet.dat"`. If bitcoin is started
+  with any `-wallet=<path>` options, there is no change in behavior, and the
+  name of any wallet is just its `<path>` string.
+
+### Logging
+
+- The log timestamp format is now ISO 8601 (e.g. "2018-02-28T12:34:56Z").
+
+Miner block size removed
+------------------------
+
+The `-blockmaxsize` option for miners to limit their blocks' sizes was
+deprecated in V0.15.1, and has now been removed. Miners should use the
+`-blockmaxweight` option if they want to limit the weight of their blocks'
+weights.
+
+Python Support
+--------------
+
+Support for Python 2 has been discontinued for all test files and tools.
 
 Credits
 =======

@@ -2,12 +2,12 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "util.h"
-#include "utiltime.h"
-#include "validation.h"
+#include <util.h>
+#include <utiltime.h>
+#include <validation.h>
 
-#include "test/test_bitcoin.h"
-#include "checkqueue.h"
+#include <test/test_bitcoin.h>
+#include <checkqueue.h>
 #include <boost/test/unit_test.hpp>
 #include <boost/thread.hpp>
 #include <atomic>
@@ -18,13 +18,13 @@
 
 #include <unordered_set>
 #include <memory>
-#include "random.h"
+#include <random.h>
 
 // BasicTestingSetup not sufficient because nScriptCheckThreads is not set
 // otherwise.
 BOOST_FIXTURE_TEST_SUITE(checkqueue_tests, TestingSetup)
 
-static const int QUEUE_BATCH_SIZE = 128;
+static const unsigned int QUEUE_BATCH_SIZE = 128;
 
 struct FakeCheck {
     bool operator()()
@@ -406,11 +406,11 @@ BOOST_AUTO_TEST_CASE(test_CheckQueueControl_Locks)
         boost::thread_group tg;
         std::mutex m;
         std::condition_variable cv;
+        bool has_lock{false};
+        bool has_tried{false};
+        bool done{false};
+        bool done_ack{false};
         {
-            bool has_lock {false};
-            bool has_tried {false};
-            bool done {false};
-            bool done_ack {false};
             std::unique_lock<std::mutex> l(m);
             tg.create_thread([&]{
                     CCheckQueueControl<FakeCheck> control(queue.get());

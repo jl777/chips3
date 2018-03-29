@@ -1,17 +1,17 @@
-// Copyright (c) 2012-2016 The Bitcoin Core developers
+// Copyright (c) 2012-2017 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #ifndef BITCOIN_DBWRAPPER_H
 #define BITCOIN_DBWRAPPER_H
 
-#include "clientversion.h"
-#include "fs.h"
-#include "serialize.h"
-#include "streams.h"
-#include "util.h"
-#include "utilstrencodings.h"
-#include "version.h"
+#include <clientversion.h>
+#include <fs.h>
+#include <serialize.h>
+#include <streams.h>
+#include <util.h>
+#include <utilstrencodings.h>
+#include <version.h>
 
 #include <leveldb/db.h>
 #include <leveldb/write_batch.h>
@@ -198,6 +198,9 @@ private:
     //! the database itself
     leveldb::DB* pdb;
 
+    //! the name of this database
+    std::string m_name;
+
     //! a key used for optional XOR-obfuscation of the database
     std::vector<unsigned char> obfuscate_key;
 
@@ -283,6 +286,9 @@ public:
     }
 
     bool WriteBatch(CDBBatch& batch, bool fSync = false);
+
+    // Get an estimate of LevelDB memory usage (in bytes).
+    size_t DynamicMemoryUsage() const;
 
     // not available for LevelDB; provide for compatibility with BDB
     bool Flush()
