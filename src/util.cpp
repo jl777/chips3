@@ -552,17 +552,18 @@ static CCriticalSection csPathCached;
 
 const fs::path &GetDataDir(bool fNetSpecific)
 {
-
+    
     LOCK(csPathCached);
-
+    
     fs::path &path = fNetSpecific ? pathCachedNetSpecific : pathCached;
-
+    
     // This can be called during exceptions by LogPrintf(), so we cache the
     // value so we don't have to do memory allocations after that.
     if (!path.empty())
     {
         //printf("return non-empty path\n");
         return path;
+    }
     if (gArgs.IsArgSet("-datadir")) {
         path = fs::system_complete(gArgs.GetArg("-datadir", ""));
         if (!fs::is_directory(path)) {
@@ -575,7 +576,7 @@ const fs::path &GetDataDir(bool fNetSpecific)
     }
     if (fNetSpecific)
         path /= BaseParams().DataDir();
-
+    
     fs::create_directories(path);
     //printf("return path.(%s)\n",path.string().c_str());
     return path;
