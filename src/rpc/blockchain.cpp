@@ -1625,6 +1625,7 @@ static const CRPCCommand commands[] =
 { //  category              name                      actor (function)         argNames
   //  --------------------- ------------------------  -----------------------  ----------
     { "blockchain",         "getblockchaininfo",      &getblockchaininfo,      {} },
+    { "blockchain",         "getinfo",      &getblockchaininfo,      {} },
     { "blockchain",         "getchaintxstats",        &getchaintxstats,        {"nblocks", "blockhash"} },
     { "blockchain",         "getbestblockhash",       &getbestblockhash,       {} },
     { "blockchain",         "getblockcount",          &getblockcount,          {} },
