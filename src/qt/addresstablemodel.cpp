@@ -1,15 +1,14 @@
-// Copyright (c) 2011-2016 The Bitcoin Core developers
+// Copyright (c) 2011-2017 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "addresstablemodel.h"
+#include <qt/addresstablemodel.h>
 
-#include "guiutil.h"
-#include "walletmodel.h"
+#include <qt/guiutil.h>
+#include <qt/walletmodel.h>
 
-#include "base58.h"
-#include "wallet/wallet.h"
-
+#include <key_io.h>
+#include <wallet/wallet.h>
 
 #include <QFont>
 #include <QDebug>
@@ -341,7 +340,7 @@ void AddressTableModel::updateEntry(const QString &address,
     priv->updateEntry(address, label, isMine, purpose, status);
 }
 
-QString AddressTableModel::addRow(const QString &type, const QString &label, const QString &address)
+QString AddressTableModel::addRow(const QString &type, const QString &label, const QString &address, const OutputType address_type)
 {
     std::string strLabel = label.toStdString();
     std::string strAddress = address.toStdString();
@@ -384,7 +383,8 @@ QString AddressTableModel::addRow(const QString &type, const QString &label, con
                 return QString();
             }
         }
-        strAddress = EncodeDestination(newKey.GetID());
+        wallet->LearnRelatedScripts(newKey, address_type);
+        strAddress = EncodeDestination(GetDestinationForKey(newKey, address_type));
     }
     else
     {
@@ -392,11 +392,8 @@ QString AddressTableModel::addRow(const QString &type, const QString &label, con
     }
 
     // Add entry
-    {
-        LOCK(wallet->cs_wallet);
-        wallet->SetAddressBook(DecodeDestination(strAddress), strLabel,
-                               (type == Send ? "send" : "receive"));
-    }
+    wallet->SetAddressBook(DecodeDestination(strAddress), strLabel,
+                           (type == Send ? "send" : "receive"));
     return QString::fromStdString(strAddress);
 }
 
@@ -410,10 +407,7 @@ bool AddressTableModel::removeRows(int row, int count, const QModelIndex &parent
         // Also refuse to remove receiving addresses.
         return false;
     }
-    {
-        LOCK(wallet->cs_wallet);
-        wallet->DelAddressBook(DecodeDestination(rec->address.toStdString()));
-    }
+    wallet->DelAddressBook(DecodeDestination(rec->address.toStdString()));
     return true;
 }
 
@@ -446,6 +440,8 @@ int AddressTableModel::lookupAddress(const QString &address) const
         return lst.at(0).row();
     }
 }
+
+OutputType AddressTableModel::GetDefaultAddressType() const { return wallet->m_default_address_type; };
 
 void AddressTableModel::emitDataChanged(int idx)
 {
