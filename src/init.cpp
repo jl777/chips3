@@ -903,7 +903,7 @@ bool AppInitParameterInteraction()
     if (!fs::is_directory(GetBlocksDir(false))) {
         return InitError(strprintf(_("Specified blocks directory \"%s\" does not exist.\n"), gArgs.GetArg("-blocksdir", "").c_str()));
     }
-    NOTARY_PUBKEY = GetArg("-pubkey", "");
+    NOTARY_PUBKEY = gArgs.GetArg("-pubkey", "");
 
     // if using block pruning, then disallow txindex
     if (gArgs.GetArg("-prune", 0)) {
