@@ -863,9 +863,9 @@ void komodo_voutupdate(int32_t txi,int32_t vout,uint8_t *scriptbuf,int32_t scrip
             opretlen = scriptbuf[len++];
             opretlen += (scriptbuf[len++] << 8);
         }
-        fprintf(stderr,"[CHIPS] notarized.%d mask.%llx notarizedht.%d sp.Nht %d sp.ht %d opretlen.%d (%c %c %c)\n",notarized,(long long)signedmask,*notarizedheightp,NOTARIZED_HEIGHT,CURRENT_HEIGHT,opretlen,scriptbuf[len+32*2+4],scriptbuf[len+32*2+4+1],scriptbuf[len+32*2+4+2]);
         if ( vout == 1 && opretlen >= 32*2+4 && strcmp("CHIPS",(char *)&scriptbuf[len+32*2+4]) == 0 )
         {
+            fprintf(stderr,"[CHIPS] notarized.%d mask.%llx notarizedht.%d sp.Nht %d sp.ht %d opretlen.%d (%c %c %c)\n",notarized,(long long)signedmask,*notarizedheightp,NOTARIZED_HEIGHT,CURRENT_HEIGHT,opretlen,scriptbuf[len+32*2+4],scriptbuf[len+32*2+4+1],scriptbuf[len+32*2+4+2]);
             len += iguana_rwbignum(0,&scriptbuf[len],32,(uint8_t *)&kmdtxid);
             len += iguana_rwnum(0,&scriptbuf[len],sizeof(*notarizedheightp),(uint8_t *)notarizedheightp);
             len += iguana_rwbignum(0,&scriptbuf[len],32,(uint8_t *)&desttxid);
@@ -976,7 +976,7 @@ void komodo_connectblock(CBlockIndex *pindex,CBlock& block)
             }
             if ( NOTARY_PUBKEY33[0] != 0 )
                 printf(") ");
-                printf("[CHIPS] ht.%d txi.%d signedmask.%llx numvins.%d numvouts.%d notarized.%d special.%d\n",height,i,(long long)signedmask,numvins,numvouts,notarized,specialtx);
+           //printf("[CHIPS] ht.%d txi.%d signedmask.%llx numvins.%d numvouts.%d notarized.%d special.%d\n",height,i,(long long)signedmask,numvins,numvouts,notarized,specialtx);
             if ( NOTARY_PUBKEY33[0] != 0 )
                 printf("CHIPS ht.%d\n",height);
             //if ( pindex->nHeight == hwmheight )
