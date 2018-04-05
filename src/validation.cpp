@@ -3993,7 +3993,7 @@ bool CChainState::AcceptBlockHeader(const CBlockHeader& block, CValidationState&
                 return state.Invalid(error("%s: block %s is marked invalid", __func__, hash.ToString()), 0, "duplicate");
             if ( pindex != 0 && IsInitialBlockDownload() == 0 ) // jl777 avoid SUPERNET fork like incidents
             {
-                if (!CheckBlockHeader(pindex->nHeight,pindex, block, state))
+                if (!CheckBlockHeader(pindex, block, state))
                 {
                     pindex->nStatus |= BLOCK_FAILED_MASK;
                     fprintf(stderr,"known block failing CheckBlockHeader %d\n",(int32_t)pindex->nHeight);
@@ -4017,7 +4017,7 @@ bool CChainState::AcceptBlockHeader(const CBlockHeader& block, CValidationState&
                         return state.DoS(100, error("%s: prev block invalid", __func__), REJECT_INVALID, "bad-prevblk");
                     }
                 }
-                if (!ContextualCheckBlockHeader(block, state, pindexPrev))
+                if (!ContextualCheckBlockHeader(block, state, chainparams, pindexPrev, GetAdjustedTime()))
                 {
                     pindex->nStatus |= BLOCK_FAILED_MASK;
                     fprintf(stderr,"known block.%d failing ContextualCheckBlockHeader\n",(int32_t)pindex->nHeight);
