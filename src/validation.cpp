@@ -829,7 +829,7 @@ int32_t komodo_checkpoint(int32_t *notarized_heightp,int32_t nHeight,uint256 has
                 return(-1);
             }
         } else fprintf(stderr,"unexpected error notary_hash %s ht.%d at ht.%d\n",notarized_hash.ToString().c_str(),notarized_height,notary->nHeight);
-    } else
+    } else if ( notarized_height > 0 )
         fprintf(stderr,"CHIPS couldnt find notarized.(%s %d) ht.%d\n",notarized_hash.ToString().c_str(),notarized_height,pindex->nHeight);
     return(0);
 }
