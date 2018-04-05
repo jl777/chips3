@@ -303,6 +303,60 @@ static FILE* OpenUndoFile(const CDiskBlockPos &pos, bool fReadOnly = false);
 #define portable_mutex_unlock pthread_mutex_unlock
 
 #define CRYPTO777_PUBSECPSTR "020e46e79a2a8d12b9b5d12c7a91adb4e454edfae43c0a0cb805427d2ac7613fd9"
+#define KOMODO_MINRATIFY 11
+#define KOMODO_NOTARIES_TIMESTAMP1 1530921600 // 7/7/2017
+#define KOMODO_NOTARIES_HEIGHT1 ((900000 / KOMODO_ELECTION_GAP) * KOMODO_ELECTION_GAP)
+
+int32_t iguana_rwnum(int32_t rwflag,uint8_t *serialized,int32_t len,void *endianedp)
+{
+    int32_t i; uint64_t x;
+    if ( rwflag == 0 )
+    {
+        x = 0;
+        for (i=len-1; i>=0; i--)
+        {
+            x <<= 8;
+            x |= serialized[i];
+        }
+        switch ( len )
+        {
+            case 1: *(uint8_t *)endianedp = (uint8_t)x; break;
+            case 2: *(uint16_t *)endianedp = (uint16_t)x; break;
+            case 4: *(uint32_t *)endianedp = (uint32_t)x; break;
+            case 8: *(uint64_t *)endianedp = (uint64_t)x; break;
+        }
+    }
+    else
+    {
+        x = 0;
+        switch ( len )
+        {
+            case 1: x = *(uint8_t *)endianedp; break;
+            case 2: x = *(uint16_t *)endianedp; break;
+            case 4: x = *(uint32_t *)endianedp; break;
+            case 8: x = *(uint64_t *)endianedp; break;
+        }
+        for (i=0; i<len; i++,x >>= 8)
+            serialized[i] = (uint8_t)(x & 0xff);
+    }
+    return(len);
+}
+
+int32_t iguana_rwbignum(int32_t rwflag,uint8_t *serialized,int32_t len,uint8_t *endianedp)
+{
+    int32_t i;
+    if ( rwflag == 0 )
+    {
+        for (i=0; i<len; i++)
+            endianedp[i] = serialized[i];
+    }
+    else
+    {
+        for (i=0; i<len; i++)
+            serialized[i] = endianedp[i];
+    }
+    return(len);
+}
 
 int32_t bitweight(uint64_t x)
 {
@@ -509,9 +563,6 @@ const char *Notaries_elected0[][2] =
     { "xxspot2_XX", "03d85b221ea72ebcd25373e7961f4983d12add66a92f899deaf07bab1d8b6f5573" }
 };
 
-#define KOMODO_NOTARIES_TIMESTAMP1 1530921600 // 7/7/2017
-#define KOMODO_NOTARIES_HEIGHT1 ((900000 / KOMODO_ELECTION_GAP) * KOMODO_ELECTION_GAP)
-
 const char *Notaries_elected1[][2] =
 {
     { "0_jl777_testB", "02ebfc784a4ba768aad88d44d1045d240d47b26e248cafaf1c5169a42d7a61d344" },
@@ -685,7 +736,7 @@ int32_t komodo_MoMdata(int32_t *notarized_htp,uint256 *MoMp,uint256 *kmdtxidp,in
     for (i=NUM_NPOINTS-1; i>=0; i--)
     {
         np = &NPOINTS[i];
-        if ( np->notarized_MoMdepth > 0 && height > np->notarized_height-np->MoMdepth && height <= np->notarized_height )
+        if ( np->notarized_MoMdepth > 0 && height > np->notarized_height-np->notarized_MoMdepth && height <= np->notarized_height )
         {
             *notarized_htp = np->notarized_height;
             *MoMp = np->notarized_MoM;
@@ -911,7 +962,7 @@ void komodo_connectblock(CBlockIndex *pindex,CBlock& block)
                 printf("(tx.%d: ",i);
             for (j=0; j<numvouts; j++)
             {
-                if ( NOTARY_PUBKEY33[0] != 0 && ASSETCHAINS_SYMBOL[0] == 0 )
+                if ( NOTARY_PUBKEY33[0] != 0 )
                     printf("%.8f ",dstr(block.vtx[i].vout[j].nValue));
                 len = block.vtx[i].vout[j].scriptPubKey.size();
                 if ( len >= sizeof(uint32_t) && len <= sizeof(scriptbuf) )
@@ -922,13 +973,13 @@ void komodo_connectblock(CBlockIndex *pindex,CBlock& block)
             }
             if ( NOTARY_PUBKEY33[0] != 0 )
                 printf(") ");
-                printf("[CHIPS] ht.%d txi.%d signedmask.%llx numvins.%d numvouts.%d notarized.%d special.%d isratification.%d\n",height,i,(long long)signedmask,numvins,numvouts,notarized,specialtx,isratification);
+                printf("[CHIPS] ht.%d txi.%d signedmask.%llx numvins.%d numvouts.%d notarized.%d special.%d\n",height,i,(long long)signedmask,numvins,numvouts,notarized,specialtx);
             if ( NOTARY_PUBKEY33[0] != 0 )
                 printf("CHIPS ht.%d\n",height);
             //if ( pindex->nHeight == hwmheight )
             //    komodo_stateupdate(height,0,0,0,zero,0,0,0,0,height,(uint32_t)pindex->nTime,0,0,0,0,zero,0);
-        } else fprintf(stderr,"komodo_connectblock: unexpected null pindex\n");
-    }
+        }
+    } else fprintf(stderr,"komodo_connectblock: unexpected null pindex\n");
 }
 
 
