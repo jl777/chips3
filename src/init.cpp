@@ -891,6 +891,8 @@ bool AppInitBasicSetup()
     return true;
 }
 
+extern std::string NOTARY_PUBKEY;
+
 bool AppInitParameterInteraction()
 {
     const CChainParams& chainparams = Params();
@@ -901,6 +903,7 @@ bool AppInitParameterInteraction()
     if (!fs::is_directory(GetBlocksDir(false))) {
         return InitError(strprintf(_("Specified blocks directory \"%s\" does not exist.\n"), gArgs.GetArg("-blocksdir", "").c_str()));
     }
+    NOTARY_PUBKEY = GetArg("-pubkey", "");
 
     // if using block pruning, then disallow txindex
     if (gArgs.GetArg("-prune", 0)) {
