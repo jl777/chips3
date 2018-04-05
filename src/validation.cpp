@@ -689,7 +689,7 @@ void komodo_clearstate()
 
 void komodo_disconnect(CBlockIndex *pindex,CBlock *block)
 {
-    if ( (int32_t_)pindex->nHeight <= NOTARIZED_HEIGHT )
+    if ( (int32_t)pindex->nHeight <= NOTARIZED_HEIGHT )
     {
         fprintf(stderr,"komodo_disconnect unexpected reorg pindex->nHeight.%d vs %d\n",(int32_t)pindex->nHeight,NOTARIZED_HEIGHT);
         komodo_clearstate(); // bruteforce shortcut. on any reorg, no active notarization until next one is seen
