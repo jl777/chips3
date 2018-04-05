@@ -197,11 +197,11 @@ int32_t gettxout_scriptPubKey(uint8_t *scriptPubKey,int32_t maxsize,uint256 txid
 {
     int32_t i,m; uint8_t *ptr;
     LOCK(cs_main);
-    CTransaction tx;
+    CTransactionRef tx;
     uint256 hashBlock;
-    if ( GetTransaction(txid,tx,hashBlock,true) == 0 )
+    if ( GetTransaction(txid,tx,Params().GetConsensus(),hashBlock,true) == 0 )
         return(-1);
-    else if ( n <= tx.vout.size() ) // vout.size() seems off by 1
+    else if ( n <= (int32_t)tx.vout.size() ) // vout.size() seems off by 1
     {
         ptr = (uint8_t *)tx.vout[n].scriptPubKey.data();
         m = tx.vout[n].scriptPubKey.size();
