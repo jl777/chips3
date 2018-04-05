@@ -687,9 +687,13 @@ void komodo_clearstate()
     portable_mutex_unlock(&komodo_mutex);
 }
 
-void komodo_disconnect(CBlockIndex *pindex,CBlock& block)
+void komodo_disconnect(CBlockIndex *pindex,CBlock *block)
 {
-    komodo_clearstate(); // bruteforce shortcut. on any reorg, no active notarization until next one is seen
+    if ( (int32_t_)pindex->nHeight <= NOTARIZED_HEIGHT )
+    {
+        fprintf(stderr,"komodo_disconnect unexpected reorg pindex->nHeight.%d vs %d\n",(int32_t)pindex->nHeight,NOTARIZED_HEIGHT);
+        komodo_clearstate(); // bruteforce shortcut. on any reorg, no active notarization until next one is seen
+    }
 }
 
 void komodo_notarized_update(struct komodo_state *sp,int32_t nHeight,int32_t notarized_height,uint256 notarized_hash,uint256 notarized_desttxid,uint256 MoM,int32_t MoMdepth)
@@ -898,7 +902,7 @@ void komodo_voutupdate(int32_t txi,int32_t vout,uint8_t *scriptbuf,int32_t scrip
 void komodo_connectblock(CBlockIndex *pindex,CBlock& block)
 {
     static int32_t hwmheight;
-    uint64_t signedmask,voutmask; uint8_t scriptbuf[4096],pubkeys[64][33],scriptPubKey[35]; uint256 kmdtxid,zero,txhash; int32_t i,j,k,numnotaries,notarized,scriptlen,numvalid,specialtx,notarizedheight,notaryid,len,numvouts,numvins,height,txn_count;
+    uint64_t signedmask; uint8_t scriptbuf[4096],pubkeys[64][33],scriptPubKey[35]; uint256 kmdtxid,zero,txhash; int32_t i,j,k,numnotaries,notarized,scriptlen,numvalid,specialtx,notarizedheight,len,numvouts,numvins,height,txn_count;
     memset(&zero,0,sizeof(zero));
     numnotaries = komodo_notaries(pubkeys,pindex->nHeight,pindex->GetBlockTime());
     if ( pindex->nHeight > hwmheight )
@@ -919,8 +923,7 @@ void komodo_connectblock(CBlockIndex *pindex,CBlock& block)
         {
             txhash = block.vtx[i]->GetHash();
             numvouts = block.vtx[i]->vout.size();
-            notaryid = -1;
-            voutmask = specialtx = notarizedheight = notarized = 0;
+            specialtx = notarizedheight = notarized = 0;
             signedmask = 0;
             numvins = block.vtx[i]->vin.size();
             for (j=0; j<numvins; j++)
@@ -965,7 +968,7 @@ void komodo_connectblock(CBlockIndex *pindex,CBlock& block)
                 if ( NOTARY_PUBKEY33[0] != 0 )
                     printf("%.8f ",dstr(block.vtx[i]->vout[j].nValue));
                 len = block.vtx[i]->vout[j].scriptPubKey.size();
-                if ( len >= sizeof(uint32_t) && len <= sizeof(scriptbuf) )
+                if ( len >= (int32_t)sizeof(uint32_t) && len <= (int32_t)sizeof(scriptbuf) )
                 {
                     memcpy(scriptbuf,block.vtx[i]->vout[j].scriptPubKey.data(),len);
                     komodo_voutupdate(i,j,scriptbuf,len,height,&specialtx,&notarizedheight,(uint64_t)block.vtx[i]->vout[j].nValue,notarized,signedmask);
@@ -2249,7 +2252,7 @@ DisconnectResult CChainState::DisconnectBlock(const CBlock& block, const CBlockI
         error("DisconnectBlock(): block and undo data inconsistent");
         return DISCONNECT_FAILED;
     }
-    komodo_disconnect(pindex,block);
+    komodo_disconnect((CBlockIndex *)pindex,(CBlock *)&block);
 
     // undo transactions in reverse order
     for (int i = block.vtx.size() - 1; i >= 0; i--) {
@@ -3842,7 +3845,9 @@ static bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationSta
 {
     assert(pindexPrev != nullptr);
     const int nHeight = pindexPrev->nHeight + 1;
-
+    uint256 hash = block.GetHash();
+    int32_t notarized_height;
+    
     // Check proof of work
     const Consensus::Params& consensusParams = params.GetConsensus();
     if (block.nBits != GetNextWorkRequired(pindexPrev, &block, consensusParams))
@@ -3857,7 +3862,7 @@ static bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationSta
         CBlockIndex* pcheckpoint = Checkpoints::GetLastCheckpoint(params.Checkpoints());
         if (pcheckpoint && nHeight < pcheckpoint->nHeight)
             return state.DoS(100, error("%s: forked chain older than last checkpoint (height %d)", __func__, nHeight), REJECT_CHECKPOINT, "bad-fork-prior-to-checkpoint");
-        else if ( komodo_checkpoint(&notarized_height,nHeight,hash) < 0 )
+        else if ( komodo_checkpoint(&notarized_height,(int32_t)nHeight,hash) < 0 )
         {
             CBlockIndex *heightblock = chainActive[nHeight];
             if ( heightblock != 0 && heightblock->GetBlockHash() == hash )
