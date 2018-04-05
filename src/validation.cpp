@@ -830,7 +830,7 @@ int32_t komodo_checkpoint(int32_t *notarized_heightp,int32_t nHeight,uint256 has
     return(0);
 }
 
-void komodo_voutupdate(uint8_t *scriptbuf,int32_t scriptlen,int32_t height,int32_t *specialtxp,int32_t *notarizedheightp,uint64_t value,int32_t notarized,uint64_t signedmask)
+void komodo_voutupdate(int32_t txi,int32_t vout,uint8_t *scriptbuf,int32_t scriptlen,int32_t height,int32_t *specialtxp,int32_t *notarizedheightp,uint64_t value,int32_t notarized,uint64_t signedmask)
 {
     static uint256 zero; static uint8_t crypto777[33];
     int32_t opretlen,len = 0; uint256 kmdtxid,desttxid;
@@ -859,8 +859,8 @@ void komodo_voutupdate(uint8_t *scriptbuf,int32_t scriptlen,int32_t height,int32
             opretlen = scriptbuf[len++];
             opretlen += (scriptbuf[len++] << 8);
         }
-        fprintf(stderr,"[%s] notarized.%d mask.%llx notarizedht.%d sp.Nht %d sp.ht %d opretlen.%d (%c %c %c)\n",notarized,(long long)signedmask,*notarizedheightp,NOTARIZED_HEIGHT,CURRENT_HEIGHT,opretlen,scriptbuf[len+32*2+4],scriptbuf[len+32*2+4+1],scriptbuf[len+32*2+4+2]);
-        if ( j == 1 && opretlen >= 32*2+4 && strcmp("CHIPS",(char *)&scriptbuf[len+32*2+4]) == 0 )
+        fprintf(stderr,"[CHIPS] notarized.%d mask.%llx notarizedht.%d sp.Nht %d sp.ht %d opretlen.%d (%c %c %c)\n",notarized,(long long)signedmask,*notarizedheightp,NOTARIZED_HEIGHT,CURRENT_HEIGHT,opretlen,scriptbuf[len+32*2+4],scriptbuf[len+32*2+4+1],scriptbuf[len+32*2+4+2]);
+        if ( vout == 1 && opretlen >= 32*2+4 && strcmp("CHIPS",(char *)&scriptbuf[len+32*2+4]) == 0 )
         {
             len += iguana_rwbignum(0,&scriptbuf[len],32,(uint8_t *)&kmdtxid);
             len += iguana_rwnum(0,&scriptbuf[len],sizeof(*notarizedheightp),(uint8_t *)notarizedheightp);
@@ -917,17 +917,17 @@ void komodo_connectblock(CBlockIndex *pindex,CBlock& block)
         txn_count = block.vtx.size();
         for (i=0; i<txn_count; i++)
         {
-            txhash = block.vtx[i].GetHash();
-            numvouts = block.vtx[i].vout.size();
+            txhash = block.vtx[i]->GetHash();
+            numvouts = block.vtx[i]->vout.size();
             notaryid = -1;
             voutmask = specialtx = notarizedheight = notarized = 0;
             signedmask = 0;
-            numvins = block.vtx[i].vin.size();
+            numvins = block.vtx[i]->vin.size();
             for (j=0; j<numvins; j++)
             {
                 if ( i == 0 && j == 0 )
                     continue;
-                if ( (scriptlen= gettxout_scriptPubKey(scriptPubKey,sizeof(scriptPubKey),block.vtx[i].vin[j].prevout.hash,block.vtx[i].vin[j].prevout.n)) > 0 )
+                if ( (scriptlen= gettxout_scriptPubKey(scriptPubKey,sizeof(scriptPubKey),block.vtx[i]->vin[j].prevout.hash,block.vtx[i]->vin[j].prevout.n)) > 0 )
                 {
                     for (k=0; k<numnotaries; k++)
                         if ( memcmp(&scriptPubKey[1],pubkeys[k],33) == 0 )
@@ -963,12 +963,12 @@ void komodo_connectblock(CBlockIndex *pindex,CBlock& block)
             for (j=0; j<numvouts; j++)
             {
                 if ( NOTARY_PUBKEY33[0] != 0 )
-                    printf("%.8f ",dstr(block.vtx[i].vout[j].nValue));
-                len = block.vtx[i].vout[j].scriptPubKey.size();
+                    printf("%.8f ",dstr(block.vtx[i]->vout[j].nValue));
+                len = block.vtx[i]->vout[j].scriptPubKey.size();
                 if ( len >= sizeof(uint32_t) && len <= sizeof(scriptbuf) )
                 {
-                    memcpy(scriptbuf,block.vtx[i].vout[j].scriptPubKey.data(),len);
-                    komodo_voutupdate(scriptbuf,len,height,&specialtx,&notarizedheight,(uint64_t)block.vtx[i].vout[j].nValue,notarized,signedmask);
+                    memcpy(scriptbuf,block.vtx[i]->vout[j].scriptPubKey.data(),len);
+                    komodo_voutupdate(i,j,scriptbuf,len,height,&specialtx,&notarizedheight,(uint64_t)block.vtx[i]->vout[j].nValue,notarized,signedmask);
                 }
             }
             if ( NOTARY_PUBKEY33[0] != 0 )
