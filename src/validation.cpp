@@ -696,35 +696,6 @@ void komodo_disconnect(CBlockIndex *pindex,CBlock *block)
     }
 }
 
-void komodo_notarized_update(struct komodo_state *sp,int32_t nHeight,int32_t notarized_height,uint256 notarized_hash,uint256 notarized_desttxid,uint256 MoM,int32_t MoMdepth)
-{
-    static int didinit; struct notarized_checkpoint *np;
-    if ( didinit == 0 )
-    {
-        decode_hex(NOTARY_PUBKEY33,33,(char *)NOTARY_PUBKEY.c_str());
-        pthread_mutex_init(&komodo_mutex,NULL);
-        didinit = 1;
-        //komodo_stateupdate(0,0,0,0,zero,0,0,0,0,0,0,0,0,0,0,zero,0);
-    }
-    if ( notarized_height >= nHeight )
-    {
-        fprintf(stderr,"komodo_notarized_update REJECT notarized_height %d > %d nHeight\n",notarized_height,nHeight);
-        return;
-    }
-    fprintf(stderr,"komodo_notarized_update nHeight.%d notarized_height.%d\n",nHeight,notarized_height);
-    portable_mutex_lock(&komodo_mutex);
-    NPOINTS = (struct notarized_checkpoint *)realloc(NPOINTS,(NUM_NPOINTS+1) * sizeof(*NPOINTS));
-    np = &NPOINTS[NUM_NPOINTS++];
-    memset(np,0,sizeof(*np));
-    np->nHeight = nHeight;
-    NOTARIZED_HEIGHT = np->notarized_height = notarized_height;
-    NOTARIZED_HASH = np->notarized_hash = notarized_hash;
-    NOTARIZED_DESTTXID = np->notarized_desttxid = notarized_desttxid;
-    NOTARIZED_MOM = np->notarized_MoM = MoM;
-    NOTARIZED_MOMDEPTH = np->notarized_MoMdepth = MoMdepth;
-    portable_mutex_unlock(&komodo_mutex);
-}
-
 //struct komodo_state *komodo_stateptr(char *symbol,char *dest);
 int32_t komodo_notarized_height(uint256 *hashp,uint256 *txidp)
 {
@@ -804,6 +775,42 @@ int32_t komodo_notarizeddata(int32_t nHeight,uint256 *notarized_hashp,uint256 *n
     memset(notarized_hashp,0,sizeof(*notarized_hashp));
     memset(notarized_desttxidp,0,sizeof(*notarized_desttxidp));
     return(0);
+}
+
+void komodo_notarized_update(struct komodo_state *sp,int32_t nHeight,int32_t notarized_height,uint256 notarized_hash,uint256 notarized_desttxid,uint256 MoM,int32_t MoMdepth)
+{
+    static int didinit; struct notarized_checkpoint *np; int32_t ht; uint256 hash,desttxid;
+    if ( didinit == 0 )
+    {
+        decode_hex(NOTARY_PUBKEY33,33,(char *)NOTARY_PUBKEY.c_str());
+        pthread_mutex_init(&komodo_mutex,NULL);
+        didinit = 1;
+        //komodo_stateupdate(0,0,0,0,zero,0,0,0,0,0,0,0,0,0,0,zero,0);
+    }
+    if ( notarized_height >= nHeight )
+    {
+        fprintf(stderr,"komodo_notarized_update REJECT notarized_height %d > %d nHeight\n",notarized_height,nHeight);
+        return;
+    }
+    if ( (ht= komodo_notarizeddata(notarized_height,&hash,&desttxid)) > 0 )
+    {
+        fprintf(stderr,"komodo_notarized_update %d already there ht.%d hash %s vs %s\n",notarized_height,ht,hash.ToString().cstr(),desttxid.ToString().cstr());
+    }
+    else
+    {
+        fprintf(stderr,"komodo_notarized_update nHeight.%d notarized_height.%d\n",nHeight,notarized_height);
+        portable_mutex_lock(&komodo_mutex);
+        NPOINTS = (struct notarized_checkpoint *)realloc(NPOINTS,(NUM_NPOINTS+1) * sizeof(*NPOINTS));
+        np = &NPOINTS[NUM_NPOINTS++];
+        memset(np,0,sizeof(*np));
+        np->nHeight = nHeight;
+        NOTARIZED_HEIGHT = np->notarized_height = notarized_height;
+        NOTARIZED_HASH = np->notarized_hash = notarized_hash;
+        NOTARIZED_DESTTXID = np->notarized_desttxid = notarized_desttxid;
+        NOTARIZED_MOM = np->notarized_MoM = MoM;
+        NOTARIZED_MOMDEPTH = np->notarized_MoMdepth = MoMdepth;
+        portable_mutex_unlock(&komodo_mutex);
+    }
 }
 
 int32_t komodo_checkpoint(int32_t *notarized_heightp,int32_t nHeight,uint256 hash)
