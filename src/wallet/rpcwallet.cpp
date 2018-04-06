@@ -2828,7 +2828,7 @@ UniValue getwalletinfo(const JSONRPCRequest& request)
 
 extern uint256 NOTARIZED_HASH,NOTARIZED_DESTTXID,NOTARIZED_MOM;
 extern int32_t NOTARIZED_HEIGHT,NOTARIZED_MOMDEPTH;
-//double GetDifficulty(const CChain& chain, const CBlockIndex* blockindex);
+double GetDifficulty(const CBlockIndex* blockindex);
 std::string GetWarnings(const std::string& strFor);
 
 UniValue getinfo(const JSONRPCRequest& request)
@@ -2906,7 +2906,7 @@ UniValue getinfo(const JSONRPCRequest& request)
     obj.pushKV("notarized_height",                (int)NOTARIZED_HEIGHT);
     obj.pushKV("notarized_MoMdepth",                (int)NOTARIZED_MOMDEPTH);
     obj.pushKV("notarized_MoM",         NOTARIZED_MOM.GetHex());
-    //obj.pushKV("difficulty",            (double)GetDifficulty());
+    obj.pushKV("difficulty",            (double)GetDifficulty(chainActive.Tip()));
     obj.pushKV("mediantime",            (int64_t)chainActive.Tip()->GetMedianTimePast());
     obj.pushKV("verificationprogress",  GuessVerificationProgress(Params().TxData(), chainActive.Tip()));
     obj.pushKV("initialblockdownload",  IsInitialBlockDownload());
