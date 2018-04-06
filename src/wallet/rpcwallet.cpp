@@ -2929,6 +2929,33 @@ UniValue getinfo(const JSONRPCRequest& request)
             obj.pushKV("prune_target_size",  nPruneTarget);
         }
     }
+    obj.pushKV("version",       CLIENT_VERSION);
+    obj.pushKV("subversion",    strSubVersion);
+    obj.pushKV("protocolversion",PROTOCOL_VERSION);
+    if(g_connman)
+        obj.pushKV("localservices", strprintf("%016x", g_connman->GetLocalServices()));
+    obj.pushKV("localrelay",     fRelayTxes);
+    obj.pushKV("timeoffset",    GetTimeOffset());
+    if (g_connman) {
+        obj.pushKV("networkactive", g_connman->GetNetworkActive());
+        obj.pushKV("connections",   (int)g_connman->GetNodeCount(CConnman::CONNECTIONS_ALL));
+    }
+    obj.pushKV("networks",      GetNetworksInfo());
+    obj.pushKV("relayfee",      ValueFromAmount(::minRelayTxFee.GetFeePerK()));
+    obj.pushKV("incrementalfee", ValueFromAmount(::incrementalRelayFee.GetFeePerK()));
+    UniValue localAddresses(UniValue::VARR);
+    {
+        LOCK(cs_mapLocalHost);
+        for (const std::pair<CNetAddr, LocalServiceInfo> &item : mapLocalHost)
+        {
+            UniValue rec(UniValue::VOBJ);
+            rec.pushKV("address", item.first.ToString());
+            rec.pushKV("port", item.second.nPort);
+            rec.pushKV("score", item.second.nScore);
+            localAddresses.push_back(rec);
+        }
+    }
+    obj.pushKV("localaddresses", localAddresses);
     obj.pushKV("warnings", GetWarnings("statusbar"));
     return obj;
 }
