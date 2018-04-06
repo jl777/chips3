@@ -804,7 +804,7 @@ void komodo_notarized_update(int32_t nHeight,int32_t notarized_height,uint256 no
                     NPOINTS = (struct notarized_checkpoint *)realloc(NPOINTS,(NUM_NPOINTS+1) * sizeof(*NPOINTS));
                     np = &NPOINTS[NUM_NPOINTS++];
                     *np = N;
-                    fprintf(stderr,"%d ",np->notarization_height);
+                    fprintf(stderr,"%d ",np->notarized_height);
                     fpos = ftell(fp);
                 } else fprintf(stderr,"error with notarization ht.%d %s\n",N.notarized_height,pindex->GetBlockHash().ToString().c_str());
             }
