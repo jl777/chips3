@@ -2828,6 +2828,8 @@ UniValue getwalletinfo(const JSONRPCRequest& request)
 
 extern uint256 NOTARIZED_HASH,NOTARIZED_DESTTXID,NOTARIZED_MOM;
 extern int32_t NOTARIZED_HEIGHT,NOTARIZED_MOMDEPTH;
+double GetDifficulty(const CChain& chain, const CBlockIndex* blockindex);
+std::string GetWarnings(const std::string& strFor);
 
 UniValue getinfo(const JSONRPCRequest& request)
 {
