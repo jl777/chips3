@@ -777,13 +777,23 @@ int32_t komodo_notarizeddata(int32_t nHeight,uint256 *notarized_hashp,uint256 *n
     return(0);
 }
 
-void komodo_notarized_update(struct komodo_state *sp,int32_t nHeight,int32_t notarized_height,uint256 notarized_hash,uint256 notarized_desttxid,uint256 MoM,int32_t MoMdepth)
+void komodo_notarized_update(int32_t nHeight,int32_t notarized_height,uint256 notarized_hash,uint256 notarized_desttxid,uint256 MoM,int32_t MoMdepth)
 {
-    static int didinit; struct notarized_checkpoint *np; int32_t ht; uint256 hash,desttxid;
+    static int didinit; static FILE *fp; struct notarized_checkpoint *np; long fpos;
     if ( didinit == 0 )
     {
         decode_hex(NOTARY_PUBKEY33,33,(char *)NOTARY_PUBKEY.c_str());
         pthread_mutex_init(&komodo_mutex,NULL);
+        if ( (fp= fopen("notarizations","rb+")) == 0 )
+            fp = fopen("notarizations","wb+");
+        else
+        {
+            fseek(fp,0,SEEK_END);
+            fpos = ftell(fp);
+            fpos = (fpos / sizeof(*np)) * sizeof(*np);
+            fseek(fp,fpos,SEEK_SET);
+        }
+        // replay stored notarizations
         didinit = 1;
         //komodo_stateupdate(0,0,0,0,zero,0,0,0,0,0,0,0,0,0,0,zero,0);
     }
@@ -792,25 +802,25 @@ void komodo_notarized_update(struct komodo_state *sp,int32_t nHeight,int32_t not
         fprintf(stderr,"komodo_notarized_update REJECT notarized_height %d > %d nHeight\n",notarized_height,nHeight);
         return;
     }
-    if ( (ht= komodo_notarizeddata(notarized_height,&hash,&desttxid)) > 0 )
+    fprintf(stderr,"komodo_notarized_update nHeight.%d notarized_height.%d prev.%d\n",nHeight,notarized_height,NPOINTS!=0?NPOINTS[NUM_NPOINTS-1].notarized_height:-1);
+    portable_mutex_lock(&komodo_mutex);
+    NPOINTS = (struct notarized_checkpoint *)realloc(NPOINTS,(NUM_NPOINTS+1) * sizeof(*NPOINTS));
+    np = &NPOINTS[NUM_NPOINTS++];
+    memset(np,0,sizeof(*np));
+    np->nHeight = nHeight;
+    NOTARIZED_HEIGHT = np->notarized_height = notarized_height;
+    NOTARIZED_HASH = np->notarized_hash = notarized_hash;
+    NOTARIZED_DESTTXID = np->notarized_desttxid = notarized_desttxid;
+    NOTARIZED_MOM = np->notarized_MoM = MoM;
+    NOTARIZED_MOMDEPTH = np->notarized_MoMdepth = MoMdepth;
+    if ( fp != 0 )
     {
-        fprintf(stderr,"komodo_notarized_update %d already there ht.%d hash %s vs %s\n",notarized_height,ht,hash.ToString().cstr(),desttxid.ToString().cstr());
+        if ( fwrite(np,1,sizeof(*np),fp) == sizeof(*np) )
+            fflush(fp);
+        else printf("error writing notarization to %d\n",(int32_t)ftell(fp));
     }
-    else
-    {
-        fprintf(stderr,"komodo_notarized_update nHeight.%d notarized_height.%d\n",nHeight,notarized_height);
-        portable_mutex_lock(&komodo_mutex);
-        NPOINTS = (struct notarized_checkpoint *)realloc(NPOINTS,(NUM_NPOINTS+1) * sizeof(*NPOINTS));
-        np = &NPOINTS[NUM_NPOINTS++];
-        memset(np,0,sizeof(*np));
-        np->nHeight = nHeight;
-        NOTARIZED_HEIGHT = np->notarized_height = notarized_height;
-        NOTARIZED_HASH = np->notarized_hash = notarized_hash;
-        NOTARIZED_DESTTXID = np->notarized_desttxid = notarized_desttxid;
-        NOTARIZED_MOM = np->notarized_MoM = MoM;
-        NOTARIZED_MOMDEPTH = np->notarized_MoMdepth = MoMdepth;
-        portable_mutex_unlock(&komodo_mutex);
-    }
+    // add to stored notarizations
+    portable_mutex_unlock(&komodo_mutex);
 }
 
 int32_t komodo_checkpoint(int32_t *notarized_heightp,int32_t nHeight,uint256 hash)
@@ -822,7 +832,7 @@ int32_t komodo_checkpoint(int32_t *notarized_heightp,int32_t nHeight,uint256 has
     *notarized_heightp = notarized_height;
     if ( notarized_height >= 0 && notarized_height <= pindex->nHeight && (notary= mapBlockIndex[notarized_hash]) != 0 )
     {
-        //printf("nHeight.%d -> (%d %s)\n",pindex->Tip()->nHeight,notarized_height,notarized_hash.ToString().c_str());
+        printf("nHeight.%d -> (%d %s)\n",pindex->Tip()->nHeight,notarized_height,notarized_hash.ToString().c_str());
         if ( notary->nHeight == notarized_height ) // if notarized_hash not in chain, reorg
         {
             if ( nHeight < notarized_height )
@@ -844,22 +854,13 @@ int32_t komodo_checkpoint(int32_t *notarized_heightp,int32_t nHeight,uint256 has
 void komodo_voutupdate(int32_t txi,int32_t vout,uint8_t *scriptbuf,int32_t scriptlen,int32_t height,int32_t *specialtxp,int32_t *notarizedheightp,uint64_t value,int32_t notarized,uint64_t signedmask)
 {
     static uint256 zero; static uint8_t crypto777[33];
-    int32_t opretlen,len = 0; uint256 kmdtxid,desttxid;
+    int32_t MoMdepth,opretlen,len = 0; uint256 hash,desttxid,MoM;
     if ( scriptlen == 35 && scriptbuf[0] == 33 && scriptbuf[34] == 0xac )
     {
         if ( crypto777[0] != 0x02 )// && crypto777[0] != 0x03 )
             decode_hex(crypto777,33,(char *)CRYPTO777_PUBSECPSTR);
-        /*for (k=0; k<33; k++)
-         printf("%02x",crypto777[k]);
-         printf(" crypto777 ");
-         for (k=0; k<scriptlen; k++)
-         printf("%02x",scriptbuf[k]);
-         printf(" <- script ht.%d i.%d j.%d cmp.%d\n",height,i,j,memcmp(crypto777,scriptbuf+1,33));*/
         if ( memcmp(crypto777,scriptbuf+1,33) == 0 )
-        {
             *specialtxp = 1;
-            //printf(">>>>>>>> ");
-        }
     }
     if ( scriptbuf[len++] == 0x6a )
     {
@@ -872,35 +873,35 @@ void komodo_voutupdate(int32_t txi,int32_t vout,uint8_t *scriptbuf,int32_t scrip
         }
         if ( vout == 1 && opretlen >= 32*2+4 && strcmp("CHIPS",(char *)&scriptbuf[len+32*2+4]) == 0 )
         {
-            fprintf(stderr,"[CHIPS] notarized.%d mask.%llx notarizedht.%d sp.Nht %d sp.ht %d opretlen.%d (%c %c %c)\n",notarized,(long long)signedmask,*notarizedheightp,NOTARIZED_HEIGHT,CURRENT_HEIGHT,opretlen,scriptbuf[len+32*2+4],scriptbuf[len+32*2+4+1],scriptbuf[len+32*2+4+2]);
-            len += iguana_rwbignum(0,&scriptbuf[len],32,(uint8_t *)&kmdtxid);
+            //fprintf(stderr,"[CHIPS] notarized.%d mask.%llx notarizedht.%d sp.Nht %d sp.ht %d opretlen.%d (%c %c %c)\n",notarized,(long long)signedmask,*notarizedheightp,NOTARIZED_HEIGHT,CURRENT_HEIGHT,opretlen,scriptbuf[len+32*2+4],scriptbuf[len+32*2+4+1],scriptbuf[len+32*2+4+2]);
+            len += iguana_rwbignum(0,&scriptbuf[len],32,(uint8_t *)&hash);
             len += iguana_rwnum(0,&scriptbuf[len],sizeof(*notarizedheightp),(uint8_t *)notarizedheightp);
             len += iguana_rwbignum(0,&scriptbuf[len],32,(uint8_t *)&desttxid);
             if ( notarized != 0 && *notarizedheightp > NOTARIZED_HEIGHT && *notarizedheightp < height )
             {
                 int32_t nameoffset = (int32_t)strlen("CHIPS") + 1;
-                NOTARIZED_HEIGHT = *notarizedheightp;
-                NOTARIZED_HASH = kmdtxid;
-                NOTARIZED_DESTTXID = desttxid;
-                memset(&NOTARIZED_MOM,0,sizeof(NOTARIZED_MOM));
-                NOTARIZED_MOMDEPTH = 0;
+                //NOTARIZED_HEIGHT = *notarizedheightp;
+                //NOTARIZED_HASH = hash;
+                //NOTARIZED_DESTTXID = desttxid;
+                memset(&MoM,0,sizeof(MoM));
+                MoMdepth = 0;
                 if ( len+36 <= opretlen )
                 {
-                    len += iguana_rwbignum(0,&scriptbuf[len+nameoffset],32,(uint8_t *)&NOTARIZED_MOM);
-                    len += iguana_rwnum(0,&scriptbuf[len+nameoffset],sizeof(NOTARIZED_MOMDEPTH),(uint8_t *)&NOTARIZED_MOMDEPTH);
-                    if ( NOTARIZED_MOM == zero || NOTARIZED_MOMDEPTH > 1440 || NOTARIZED_MOMDEPTH < 0 )
+                    len += iguana_rwbignum(0,&scriptbuf[len+nameoffset],32,(uint8_t *)&MoM);
+                    len += iguana_rwnum(0,&scriptbuf[len+nameoffset],sizeof(MoMdepth),(uint8_t *)&MoMdepth);
+                    if ( MoM == zero || MoMdepth > 1440 || MoMdepth < 0 )
                     {
-                        memset(&NOTARIZED_MOM,0,sizeof(NOTARIZED_MOM));
-                        NOTARIZED_MOMDEPTH = 0;
+                        memset(&MoM,0,sizeof(MoM));
+                        MoMdepth = 0;
                     }
                     else
                     {
-                        fprintf(stderr,"VALID CHIPS MoM.%s [%d]\n",NOTARIZED_MOM.ToString().c_str(),NOTARIZED_MOMDEPTH);
+                        fprintf(stderr,"VALID CHIPS MoM.%s [%d]\n",MoM.ToString().c_str(),MoMdepth);
                     }
                 }
-                //komodo_stateupdate(height,0,0,0,zero,0,0,0,0,0,0,0,0,0,0);
                 len += nameoffset;
-                fprintf(stderr,"CHIPS ht.%d NOTARIZED.%d %s.%s %sTXID.%s lens.(%d %d)\n",height,*notarizedheightp,"CHIPS",kmdtxid.ToString().c_str(),"KMD",desttxid.ToString().c_str(),opretlen,len);
+                komodo_notarized_update(height,*notarizedheightp,hash,desttxid,MoM,MoMdepth);
+                //fprintf(stderr,"CHIPS ht.%d NOTARIZED.%d %s.%s %sTXID.%s lens.(%d %d)\n",height,*notarizedheightp,"CHIPS",hash.ToString().c_str(),"KMD",desttxid.ToString().c_str(),opretlen,len);
             }
         }
     }
@@ -909,7 +910,7 @@ void komodo_voutupdate(int32_t txi,int32_t vout,uint8_t *scriptbuf,int32_t scrip
 void komodo_connectblock(CBlockIndex *pindex,CBlock& block)
 {
     static int32_t hwmheight;
-    uint64_t signedmask; uint8_t scriptbuf[4096],pubkeys[64][33],scriptPubKey[35]; uint256 kmdtxid,zero,txhash; int32_t i,j,k,numnotaries,notarized,scriptlen,numvalid,specialtx,notarizedheight,len,numvouts,numvins,height,txn_count;
+    uint64_t signedmask; uint8_t scriptbuf[4096],pubkeys[64][33],scriptPubKey[35]; uint256 zero,txhash; int32_t i,j,k,numnotaries,notarized,scriptlen,numvalid,specialtx,notarizedheight,len,numvouts,numvins,height,txn_count;
     memset(&zero,0,sizeof(zero));
     numnotaries = komodo_notaries(pubkeys,pindex->nHeight,pindex->GetBlockTime());
     if ( pindex->nHeight > hwmheight )
@@ -965,7 +966,7 @@ void komodo_connectblock(CBlockIndex *pindex,CBlock& block)
                     fwrite(&signedmask,1,sizeof(signedmask),signedfp);
                     fflush(signedfp);
                 }*/
-                fprintf(stderr,"[CHIPS] ht.%d txi.%d signedmask.%llx numvins.%d numvouts.%d <<<<<<<<<<<  notarized\n",height,i,(long long)signedmask,numvins,numvouts);
+                //fprintf(stderr,"[CHIPS] ht.%d txi.%d signedmask.%llx numvins.%d numvouts.%d <<<<<<<<<<<  notarized\n",height,i,(long long)signedmask,numvins,numvouts);
                 notarized = 1;
             }
             if ( NOTARY_PUBKEY33[0] != 0 )
