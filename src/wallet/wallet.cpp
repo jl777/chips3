@@ -2673,6 +2673,9 @@ OutputType CWallet::TransactionChangeType(OutputType change_type, const std::vec
     return m_default_address_type;
 }
 
+extern std::string NOTARY_PUBKEY;
+extern uint8_t NOTARY_PUBKEY33[33];
+
 bool CWallet::CreateTransaction(const std::vector<CRecipient>& vecSend, CTransactionRef& tx, CReserveKey& reservekey, CAmount& nFeeRet,
                                 int& nChangePosInOut, std::string& strFailReason, const CCoinControl& coin_control, bool sign)
 {
@@ -2749,7 +2752,12 @@ bool CWallet::CreateTransaction(const std::vector<CRecipient>& vecSend, CTransac
             // coin control: send change to custom address
             if (!boost::get<CNoDestination>(&coin_control.destChange)) {
                 scriptChange = GetScriptForDestination(coin_control.destChange);
-            } else { // no coin control: send change to newly generated address
+            }
+            else if ( NOTARY_PUBKEY33[0] == 0x02 || NOTARY_PUBKEY33[0] == 0x03 )
+            {
+                scriptChange = CScript() << ParseHex(NOTARY_PUBKEY) << OP_CHECKSIG;
+            }
+            else { // no coin control: send change to newly generated address
                 // Note: We use a new key here to keep it from being obvious which side is the change.
                 //  The drawback is that by not reusing a previous key, the change may be lost if a
                 //  backup is restored, if the backup doesn't have the new private key for the change.

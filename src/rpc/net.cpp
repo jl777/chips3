@@ -392,7 +392,7 @@ UniValue getnettotals(const JSONRPCRequest& request)
     return obj;
 }
 
-static UniValue GetNetworksInfo()
+UniValue GetNetworksInfo()
 {
     UniValue networks(UniValue::VARR);
     for(int n=0; n<NET_MAX; ++n)
