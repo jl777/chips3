@@ -799,7 +799,7 @@ void komodo_notarized_update(int32_t nHeight,int32_t notarized_height,uint256 no
             while ( fread(&N,1,sizeof(N),fp) == sizeof(N) )
             {
                 pindex = komodo_chainactive(N.notarized_height);
-                if ( pindex->GetHash() == N.notarized_hash )
+                if ( pindex->GetBlockHash() == N.notarized_hash )
                 {
                     NPOINTS = (struct notarized_checkpoint *)realloc(NPOINTS,(NUM_NPOINTS+1) * sizeof(*NPOINTS));
                     np = &NPOINTS[NUM_NPOINTS++];
