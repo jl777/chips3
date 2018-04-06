@@ -782,7 +782,7 @@ void komodo_notarized_update(int32_t nHeight,int32_t notarized_height,uint256 no
     static int didinit; static FILE *fp; struct notarized_checkpoint *np,N; long fpos;
     if ( didinit == 0 )
     {
-        char fname[512]; CBlockIndex *pindex;
+        char fname[512]; CBlockIndex *pindex; int32_t latestht = 0;
         decode_hex(NOTARY_PUBKEY33,33,(char *)NOTARY_PUBKEY.c_str());
         pthread_mutex_init(&komodo_mutex,NULL);
 #ifdef _WIN32
@@ -799,11 +799,12 @@ void komodo_notarized_update(int32_t nHeight,int32_t notarized_height,uint256 no
             while ( fread(&N,1,sizeof(N),fp) == sizeof(N) )
             {
                 pindex = komodo_chainactive(N.notarized_height);
-                if ( pindex->GetBlockHash() == N.notarized_hash )
+                if ( pindex->GetBlockHash() == N.notarized_hash && N.notarized_height > latestht )
                 {
                     NPOINTS = (struct notarized_checkpoint *)realloc(NPOINTS,(NUM_NPOINTS+1) * sizeof(*NPOINTS));
                     np = &NPOINTS[NUM_NPOINTS++];
                     *np = N;
+                    latestht = np->notarized_heightl
                     fprintf(stderr,"%d ",np->notarized_height);
                     fpos = ftell(fp);
                 } else fprintf(stderr,"error with notarization ht.%d %s\n",N.notarized_height,pindex->GetBlockHash().ToString().c_str());
