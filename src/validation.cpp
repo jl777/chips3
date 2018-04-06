@@ -805,6 +805,11 @@ void komodo_notarized_update(int32_t nHeight,int32_t notarized_height,uint256 no
                     np = &NPOINTS[NUM_NPOINTS++];
                     *np = N;
                     latestht = np->notarized_height;
+                    NOTARIZED_HEIGHT = np->notarized_height;
+                    NOTARIZED_HASH = np->notarized_hash;
+                    NOTARIZED_DESTTXID = np->notarized_desttxid;
+                    NOTARIZED_MOM = np->notarized_MoM;
+                    NOTARIZED_MOMDEPTH = np->notarized_MoMdepth;
                     fprintf(stderr,"%d ",np->notarized_height);
                     fpos = ftell(fp);
                 } else fprintf(stderr,"error with notarization ht.%d %s\n",N.notarized_height,pindex->GetBlockHash().ToString().c_str());
