@@ -892,8 +892,8 @@ bool AppInitBasicSetup()
 }
 
 extern std::string NOTARY_PUBKEY;
+extern uint8_t NOTARY_PUBKEY33[33];
 int32_t decode_hex(uint8_t *bytes,int32_t n,char *hex);
-uint8_t NOTARY_PUBKEY33[33];
 
 bool AppInitParameterInteraction()
 {
