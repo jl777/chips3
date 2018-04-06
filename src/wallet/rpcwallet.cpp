@@ -2826,6 +2826,111 @@ UniValue getwalletinfo(const JSONRPCRequest& request)
     return obj;
 }
 
+extern uint256 NOTARIZED_HASH,NOTARIZED_DESTTXID,NOTARIZED_MOM;
+extern int32_t NOTARIZED_HEIGHT,NOTARIZED_MOMDEPTH;
+
+UniValue getinfo(const JSONRPCRequest& request)
+{
+    CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
+    if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
+        return NullUniValue;
+    }
+    if (request.fHelp || request.params.size() != 0)
+        throw std::runtime_error(
+                                 "getinfo\n"
+                                 "Returns an object containing various state info regarding blockchain processing.\n"
+                                 "\nResult:\n"
+                                 "{\n"
+                                 "  \"chain\": \"xxxx\",              (string) current network name as defined in BIP70 (main, test, regtest)\n"
+                                 "  \"blocks\": xxxxxx,             (numeric) the current number of blocks processed in the server\n"
+                                 "  \"headers\": xxxxxx,            (numeric) the current number of headers we have validated\n"
+                                 "  \"bestblockhash\": \"...\",       (string) the hash of the currently best block\n"
+                                 "  \"difficulty\": xxxxxx,         (numeric) the current difficulty\n"
+                                 "  \"mediantime\": xxxxxx,         (numeric) median time for the current best block\n"
+                                 "  \"verificationprogress\": xxxx, (numeric) estimate of verification progress [0..1]\n"
+                                 "  \"initialblockdownload\": xxxx, (bool) (debug information) estimate of whether this node is in Initial Block Download mode.\n"
+                                 "  \"chainwork\": \"xxxx\"           (string) total amount of work in active chain, in hexadecimal\n"
+                                 "  \"size_on_disk\": xxxxxx,       (numeric) the estimated size of the block and undo files on disk\n"
+                                 "  \"pruned\": xx,                 (boolean) if the blocks are subject to pruning\n"
+                                 "  \"pruneheight\": xxxxxx,        (numeric) lowest-height complete block stored (only present if pruning is enabled)\n"
+                                 "  \"automatic_pruning\": xx,      (boolean) whether automatic pruning is enabled (only present if pruning is enabled)\n"
+                                 "  \"prune_target_size\": xxxxxx,  (numeric) the target size used by pruning (only present if automatic pruning is enabled)\n"
+                                 "  \"warnings\" : \"...\",           (string) any network and blockchain warnings.\n"
+                                 "}\n"
+                                 "\nExamples:\n"
+                                 + HelpExampleCli("getinfo", "")
+                                 + HelpExampleRpc("getinfo", "")
+                                 );
+    
+    ObserveSafeMode();
+    
+    // Make sure the results are valid at least up to the most recent block
+    // the user could have gotten from another RPC command prior to now
+    pwallet->BlockUntilSyncedToCurrentChain();
+    
+    LOCK(cs_main);
+    LOCK2(cs_main, pwallet->cs_wallet);
+    
+    UniValue obj(UniValue::VOBJ);
+    
+    size_t kpExternalSize = pwallet->KeypoolCountExternalKeys();
+    obj.pushKV("walletname", pwallet->GetName());
+    obj.pushKV("walletversion", pwallet->GetVersion());
+    obj.pushKV("balance",       ValueFromAmount(pwallet->GetBalance()));
+    obj.pushKV("unconfirmed_balance", ValueFromAmount(pwallet->GetUnconfirmedBalance()));
+    obj.pushKV("immature_balance",    ValueFromAmount(pwallet->GetImmatureBalance()));
+    obj.pushKV("txcount",       (int)pwallet->mapWallet.size());
+    obj.pushKV("keypoololdest", pwallet->GetOldestKeyPoolTime());
+    obj.pushKV("keypoolsize", (int64_t)kpExternalSize);
+    CKeyID masterKeyID = pwallet->GetHDChain().masterKeyID;
+    if (!masterKeyID.IsNull() && pwallet->CanSupportFeature(FEATURE_HD_SPLIT)) {
+        obj.pushKV("keypoolsize_hd_internal",   (int64_t)(pwallet->GetKeyPoolSize() - kpExternalSize));
+    }
+    if (pwallet->IsCrypted()) {
+        obj.pushKV("unlocked_until", pwallet->nRelockTime);
+    }
+    obj.pushKV("paytxfee",      ValueFromAmount(payTxFee.GetFeePerK()));
+    if (!masterKeyID.IsNull())
+        obj.pushKV("hdmasterkeyid", masterKeyID.GetHex());
+    
+    obj.pushKV("chain",                 Params().NetworkIDString());
+    obj.pushKV("blocks",                (int)chainActive.Height());
+    obj.pushKV("headers",               pindexBestHeader ? pindexBestHeader->nHeight : -1);
+    obj.pushKV("bestblockhash",         chainActive.Tip()->GetBlockHash().GetHex());
+    extern uint256 NOTARIZED_HASH,NOTARIZED_DESTTXID,NOTARIZED_MOM;
+    extern int32_t NOTARIZED_HEIGHT,NOTARIZED_MOMDEPTH;
+    obj.pushKV("notarized_hash",         NOTARIZED_HASH.GetHex());
+    obj.pushKV("notarized_desttxid",         NOTARIZED_DESTTXID.GetHex());
+    obj.pushKV("notarized_height",                (int)NOTARIZED_HEIGHT);
+    obj.pushKV("notarized_MoMdepth",                (int)NOTARIZED_MOMDEPTH);
+    obj.pushKV("notarized_MoM",         NOTARIZED_MOM.GetHex());
+    obj.pushKV("difficulty",            (double)GetDifficulty());
+    obj.pushKV("mediantime",            (int64_t)chainActive.Tip()->GetMedianTimePast());
+    obj.pushKV("verificationprogress",  GuessVerificationProgress(Params().TxData(), chainActive.Tip()));
+    obj.pushKV("initialblockdownload",  IsInitialBlockDownload());
+    obj.pushKV("chainwork",             chainActive.Tip()->nChainWork.GetHex());
+    obj.pushKV("size_on_disk",          CalculateCurrentUsage());
+    obj.pushKV("pruned",                fPruneMode);
+    if (fPruneMode) {
+        CBlockIndex* block = chainActive.Tip();
+        assert(block);
+        while (block->pprev && (block->pprev->nStatus & BLOCK_HAVE_DATA)) {
+            block = block->pprev;
+        }
+        
+        obj.pushKV("pruneheight",        block->nHeight);
+        
+        // if 0, execution bypasses the whole if block.
+        bool automatic_pruning = (gArgs.GetArg("-prune", 0) != 1);
+        obj.pushKV("automatic_pruning",  automatic_pruning);
+        if (automatic_pruning) {
+            obj.pushKV("prune_target_size",  nPruneTarget);
+        }
+    }
+    obj.pushKV("warnings", GetWarnings("statusbar"));
+    return obj;
+}
+
 UniValue listwallets(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() != 0)

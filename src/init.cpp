@@ -892,6 +892,8 @@ bool AppInitBasicSetup()
 }
 
 extern std::string NOTARY_PUBKEY;
+int32_t decode_hex(uint8_t *bytes,int32_t n,char *hex);
+uint8_t NOTARY_PUBKEY33[33];
 
 bool AppInitParameterInteraction()
 {
@@ -904,6 +906,7 @@ bool AppInitParameterInteraction()
         return InitError(strprintf(_("Specified blocks directory \"%s\" does not exist.\n"), gArgs.GetArg("-blocksdir", "").c_str()));
     }
     NOTARY_PUBKEY = gArgs.GetArg("-pubkey", "");
+    decode_hex(NOTARY_PUBKEY33,33,(char *)NOTARY_PUBKEY.c_str());
 
     // if using block pruning, then disallow txindex
     if (gArgs.GetArg("-prune", 0)) {

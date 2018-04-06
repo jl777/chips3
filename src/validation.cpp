@@ -639,7 +639,7 @@ struct notarized_checkpoint *NPOINTS;
 std::string NOTARY_PUBKEY;
 uint8_t NOTARY_PUBKEY33[33];
 uint256 NOTARIZED_HASH,NOTARIZED_DESTTXID,NOTARIZED_MOM;
-int32_t NUM_NPOINTS,last_NPOINTSi,NOTARIZED_HEIGHT,CURRENT_HEIGHT,NOTARIZED_MOMDEPTH;
+int32_t NUM_NPOINTS,last_NPOINTSi,NOTARIZED_HEIGHT,NOTARIZED_MOMDEPTH;
 portable_mutex_t komodo_mutex;
 
 int32_t gettxout_scriptPubKey(uint8_t *scriptPubKey,int32_t maxsize,uint256 txid,int32_t n);
@@ -783,7 +783,7 @@ void komodo_notarized_update(int32_t nHeight,int32_t notarized_height,uint256 no
     if ( didinit == 0 )
     {
         char fname[512]; CBlockIndex *pindex; int32_t latestht = 0;
-        decode_hex(NOTARY_PUBKEY33,33,(char *)NOTARY_PUBKEY.c_str());
+        //decode_hex(NOTARY_PUBKEY33,33,(char *)NOTARY_PUBKEY.c_str());
         pthread_mutex_init(&komodo_mutex,NULL);
 #ifdef _WIN32
         sprintf(fname,"%s\\notarizations",GetDefaultDataDir().string().c_str());
@@ -812,7 +812,7 @@ void komodo_notarized_update(int32_t nHeight,int32_t notarized_height,uint256 no
             if ( ftell(fp) !=  fpos )
                 fseek(fp,fpos,SEEK_SET);
         }
-        fprintf(stderr,"finished loading %s\n",fname);
+        fprintf(stderr,"finished loading %s [%s]\n",fname,NOTARY_PUBKEY.c_str());
         didinit = 1;
     }
     if ( notarized_height == 0 )
@@ -895,7 +895,6 @@ void komodo_voutupdate(int32_t txi,int32_t vout,uint8_t *scriptbuf,int32_t scrip
         }
         if ( vout == 1 && opretlen >= 32*2+4 && strcmp("CHIPS",(char *)&scriptbuf[len+32*2+4]) == 0 )
         {
-            //fprintf(stderr,"[CHIPS] notarized.%d mask.%llx notarizedht.%d sp.Nht %d sp.ht %d opretlen.%d (%c %c %c)\n",notarized,(long long)signedmask,*notarizedheightp,NOTARIZED_HEIGHT,CURRENT_HEIGHT,opretlen,scriptbuf[len+32*2+4],scriptbuf[len+32*2+4+1],scriptbuf[len+32*2+4+2]);
             len += iguana_rwbignum(0,&scriptbuf[len],32,(uint8_t *)&hash);
             len += iguana_rwnum(0,&scriptbuf[len],sizeof(*notarizedheightp),(uint8_t *)notarizedheightp);
             len += iguana_rwbignum(0,&scriptbuf[len],32,(uint8_t *)&desttxid);
