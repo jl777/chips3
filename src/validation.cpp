@@ -804,12 +804,14 @@ void komodo_notarized_update(int32_t nHeight,int32_t notarized_height,uint256 no
                     NPOINTS = (struct notarized_checkpoint *)realloc(NPOINTS,(NUM_NPOINTS+1) * sizeof(*NPOINTS));
                     np = &NPOINTS[NUM_NPOINTS++];
                     *np = N;
+                    fprintf(stderr,"%d ",np->notarization_height);
                     fpos = ftell(fp);
                 } else fprintf(stderr,"error with notarization ht.%d %s\n",N.notarized_height,pindex->GetHash().ToString().c_str());
             }
             if ( ftell(fp) !=  fpos )
                 fseek(fp,fpos,SEEK_SET);
         }
+        fprintf(stderr,"finished loading %s\n",fname);
         didinit = 1;
     }
     if ( notarized_height == 0 )
@@ -842,7 +844,9 @@ void komodo_notarized_update(int32_t nHeight,int32_t notarized_height,uint256 no
 
 int32_t komodo_checkpoint(int32_t *notarized_heightp,int32_t nHeight,uint256 hash)
 {
-    int32_t notarized_height; uint256 notarized_hash,notarized_desttxid; CBlockIndex *notary; CBlockIndex *pindex;
+    int32_t notarized_height; uint256 zero,notarized_hash,notarized_desttxid; CBlockIndex *notary; CBlockIndex *pindex;
+    memset(&zero,0,sizeof(zero));
+    komodo_notarized_update(0,0,zero,zero,zero,0);
     if ( (pindex= chainActive.Tip()) == 0 )
         return(-1);
     notarized_height = komodo_notarizeddata(pindex->nHeight,&notarized_hash,&notarized_desttxid);
