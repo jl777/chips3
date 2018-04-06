@@ -2830,6 +2830,7 @@ extern uint256 NOTARIZED_HASH,NOTARIZED_DESTTXID,NOTARIZED_MOM;
 extern int32_t NOTARIZED_HEIGHT,NOTARIZED_MOMDEPTH;
 double GetDifficulty(const CBlockIndex* blockindex);
 std::string GetWarnings(const std::string& strFor);
+UniValue GetNetworksInfo();
 
 UniValue getinfo(const JSONRPCRequest& request)
 {
