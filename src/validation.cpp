@@ -779,23 +779,29 @@ int32_t komodo_notarizeddata(int32_t nHeight,uint256 *notarized_hashp,uint256 *n
 
 void komodo_notarized_update(int32_t nHeight,int32_t notarized_height,uint256 notarized_hash,uint256 notarized_desttxid,uint256 MoM,int32_t MoMdepth)
 {
-    static int didinit; static FILE *fp; struct notarized_checkpoint *np; long fpos;
+    static int didinit; static FILE *fp; struct notarized_checkpoint *np,N; long fpos;
     if ( didinit == 0 )
     {
+        char fname[512];
         decode_hex(NOTARY_PUBKEY33,33,(char *)NOTARY_PUBKEY.c_str());
         pthread_mutex_init(&komodo_mutex,NULL);
-        if ( (fp= fopen("notarizations","rb+")) == 0 )
-            fp = fopen("notarizations","wb+");
+        sprintf(fname,"%s/notarizatoins",GetDefaultDataDir().string().c_str());
+        printf("fname.(%s)\n",fname);
+        if ( (fp= fopen(fname,"rb+")) == 0 )
+            fp = fopen(fname,"wb+");
         else
         {
-            fseek(fp,0,SEEK_END);
-            fpos = ftell(fp);
-            fpos = (fpos / sizeof(*np)) * sizeof(*np);
-            fseek(fp,fpos,SEEK_SET);
+            fpos = 0;
+            while ( fread(&N,1,sizeof(N),fp) == sizeof(N) )
+            {
+                NPOINTS = (struct notarized_checkpoint *)realloc(NPOINTS,(NUM_NPOINTS+1) * sizeof(*NPOINTS));
+                np = &NPOINTS[NUM_NPOINTS++];
+                *np = N; // error check!
+            }
+            if ( ftell(fp) !=  fpos )
+                fseek(fp,fpos,SEEK_SET);
         }
-        // replay stored notarizations
         didinit = 1;
-        //komodo_stateupdate(0,0,0,0,zero,0,0,0,0,0,0,0,0,0,0,zero,0);
     }
     if ( notarized_height >= nHeight )
     {
@@ -832,7 +838,7 @@ int32_t komodo_checkpoint(int32_t *notarized_heightp,int32_t nHeight,uint256 has
     *notarized_heightp = notarized_height;
     if ( notarized_height >= 0 && notarized_height <= pindex->nHeight && (notary= mapBlockIndex[notarized_hash]) != 0 )
     {
-        printf("nHeight.%d -> (%d %s)\n",pindex->nHeight,notarized_height,notarized_hash.ToString().c_str());
+        //printf("nHeight.%d -> (%d %s)\n",pindex->nHeight,notarized_height,notarized_hash.ToString().c_str());
         if ( notary->nHeight == notarized_height ) // if notarized_hash not in chain, reorg
         {
             if ( nHeight < notarized_height )
