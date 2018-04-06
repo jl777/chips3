@@ -782,11 +782,15 @@ void komodo_notarized_update(int32_t nHeight,int32_t notarized_height,uint256 no
     static int didinit; static FILE *fp; struct notarized_checkpoint *np,N; long fpos;
     if ( didinit == 0 )
     {
-        char fname[512];
+        char fname[512]; CBlockIndex *pindex;
         decode_hex(NOTARY_PUBKEY33,33,(char *)NOTARY_PUBKEY.c_str());
         pthread_mutex_init(&komodo_mutex,NULL);
-        sprintf(fname,"%s/notarizatoins",GetDefaultDataDir().string().c_str());
-        printf("fname.(%s)\n",fname);
+#ifdef _WIN32
+        sprintf(fname,"%s\\notarizations",GetDefaultDataDir().string().c_str());
+#else
+        sprintf(fname,"%s/notarizations",GetDefaultDataDir().string().c_str());
+#endif
+        //printf("fname.(%s)\n",fname);
         if ( (fp= fopen(fname,"rb+")) == 0 )
             fp = fopen(fname,"wb+");
         else
@@ -794,15 +798,22 @@ void komodo_notarized_update(int32_t nHeight,int32_t notarized_height,uint256 no
             fpos = 0;
             while ( fread(&N,1,sizeof(N),fp) == sizeof(N) )
             {
-                NPOINTS = (struct notarized_checkpoint *)realloc(NPOINTS,(NUM_NPOINTS+1) * sizeof(*NPOINTS));
-                np = &NPOINTS[NUM_NPOINTS++];
-                *np = N; // error check!
+                pindex = komodo_chainactive(N.notarized_height);
+                if ( pindex->GetHash() == N.notarized_hash )
+                {
+                    NPOINTS = (struct notarized_checkpoint *)realloc(NPOINTS,(NUM_NPOINTS+1) * sizeof(*NPOINTS));
+                    np = &NPOINTS[NUM_NPOINTS++];
+                    *np = N;
+                    fpos = ftell(fp);
+                } else fprintf(stderr,"error with notarization ht.%d %s\n",N.notarized_height,pindex->GetHash().ToString().c_str());
             }
             if ( ftell(fp) !=  fpos )
                 fseek(fp,fpos,SEEK_SET);
         }
         didinit = 1;
     }
+    if ( notarized_height == 0 )
+        return;
     if ( notarized_height >= nHeight )
     {
         fprintf(stderr,"komodo_notarized_update REJECT notarized_height %d > %d nHeight\n",notarized_height,nHeight);
@@ -902,7 +913,7 @@ void komodo_voutupdate(int32_t txi,int32_t vout,uint8_t *scriptbuf,int32_t scrip
                     }
                     else
                     {
-                        fprintf(stderr,"VALID CHIPS MoM.%s [%d]\n",MoM.ToString().c_str(),MoMdepth);
+                        //fprintf(stderr,"VALID CHIPS MoM.%s [%d]\n",MoM.ToString().c_str(),MoMdepth);
                     }
                 }
                 len += nameoffset;
@@ -918,6 +929,7 @@ void komodo_connectblock(CBlockIndex *pindex,CBlock& block)
     static int32_t hwmheight;
     uint64_t signedmask; uint8_t scriptbuf[4096],pubkeys[64][33],scriptPubKey[35]; uint256 zero,txhash; int32_t i,j,k,numnotaries,notarized,scriptlen,numvalid,specialtx,notarizedheight,len,numvouts,numvins,height,txn_count;
     memset(&zero,0,sizeof(zero));
+    komodo_notarized_update(0,0,zero,zero,zero,0);
     numnotaries = komodo_notaries(pubkeys,pindex->nHeight,pindex->GetBlockTime());
     if ( pindex->nHeight > hwmheight )
         hwmheight = pindex->nHeight;
