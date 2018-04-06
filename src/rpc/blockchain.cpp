@@ -1621,6 +1621,9 @@ UniValue savemempool(const JSONRPCRequest& request)
     return NullUniValue;
 }
 
+UniValue getinfo(const JSONRPCRequest& request);
+
+
 static const CRPCCommand commands[] =
 { //  category              name                      actor (function)         argNames
   //  --------------------- ------------------------  -----------------------  ----------
