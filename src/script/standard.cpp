@@ -6,6 +6,7 @@
 #include <script/standard.h>
 
 #include <pubkey.h>
+#include <script/cc.h>
 #include <script/script.h>
 #include <util.h>
 #include <utilstrencodings.h>
@@ -27,6 +28,7 @@ const char* GetTxnOutputType(txnouttype t)
     case TX_PUBKEYHASH: return "pubkeyhash";
     case TX_SCRIPTHASH: return "scripthash";
     case TX_MULTISIG: return "multisig";
+    case TX_CRYPTOCONDITION: return "cryptocondition";
     case TX_NULL_DATA: return "nulldata";
     case TX_WITNESS_V0_KEYHASH: return "witness_v0_keyhash";
     case TX_WITNESS_V0_SCRIPTHASH: return "witness_v0_scripthash";
@@ -93,6 +95,17 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, std::vector<std::v
     if (scriptPubKey.size() >= 1 && scriptPubKey[0] == OP_RETURN && scriptPubKey.IsPushOnly(scriptPubKey.begin()+1)) {
         typeRet = TX_NULL_DATA;
         return true;
+    }
+
+    if (IsCryptoConditionsEnabled()) {
+        // Shortcut for pay-to-crypto-condition
+        if (scriptPubKey.IsPayToCryptoCondition()) {
+            if (scriptPubKey.MayAcceptCryptoCondition()) {
+                typeRet = TX_CRYPTOCONDITION;
+                return true;
+            }
+            return false;
+        }
     }
 
     // Scan templates

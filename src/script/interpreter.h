@@ -6,6 +6,7 @@
 #ifndef BITCOIN_SCRIPT_INTERPRETER_H
 #define BITCOIN_SCRIPT_INTERPRETER_H
 
+#include <script/cc.h>
 #include <script/script_error.h>
 #include <primitives/transaction.h>
 
@@ -149,18 +150,26 @@ public:
          return false;
     }
 
+    virtual int CheckCryptoCondition(
+        const std::vector<unsigned char>& condBin,
+        const std::vector<unsigned char>& ffillBin,
+        const CScript& scriptCode) const
+    {
+        return false;
+    }
+
+
     virtual ~BaseSignatureChecker() {}
 };
 
 class TransactionSignatureChecker : public BaseSignatureChecker
 {
-private:
+protected:
     const CTransaction* txTo;
     unsigned int nIn;
     const CAmount amount;
     const PrecomputedTransactionData* txdata;
 
-protected:
     virtual bool VerifySignature(const std::vector<unsigned char>& vchSig, const CPubKey& vchPubKey, const uint256& sighash) const;
 
 public:
@@ -169,6 +178,11 @@ public:
     bool CheckSig(const std::vector<unsigned char>& scriptSig, const std::vector<unsigned char>& vchPubKey, const CScript& scriptCode, SigVersion sigversion) const override;
     bool CheckLockTime(const CScriptNum& nLockTime) const override;
     bool CheckSequence(const CScriptNum& nSequence) const override;
+    int CheckCryptoCondition(
+        const std::vector<unsigned char>& condBin,
+        const std::vector<unsigned char>& ffillBin,
+        const CScript& scriptCode) const;
+    virtual int CheckEvalCondition(const CC *cond) const;
 };
 
 class MutableTransactionSignatureChecker : public TransactionSignatureChecker

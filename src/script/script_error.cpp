@@ -73,6 +73,8 @@ const char* ScriptErrorString(const ScriptError serror)
             return "Witness version reserved for soft-fork upgrades";
         case SCRIPT_ERR_PUBKEYTYPE:
             return "Public key is neither compressed or uncompressed";
+        case SCRIPT_ERR_CRYPTOCONDITION_INVALID_FULFILLMENT:
+            return "Crypto-Condition payload is invalid";
         case SCRIPT_ERR_CLEANSTACK:
             return "Extra items left on stack after execution";
         case SCRIPT_ERR_WITNESS_PROGRAM_WRONG_LENGTH:

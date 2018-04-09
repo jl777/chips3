@@ -52,6 +52,7 @@ enum txnouttype
     TX_PUBKEYHASH,
     TX_SCRIPTHASH,
     TX_MULTISIG,
+    TX_CRYPTOCONDITION,
     TX_NULL_DATA, //!< unspendable OP_RETURN script that carries data
     TX_WITNESS_V0_SCRIPTHASH,
     TX_WITNESS_V0_KEYHASH,
