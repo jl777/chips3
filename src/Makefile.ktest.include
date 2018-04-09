@@ -1,4 +1,6 @@
 
+DIST_SUBDIRS += test-komodo/googletest/googletest
+
 # Google Test target
 LIBGTEST=test-komodo/googletest/googletest/lib/libgtest.la
 

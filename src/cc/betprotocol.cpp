@@ -130,22 +130,6 @@ CMutableTransaction BetProtocol::MakeImportPayoutTx(std::vector<CTxOut> payouts,
 }
 
 
-uint256 ExecMerkleBranch(uint256 hash, const std::vector<uint256>& vMerkleBranch, int nIndex)
-{
-    if (nIndex == -1)
-        return uint256();
-    for (std::vector<uint256>::const_iterator it(vMerkleBranch.begin()); it != vMerkleBranch.end(); ++it)
-    {
-        if (nIndex & 1)
-            hash = Hash(BEGIN(*it), END(*it), BEGIN(hash), END(hash));
-        else
-            hash = Hash(BEGIN(hash), END(hash), BEGIN(*it), END(*it));
-        nIndex >>= 1;
-    }
-    return hash;
-}
-
-
 bool GetOpReturnHash(CScript script, uint256 &hash)
 {
     std::vector<unsigned char> vHash;
