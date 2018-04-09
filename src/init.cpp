@@ -32,8 +32,9 @@
 #include <rpc/register.h>
 #include <rpc/safemode.h>
 #include <rpc/blockchain.h>
+#include <script/cc.h>
 #include <script/standard.h>
-#include <script/sigcache.h>
+#include <script/serverchecker.h>
 #include <scheduler.h>
 #include <timedata.h>
 #include <txdb.h>
@@ -513,6 +514,7 @@ std::string HelpMessage(HelpMessageMode mode)
     if (showDebug)
         strUsage += HelpMessageOpt("-rpcworkqueue=<n>", strprintf("Set the depth of the work queue to service RPC calls (default: %d)", DEFAULT_HTTP_WORKQUEUE));
     strUsage += HelpMessageOpt("-server", _("Accept command line and JSON-RPC commands"));
+    strUsage += HelpMessageOpt("-ac_cc", _("Enable Crypto-Conditions"));
 
     return strUsage;
 }
@@ -1748,6 +1750,8 @@ bool AppInitMain()
     if (!connman.Start(scheduler, connOptions)) {
         return false;
     }
+
+    ASSETCHAINS_CC = gArgs.GetBoolArg("-ac_cc", false);
 
     // ********************************************************* Step 12: finished
 

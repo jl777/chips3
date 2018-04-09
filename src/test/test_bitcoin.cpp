@@ -15,7 +15,7 @@
 #include <streams.h>
 #include <rpc/server.h>
 #include <rpc/register.h>
-#include <script/sigcache.h>
+#include <script/serverchecker.h>
 
 #include <memory>
 
