@@ -3,12 +3,10 @@
 
 #include "cc/eval.h"
 #include "pubkey.h"
+#include "consensus/merkle.h"
 #include "primitives/block.h"
 #include "primitives/transaction.h"
 #include "cryptoconditions/include/cryptoconditions.h"
-
-
-uint256 ExecMerkleBranch(uint256 hash, const std::vector<uint256>& vMerkleBranch, int nIndex);
 
 
 class MoMProof
@@ -21,7 +19,7 @@ public:
     MoMProof() {}
     MoMProof(unsigned long i, std::vector<uint256> b, uint256 n) :
         nIndex(i), branch(b), notarisationHash(n) {}
-    uint256 Exec(uint256 hash) { return ExecMerkleBranch(hash, branch, nIndex); }
+    uint256 Exec(uint256 hash) { return ComputeMerkleRootFromBranch(hash, branch, nIndex); }
 
     ADD_SERIALIZE_METHODS;
     
