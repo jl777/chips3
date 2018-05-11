@@ -2426,7 +2426,7 @@ bool CChainState::ConnectTip(CValidationState& state, const CChainParams& chainp
     LogPrint(BCLog::BENCH, "- Connect block: %.2fms [%.2fs (%.2fms/blk)]\n", (nTime6 - nTime1) * MILLI, nTimeTotal * MICRO, nTimeTotal * MILLI / nBlocksTotal);
 
     connectTrace.BlockConnected(pindexNew, std::move(pthisBlock));
-    komodo_connect(pindexNew,*(CBlock *)&blockConnecting);
+    komodo_connectblock(pindexNew,*(CBlock *)&blockConnecting);
     return true;
 }
 
