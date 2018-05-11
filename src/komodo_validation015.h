@@ -64,7 +64,29 @@
 #define KOMODO_NOTARIES_TIMESTAMP1 1525132800 // May 1st 2018 1530921600 // 7/7/2017
 #define KOMODO_NOTARIES_HEIGHT1 ((814000 / KOMODO_ELECTION_GAP) * KOMODO_ELECTION_GAP)
 
-int32_t gettxout_scriptPubKey(int32_t height,uint8_t *scriptPubKey,int32_t maxsize,uint256 txid,int32_t n);
+int32_t gettxout_scriptPubKey(int32_t height,uint8_t *scriptPubKey,int32_t maxsize,uint256 txid,int32_t n); // need to be in rawtransaction.cpp
+/*{
+    int32_t i,m; uint8_t *ptr;
+    LOCK(cs_main);
+    CTransactionRef tx;
+    uint256 hashBlock;
+    if ( GetTransaction(txid,tx,Params().GetConsensus(),hashBlock,true) == 0 )
+    {
+        fprintf(stderr,"ht.%d couldnt get txid.%s\n",height,txid.GetHex().c_str());
+        return(-1);
+    }
+    else if ( n <= (int32_t)tx->vout.size() ) // vout.size() seems off by 1
+    {
+        ptr = (uint8_t *)tx->vout[n].scriptPubKey.data();
+        m = tx->vout[n].scriptPubKey.size();
+        for (i=0; i<maxsize&&i<m; i++)
+            scriptPubKey[i] = ptr[i];
+        //fprintf(stderr,"got scriptPubKey via rawtransaction\n");
+        return(i);
+    } else fprintf(stderr,"gettxout_scriptPubKey ht.%d n.%d > voutsize.%d\n",height,n,(int32_t)tx->vout.size());
+    return(-1);
+}
+*/
 
 union _bits256 { uint8_t bytes[32]; uint16_t ushorts[16]; uint32_t uints[8]; uint64_t ulongs[4]; uint64_t txid; };
 typedef union _bits256 bits256;
@@ -1058,7 +1080,7 @@ void komodo_connectblock(CBlockIndex *pindex,CBlock& block)
                             signedmask |= (1LL << k);
                             break;
                         }
-                } else printf("cant get scriptPubKey for ht.%d txi.%d vin.%d\n",height,i,j);
+                } else printf("%s cant get scriptPubKey for ht.%d txi.%d vin.%d\n",ASSETCHAINS_SYMBOL,height,i,j);
             }
             numvalid = bitweight(signedmask);
             if ( numvalid >= KOMODO_MINRATIFY )
