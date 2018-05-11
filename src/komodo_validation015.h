@@ -48,6 +48,7 @@
 #define CRYPTO777_PUBSECPSTR "020e46e79a2a8d12b9b5d12c7a91adb4e454edfae43c0a0cb805427d2ac7613fd9"
 #define KOMODO_MINRATIFY 11
 #define KOMODO_ELECTION_GAP 2000
+#define KOMODO_ASSETCHAIN_MAXLEN 65
 #define KOMODO_NOTARIES_TIMESTAMP1 1525132800 // May 1st 2018 1530921600 // 7/7/2017
 #define KOMODO_NOTARIES_HEIGHT1 ((814000 / KOMODO_ELECTION_GAP) * KOMODO_ELECTION_GAP)
 
@@ -761,15 +762,12 @@ void komodo_disconnect(CBlockIndex *pindex,CBlock *block)
 
 struct notarized_checkpoint *komodo_npptr(int32_t height)
 {
-    char symbol[KOMODO_ASSETCHAIN_MAXLEN],dest[KOMODO_ASSETCHAIN_MAXLEN]; int32_t i; struct komodo_state *sp; struct notarized_checkpoint *np = 0;
-    if ( (sp= komodo_stateptr(symbol,dest)) != 0 )
+    int32_t i; struct komodo_state *sp; struct notarized_checkpoint *np = 0;
+    for (i=NUM_NPOINTS-1; i>=0; i--)
     {
-        for (i=sp->NUM_NPOINTS-1; i>=0; i--)
-        {
-            np = &sp->NPOINTS[i];
-            if ( np->MoMdepth > 0 && height > np->notarized_height-np->MoMdepth && height <= np->notarized_height )
-                return(np);
-        }
+        np = &NPOINTS[i];
+        if ( np->MoMdepth > 0 && height > np->notarized_height-np->MoMdepth && height <= np->notarized_height )
+            return(np);
     }
     return(0);
 }
