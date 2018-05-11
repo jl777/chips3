@@ -72,13 +72,10 @@ int32_t gettxout_scriptPubKey(int32_t height,uint8_t *scriptPubKey,int32_t maxsi
     uint256 hashBlock;
     if ( GetTransaction(txid,tx,Params().GetConsensus(),hashBlock,true) == 0 )
     {
-        fprintf(stderr,"ht.%d couldnt get txid.%s\n",height,txid.GetHex().c_str());
-        sleep(3);
-        if ( GetTransaction(txid,tx,Params().GetConsensus(),hashBlock,true) == 0 )
-        {
-            fprintf(stderr,"ht.%d second couldnt get txid.%s\n",height,txid.GetHex().c_str());
-            return(-1);
-        }
+        int32_t activeht = 0;
+        if ( chainActive.Tip() != 0 )
+            activeht = chainActive.Tip()->nHeight;
+        fprintf(stderr,"active.%d ht.%d couldnt get txid.%s\n",activeht,height,txid.GetHex().c_str());
     }
     if ( n <= (int32_t)tx->vout.size() ) // vout.size() seems off by 1
     {
