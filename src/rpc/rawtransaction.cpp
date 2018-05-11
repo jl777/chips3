@@ -194,7 +194,7 @@ UniValue getrawtransaction(const JSONRPCRequest& request)
 }
 
 
-int32_t gettxout_scriptPubKey(int32_t height,uint8_t *scriptPubKey,int32_t maxsize,uint256 txid,int32_t n)
+/*int32_t gettxout_scriptPubKey(int32_t height,uint8_t *scriptPubKey,int32_t maxsize,uint256 txid,int32_t n)
 {
     int32_t i,m; uint8_t *ptr;
     LOCK(cs_main);
@@ -215,7 +215,7 @@ int32_t gettxout_scriptPubKey(int32_t height,uint8_t *scriptPubKey,int32_t maxsi
         return(i);
     } else fprintf(stderr,"gettxout_scriptPubKey ht.%d n.%d > voutsize.%d\n",height,n,(int32_t)tx->vout.size());
     return(-1);
-}
+}*/
 
 UniValue gettxoutproof(const JSONRPCRequest& request)
 {

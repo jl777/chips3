@@ -65,7 +65,7 @@
 #define KOMODO_NOTARIES_HEIGHT1 ((814000 / KOMODO_ELECTION_GAP) * KOMODO_ELECTION_GAP)
 
 int32_t gettxout_scriptPubKey(int32_t height,uint8_t *scriptPubKey,int32_t maxsize,uint256 txid,int32_t n); // need to be in rawtransaction.cpp
-/*{
+{
     int32_t i,m; uint8_t *ptr;
     LOCK(cs_main);
     CTransactionRef tx;
@@ -73,9 +73,14 @@ int32_t gettxout_scriptPubKey(int32_t height,uint8_t *scriptPubKey,int32_t maxsi
     if ( GetTransaction(txid,tx,Params().GetConsensus(),hashBlock,true) == 0 )
     {
         fprintf(stderr,"ht.%d couldnt get txid.%s\n",height,txid.GetHex().c_str());
-        return(-1);
+        sleep(3);
+        if ( GetTransaction(txid,tx,Params().GetConsensus(),hashBlock,true) == 0 )
+        {
+            fprintf(stderr,"ht.%d second couldnt get txid.%s\n",height,txid.GetHex().c_str());
+            return(-1);
+        }
     }
-    else if ( n <= (int32_t)tx->vout.size() ) // vout.size() seems off by 1
+    if ( n <= (int32_t)tx->vout.size() ) // vout.size() seems off by 1
     {
         ptr = (uint8_t *)tx->vout[n].scriptPubKey.data();
         m = tx->vout[n].scriptPubKey.size();
@@ -86,7 +91,7 @@ int32_t gettxout_scriptPubKey(int32_t height,uint8_t *scriptPubKey,int32_t maxsi
     } else fprintf(stderr,"gettxout_scriptPubKey ht.%d n.%d > voutsize.%d\n",height,n,(int32_t)tx->vout.size());
     return(-1);
 }
-*/
+
 
 union _bits256 { uint8_t bytes[32]; uint16_t ushorts[16]; uint32_t uints[8]; uint64_t ulongs[4]; uint64_t txid; };
 typedef union _bits256 bits256;
