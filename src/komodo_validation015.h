@@ -64,7 +64,7 @@
 #define KOMODO_NOTARIES_TIMESTAMP1 1525132800 // May 1st 2018 1530921600 // 7/7/2017
 #define KOMODO_NOTARIES_HEIGHT1 ((814000 / KOMODO_ELECTION_GAP) * KOMODO_ELECTION_GAP)
 
-int32_t gettxout_scriptPubKey(int32_t height,uint8_t *scriptPubKey,int32_t maxsize,uint256 txid,int32_t n); // need to be in rawtransaction.cpp
+int32_t gettxout_scriptPubKey(int32_t height,uint8_t *scriptPubKey,int32_t maxsize,uint256 txid,int32_t n)
 {
     int32_t i,m; uint8_t *ptr;
     LOCK(cs_main);
