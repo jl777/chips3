@@ -14,8 +14,11 @@
  ******************************************************************************/
 
 // in rpc/blockchain.cpp
-//{ "blockchain",         "calc_MoM",               &calc_MoM,             true  },
-//{ "blockchain",         "height_MoM",             &height_MoM,             true  },
+//int32_t komodo_MoMdata(int32_t *notarized_htp,uint256 *MoMp,uint256 *kmdtxidp,int32_t height);
+//uint256 komodo_calcMoM(int32_t height,int32_t MoMdepth);
+//int32_t komodo_MoM(int32_t *notarized_htp,uint256 *MoMp,uint256 *kmdtxidp,int32_t nHeight,uint256 *MoMoMp,int32_t *MoMoMoffsetp,int32_t *MoMoMdepthp,int32_t *kmdstartip,int32_t *kmdendip);
+// { "blockchain",         "calc_MoM",               &calc_MoM,             {"height", "MoMdepth"}  },
+// { "blockchain",         "height_MoM",             &height_MoM,             {"height"}  },
 
 // in validation.cpp
 // in ConnectBlock: komodo_connectblock(pindex,*(CBlock *)&block);

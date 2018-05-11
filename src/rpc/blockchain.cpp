@@ -1624,9 +1624,10 @@ UniValue savemempool(const JSONRPCRequest& request)
 }
 
 
-extern int32_t komodo_MoMdata(int32_t *notarized_htp,uint256 *MoMp,uint256 *kmdtxidp,int32_t height);
+int32_t komodo_MoMdata(int32_t *notarized_htp,uint256 *MoMp,uint256 *kmdtxidp,int32_t height);
 uint256 komodo_calcMoM(int32_t height,int32_t MoMdepth);
 int32_t komodo_MoM(int32_t *notarized_htp,uint256 *MoMp,uint256 *kmdtxidp,int32_t nHeight,uint256 *MoMoMp,int32_t *MoMoMoffsetp,int32_t *MoMoMdepthp,int32_t *kmdstartip,int32_t *kmdendip);
+extern char ASSETCHAINS_SYMBOL[65];
 
 
 UniValue calc_MoM(const UniValue& params, bool fHelp)
@@ -1690,8 +1691,8 @@ UniValue height_MoM(const UniValue& params, bool fHelp)
 
 UniValue txMoMproof(const JSONRPCRequest& request)
 {
-    uint256 hash, notarisationHash, MoM;
-    int32_t notarisedHeight, depth;
+    uint256 hash, notarisationHash, MoM,MoMoM;
+    int32_t notarisedHeight, depth,MoMoMdepth,MoMoMoffset,kmdstarti,kmdendi;
     CBlockIndex* blockIndex = NULL;
     std::vector<uint256> branch;
     int nIndex;
@@ -1708,7 +1709,7 @@ UniValue txMoMproof(const JSONRPCRequest& request)
         if (!GetTransaction(hash, txDontNeed, Params().GetConsensus(), blockHash, true, blockIndex))
             throw std::runtime_error("cannot find transaction");
 
-        depth = komodo_MoM(&notarisedHeight, &MoM, &notarisationHash, blockIndex->nHeight);
+        depth = komodo_MoM(&notarisedHeight, &MoM, &notarisationHash, blockIndex->nHeight,&MoMoM,&MoMoMoffset,&MoMoMdepth,&kmdstarti,&kmdendi);
 
         if (!depth)
             throw std::runtime_error("notarisation not found");
@@ -1806,8 +1807,8 @@ static const CRPCCommand commands[] =
 
     { "blockchain",         "preciousblock",          &preciousblock,          {"blockhash"} },
     { "blockchain",         "txMoMproof",             &txMoMproof,             {"txid"} },
-    { "blockchain",         "calc_MoM",               &calc_MoM,             true  },
-    { "blockchain",         "height_MoM",             &height_MoM,             true  },
+    { "blockchain",         "calc_MoM",               &calc_MoM,             {"height", "MoMdepth"}  },
+    { "blockchain",         "height_MoM",             &height_MoM,             {"height"}  },
 
     /* Not shown in help */
     { "hidden",             "invalidateblock",        &invalidateblock,        {"blockhash"} },
