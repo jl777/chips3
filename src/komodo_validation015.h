@@ -13,6 +13,31 @@
  *                                                                            *
  ******************************************************************************/
 
+// in rpc/blockchain.cpp
+//{ "blockchain",         "calc_MoM",               &calc_MoM,             true  },
+//{ "blockchain",         "height_MoM",             &height_MoM,             true  },
+
+// in validation.cpp
+// in ConnectBlock: komodo_connectblock(pindex,*(CBlock *)&block);
+
+// in DisconnectBlock: komodo_disconnect((CBlockIndex *)pindex,(CBlock *)&block);
+
+/* add to ContextualCheckBlockHeader
+    uint256 hash = block.GetHash();
+    int32_t notarized_height;
+    ....
+    else if ( komodo_checkpoint(&notarized_height,(int32_t)nHeight,hash) < 0 )
+    {
+        CBlockIndex *heightblock = chainActive[nHeight];
+        if ( heightblock != 0 && heightblock->GetBlockHash() == hash )
+        {
+            //fprintf(stderr,"got a pre notarization block that matches height.%d\n",(int32_t)nHeight);
+            return true;
+        } else return state.DoS(100, error("%s: forked chain %d older than last notarized (height %d) vs %d", __func__,nHeight, notarized_height));
+    }
+*/
+
+
 #define SATOSHIDEN ((uint64_t)100000000L)
 #define dstr(x) ((double)(x) / SATOSHIDEN)
 #define portable_mutex_t pthread_mutex_t
@@ -360,6 +385,50 @@ uint8_t NOTARY_PUBKEY33[33];
 uint256 NOTARIZED_HASH,NOTARIZED_DESTTXID,NOTARIZED_MOM;
 int32_t NUM_NPOINTS,last_NPOINTSi,NOTARIZED_HEIGHT,NOTARIZED_MOMDEPTH;
 portable_mutex_t komodo_mutex;
+
+bits256 iguana_merkle(bits256 *tree,int32_t txn_count)
+{
+    int32_t i,n=0,prev; uint8_t serialized[sizeof(bits256) * 2];
+    if ( txn_count == 1 )
+        return(tree[0]);
+    prev = 0;
+    while ( txn_count > 1 )
+    {
+        if ( (txn_count & 1) != 0 )
+            tree[prev + txn_count] = tree[prev + txn_count-1], txn_count++;
+        n += txn_count;
+        for (i=0; i<txn_count; i+=2)
+        {
+            iguana_rwbignum(1,serialized,sizeof(*tree),tree[prev + i].bytes);
+            iguana_rwbignum(1,&serialized[sizeof(*tree)],sizeof(*tree),tree[prev + i + 1].bytes);
+            tree[n + (i >> 1)] = bits256_doublesha256(0,serialized,sizeof(serialized));
+        }
+        prev = n;
+        txn_count >>= 1;
+    }
+    return(tree[n]);
+}
+
+uint256 komodo_calcMoM(int32_t height,int32_t MoMdepth)
+{
+    static uint256 zero; bits256 MoM,*tree; CBlockIndex *pindex; int32_t i;
+    if ( MoMdepth >= height )
+        return(zero);
+    tree = (bits256 *)calloc(MoMdepth * 3,sizeof(*tree));
+    for (i=0; i<MoMdepth; i++)
+    {
+        if ( (pindex= komodo_chainactive(height - i)) != 0 )
+            memcpy(&tree[i],&pindex->hashMerkleRoot,sizeof(bits256));
+        else
+        {
+            free(tree);
+            return(zero);
+        }
+    }
+    MoM = iguana_merkle(tree,MoMdepth);
+    free(tree);
+    return(*(uint256 *)&MoM);
+}
 
 int32_t gettxout_scriptPubKey(uint8_t *scriptPubKey,int32_t maxsize,uint256 txid,int32_t n)
 {
