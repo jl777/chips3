@@ -786,10 +786,11 @@ int32_t komodo_prevMoMheight()
 }
 
 //struct komodo_state *komodo_stateptr(char *symbol,char *dest);
-int32_t komodo_notarized_height(uint256 *hashp,uint256 *txidp)
+int32_t komodo_notarized_height(int32_t *prevMoMheightp,uint256 *hashp,uint256 *txidp)
 {
     *hashp = NOTARIZED_HASH;
     *txidp = NOTARIZED_DESTTXID;
+    *prevMoMheightp = komodo_prevMoMheight();
     return(NOTARIZED_HEIGHT);
 }
 
