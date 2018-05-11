@@ -361,13 +361,10 @@ uint256 NOTARIZED_HASH,NOTARIZED_DESTTXID,NOTARIZED_MOM;
 int32_t NUM_NPOINTS,last_NPOINTSi,NOTARIZED_HEIGHT,NOTARIZED_MOMDEPTH;
 portable_mutex_t komodo_mutex;
 
-//int32_t gettxout_scriptPubKey(uint8_t *scriptPubKey,int32_t maxsize,uint256 txid,int32_t n);
-
 int32_t gettxout_scriptPubKey(uint8_t *scriptPubKey,int32_t maxsize,uint256 txid,int32_t n)
 {
     int32_t i,m; uint8_t *ptr;
     LOCK(cs_main);
-    CBlockIndex* blockindex = nullptr;
     CTransactionRef tx;
     uint256 hashBlock;
     if ( GetTransaction(txid,tx,Params().GetConsensus(),hashBlock,true) == 0 )
