@@ -1647,7 +1647,7 @@ UniValue txMoMproof(const JSONRPCRequest& request)
 {
     uint256 hash, notarisationHash, MoM;
     int32_t notarisedHeight, depth;
-    CBlockIndex* blockIndex;
+    CBlockIndex* blockIndex = NULL;
     std::vector<uint256> branch;
     int nIndex;
 
@@ -1699,7 +1699,7 @@ UniValue txMoMproof(const JSONRPCRequest& request)
         // Get txids from block
         std::vector<uint256> txids;
         int nTxIndex = -1;
-        for (int i=0; i<block.vtx.size(); i++) {
+        for (int i=0; i<(int32_t)block.vtx.size(); i++) {
             uint256 txid = block.vtx[i]->GetHash();
             txids.push_back(txid);
             if (nTxIndex == -1 && hash == txid) nTxIndex = i;
