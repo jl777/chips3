@@ -370,7 +370,7 @@ int32_t gettxout_scriptPubKey(uint8_t *scriptPubKey,int32_t maxsize,uint256 txid
     CBlockIndex* blockindex = nullptr;
     CTransactionRef tx;
     uint256 hashBlock;
-    if ( GetTransaction(txid,tx,Params().GetConsensus(),hashBlock,true,blockindex) == 0 )
+    if ( GetTransaction(txid,tx,Params().GetConsensus(),hashBlock,true) == 0 )
         return(-1);
     else if ( n <= (int32_t)tx->vout.size() ) // vout.size() seems off by 1
     {
