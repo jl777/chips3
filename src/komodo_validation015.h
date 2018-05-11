@@ -762,7 +762,7 @@ void komodo_disconnect(CBlockIndex *pindex,CBlock *block)
 
 struct notarized_checkpoint *komodo_npptr(int32_t height)
 {
-    int32_t i; struct komodo_state *sp; struct notarized_checkpoint *np = 0;
+    int32_t i; struct notarized_checkpoint *np = 0;
     for (i=NUM_NPOINTS-1; i>=0; i--)
     {
         np = &NPOINTS[i];
@@ -898,8 +898,8 @@ void komodo_notarized_update(int32_t nHeight,int32_t notarized_height,uint256 no
                     NOTARIZED_HEIGHT = np->notarized_height;
                     NOTARIZED_HASH = np->notarized_hash;
                     NOTARIZED_DESTTXID = np->notarized_desttxid;
-                    NOTARIZED_MOM = np->notarized_MoM;
-                    NOTARIZED_MOMDEPTH = np->notarized_MoMdepth;
+                    NOTARIZED_MOM = np->MoM;
+                    NOTARIZED_MOMDEPTH = np->MoMdepth;
                     //fprintf(stderr,"%d ",np->notarized_height);
                     fpos = ftell(fp);
                 } else fprintf(stderr,"error with notarization ht.%d %s\n",N.notarized_height,pindex->GetBlockHash().ToString().c_str());
@@ -926,8 +926,8 @@ void komodo_notarized_update(int32_t nHeight,int32_t notarized_height,uint256 no
     NOTARIZED_HEIGHT = np->notarized_height = notarized_height;
     NOTARIZED_HASH = np->notarized_hash = notarized_hash;
     NOTARIZED_DESTTXID = np->notarized_desttxid = notarized_desttxid;
-    NOTARIZED_MOM = np->notarized_MoM = MoM;
-    NOTARIZED_MOMDEPTH = np->notarized_MoMdepth = MoMdepth;
+    NOTARIZED_MOM = np->MoM = MoM;
+    NOTARIZED_MOMDEPTH = np->MoMdepth = MoMdepth;
     if ( fp != 0 )
     {
         if ( fwrite(np,1,sizeof(*np),fp) == sizeof(*np) )
