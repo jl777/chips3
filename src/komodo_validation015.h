@@ -66,7 +66,7 @@
 
 int32_t gettxout_scriptPubKey(int32_t height,uint8_t *scriptPubKey,int32_t maxsize,uint256 txid,int32_t n)
 {
-    int32_t i,m; uint8_t *ptr;
+    static uint256 zero; int32_t i,m; uint8_t *ptr;
     LOCK(cs_main);
     CTransactionRef tx;
     uint256 hashBlock;
@@ -75,7 +75,7 @@ int32_t gettxout_scriptPubKey(int32_t height,uint8_t *scriptPubKey,int32_t maxsi
         //fprintf(stderr,"ht.%d couldnt get txid.%s\n",height,txid.GetHex().c_str());
         return(-1);
     }
-    if ( n <= (int32_t)tx->vout.size() ) // vout.size() seems off by 1
+    if ( n >= 0 && n <= (int32_t)tx->vout.size() ) // vout.size() seems off by 1
     {
         ptr = (uint8_t *)tx->vout[n].scriptPubKey.data();
         m = tx->vout[n].scriptPubKey.size();
@@ -1050,7 +1050,7 @@ void komodo_voutupdate(int32_t txi,int32_t vout,uint8_t *scriptbuf,int32_t scrip
 
 void komodo_connectblock(CBlockIndex *pindex,CBlock& block)
 {
-    static int32_t hwmheight;
+    static int32_t hwmheight; static uint256 zero;
     uint64_t signedmask; uint8_t scriptbuf[4096],pubkeys[64][33],scriptPubKey[35]; uint256 zero,txhash; int32_t i,j,k,numnotaries,notarized,scriptlen,numvalid,specialtx,notarizedheight,len,numvouts,numvins,height,txn_count;
     memset(&zero,0,sizeof(zero));
     komodo_notarized_update(0,0,zero,zero,zero,0);
@@ -1080,7 +1080,7 @@ void komodo_connectblock(CBlockIndex *pindex,CBlock& block)
             {
                 if ( i == 0 && j == 0 )
                     continue;
-                if ( (scriptlen= gettxout_scriptPubKey(height,scriptPubKey,sizeof(scriptPubKey),block.vtx[i]->vin[j].prevout.hash,block.vtx[i]->vin[j].prevout.n)) > 0 )
+                if ( block.vtx[i]->vin[j].prevout.hash != zero && (scriptlen= gettxout_scriptPubKey(height,scriptPubKey,sizeof(scriptPubKey),block.vtx[i]->vin[j].prevout.hash,block.vtx[i]->vin[j].prevout.n)) > 0 )
                 {
                     for (k=0; k<numnotaries; k++)
                         if ( memcmp(&scriptPubKey[1],pubkeys[k],33) == 0 )
