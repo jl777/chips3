@@ -1636,10 +1636,10 @@ UniValue calc_MoM(const JSONRPCRequest& params, bool fHelp)
     if ( fHelp || params.size() != 2 )
         throw std::runtime_error("calc_MoM height MoMdepth\n");
     LOCK(cs_main);
-    height = atoi(params[0].get_str().c_str());
-    MoMdepth = atoi(params[1].get_str().c_str());
+    height = atoi(request.params[0].get_str().c_str());
+    MoMdepth = atoi(request.params[1].get_str().c_str());
     if ( height <= 0 || MoMdepth <= 0 || MoMdepth >= height )
-        throw runtime_error("calc_MoM illegal height or MoMdepth\n");
+        throw std::runtime_error("calc_MoM illegal height or MoMdepth\n");
     //fprintf(stderr,"height_MoM height.%d\n",height);
     MoM = komodo_calcMoM(height,MoMdepth);
     ret.push_back(Pair("coin",(char *)(ASSETCHAINS_SYMBOL[0] == 0 ? "KMD" : ASSETCHAINS_SYMBOL)));
@@ -1652,10 +1652,10 @@ UniValue calc_MoM(const JSONRPCRequest& params, bool fHelp)
 UniValue height_MoM(const JSONRPCRequest& params, bool fHelp)
 {
     int32_t height,depth,notarized_height,MoMoMdepth,MoMoMoffset,kmdstarti,kmdendi; uint256 MoM,MoMoM,kmdtxid; uint32_t timestamp = 0; UniValue ret(UniValue::VOBJ); UniValue a(UniValue::VARR);
-    if ( fHelp || params.size() != 1 )
+    if ( fHelp || request.params.size() != 1 )
         throw std::runtime_error("height_MoM height\n");
     LOCK(cs_main);
-    height = atoi(params[0].get_str().c_str());
+    height = atoi(request.params[0].get_str().c_str());
     if ( height <= 0 )
     {
         if ( chainActive.Tip() == 0 )
