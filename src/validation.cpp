@@ -299,15 +299,20 @@ char ASSETCHAINS_SYMBOL[65] = { "CHIPS" };
 // add calls to ConnectBlock/DisconnectBlock and ContextualCheckBlockHeader
 // komodo_connectblock(pindex,*(CBlock *)&block);
 // komodo_disconnect((CBlockIndex *)pindex,(CBlock *)&block);
-/* else if ( komodo_checkpoint(&notarized_height,(int32_t)nHeight,hash) < 0 )
-{
-    CBlockIndex *heightblock = chainActive[nHeight];
-    if ( heightblock != 0 && heightblock->GetBlockHash() == hash )
+/*   
+    uint256 hash = block.GetHash();
+    int32_t notarized_height;
+    ....
+    else if ( komodo_checkpoint(&notarized_height,(int32_t)nHeight,hash) < 0 )
     {
-        //fprintf(stderr,"got a pre notarization block that matches height.%d\n",(int32_t)nHeight);
-        return true;
-    } else return state.DoS(100, error("%s: forked chain %d older than last notarized (height %d) vs %d", __func__,nHeight, notarized_height));
-}*/
+        CBlockIndex *heightblock = chainActive[nHeight];
+        if ( heightblock != 0 && heightblock->GetBlockHash() == hash )
+        {
+            //fprintf(stderr,"got a pre notarization block that matches height.%d\n",(int32_t)nHeight);
+            return true;
+        } else return state.DoS(100, error("%s: forked chain %d older than last notarized (height %d) vs %d", __func__,nHeight, notarized_height));
+    }
+ */
 
 
 bool CheckFinalTx(const CTransaction &tx, int flags)
