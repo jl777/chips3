@@ -623,9 +623,9 @@ const char *Notaries_elected1[][2] =
 
 struct notarized_checkpoint
 {
-    uint256 notarized_hash,notarized_desttxid,notarized_MoM; int32_t nHeight,notarized_height,notarized_MoMdepth;
-};
-struct notarized_checkpoint *NPOINTS;
+    uint256 notarized_hash,notarized_desttxid,MoM,MoMoM;
+    int32_t nHeight,notarized_height,MoMdepth,MoMoMdepth,MoMoMoffset,kmdstarti,kmdendi;
+} *NPOINTS;
 std::string NOTARY_PUBKEY;
 uint8_t NOTARY_PUBKEY33[33];
 uint256 NOTARIZED_HASH,NOTARIZED_DESTTXID,NOTARIZED_MOM;
