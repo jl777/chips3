@@ -1088,7 +1088,7 @@ void komodo_connectblock(CBlockIndex *pindex,CBlock& block)
                             signedmask |= (1LL << k);
                             break;
                         }
-                } else printf("%s cant get scriptPubKey for ht.%d txi.%d vin.%d\n",ASSETCHAINS_SYMBOL,height,i,j);
+                } //else printf("%s cant get scriptPubKey for ht.%d txi.%d vin.%d\n",ASSETCHAINS_SYMBOL,height,i,j);
             }
             numvalid = bitweight(signedmask);
             if ( numvalid >= KOMODO_MINRATIFY )
