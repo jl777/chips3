@@ -14,17 +14,14 @@
  ******************************************************************************/
 
 // in rpc/blockchain.cpp
-//int32_t komodo_MoMdata(int32_t *notarized_htp,uint256 *MoMp,uint256 *kmdtxidp,int32_t height);
-//uint256 komodo_calcMoM(int32_t height,int32_t MoMdepth);
-//int32_t komodo_MoM(int32_t *notarized_htp,uint256 *MoMp,uint256 *kmdtxidp,int32_t nHeight,uint256 *MoMoMp,int32_t *MoMoMoffsetp,int32_t *MoMoMdepthp,int32_t *kmdstartip,int32_t *kmdendip);
+// #include komodo_rpcblockchain.h
+// ...
 // { "blockchain",         "calc_MoM",               &calc_MoM,             {"height", "MoMdepth"}  },
 // { "blockchain",         "height_MoM",             &height_MoM,             {"height"}  },
 
 // in validation.cpp
 // in ConnectBlock: komodo_connectblock(pindex,*(CBlock *)&block);
-
 // in DisconnectBlock: komodo_disconnect((CBlockIndex *)pindex,(CBlock *)&block);
-
 /* add to ContextualCheckBlockHeader
     uint256 hash = block.GetHash();
     int32_t notarized_height;
@@ -389,9 +386,9 @@ uint256 NOTARIZED_HASH,NOTARIZED_DESTTXID,NOTARIZED_MOM;
 int32_t NUM_NPOINTS,last_NPOINTSi,NOTARIZED_HEIGHT,NOTARIZED_MOMDEPTH;
 portable_mutex_t komodo_mutex;
 
-bits256 iguana_merkle(bits256 *tree,int32_t txn_count)
+uint256 iguana_merkle(uint256 *tree,int32_t txn_count)
 {
-    int32_t i,n=0,prev; uint8_t serialized[sizeof(bits256) * 2];
+    int32_t i,n=0,prev; uint8_t serialized[sizeof(uint256) * 2];
     if ( txn_count == 1 )
         return(tree[0]);
     prev = 0;
@@ -414,7 +411,7 @@ bits256 iguana_merkle(bits256 *tree,int32_t txn_count)
 
 uint256 komodo_calcMoM(int32_t height,int32_t MoMdepth)
 {
-    static uint256 zero; bits256 MoM,*tree; CBlockIndex *pindex; int32_t i;
+    static uint256 zero; uint256 MoM,*tree; CBlockIndex *pindex; int32_t i;
     if ( MoMdepth >= height )
         return(zero);
     tree = (bits256 *)calloc(MoMdepth * 3,sizeof(*tree));
@@ -430,7 +427,7 @@ uint256 komodo_calcMoM(int32_t height,int32_t MoMdepth)
     }
     MoM = iguana_merkle(tree,MoMdepth);
     free(tree);
-    return(*(uint256 *)&MoM);
+    return(MoM);
 }
 
 int32_t gettxout_scriptPubKey(uint8_t *scriptPubKey,int32_t maxsize,uint256 txid,int32_t n)
