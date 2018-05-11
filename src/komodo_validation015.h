@@ -292,7 +292,7 @@ bits256 bits256_doublesha256(char *deprecated,uint8_t *data,int32_t datalen)
     bits256 hash,hash2; int32_t i;
     vcalc_sha256(0,hash.bytes,data,datalen);
     vcalc_sha256(0,hash2.bytes,hash.bytes,sizeof(hash));
-    for (i=0; i<sizeof(hash); i++)
+    for (i=0; i<(int32_t)sizeof(hash); i++)
         hash.bytes[i] = hash2.bytes[sizeof(hash) - 1 - i];
     return(hash);
 }

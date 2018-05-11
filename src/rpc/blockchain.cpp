@@ -1626,9 +1626,23 @@ UniValue savemempool(const JSONRPCRequest& request)
 
 int32_t komodo_MoMdata(int32_t *notarized_htp,uint256 *MoMp,uint256 *kmdtxidp,int32_t height);
 uint256 komodo_calcMoM(int32_t height,int32_t MoMdepth);
-int32_t komodo_MoM(int32_t *notarized_htp,uint256 *MoMp,uint256 *kmdtxidp,int32_t nHeight,uint256 *MoMoMp,int32_t *MoMoMoffsetp,int32_t *MoMoMdepthp,int32_t *kmdstartip,int32_t *kmdendip);
 extern char ASSETCHAINS_SYMBOL[65];
 
+int32_t komodo_MoM(int32_t *notarized_heightp,uint256 *MoMp,uint256 *kmdtxidp,int32_t nHeight,uint256 *MoMoMp,int32_t *MoMoMoffsetp,int32_t *MoMoMdepthp,int32_t *kmdstartip,int32_t *kmdendip)
+{
+    int32_t depth,notarized_ht; uint256 MoM,kmdtxid;
+    depth = komodo_MoMdata(&notarized_ht,&MoM,&kmdtxid,nHeight,MoMoMp,MoMoMoffsetp,MoMoMdepthp,kmdstartip,kmdendip);
+    memset(MoMp,0,sizeof(*MoMp));
+    memset(kmdtxidp,0,sizeof(*kmdtxidp));
+    *notarized_heightp = 0;
+    if ( depth > 0 && notarized_ht > 0 && nHeight > notarized_ht-depth && nHeight <= notarized_ht )
+    {
+        *MoMp = MoM;
+        *notarized_heightp = notarized_ht;
+        *kmdtxidp = kmdtxid;
+    }
+    return(depth);
+}
 
 UniValue calc_MoM(const JSONRPCRequest& request)
 {
