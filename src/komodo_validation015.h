@@ -20,8 +20,8 @@
 // { "blockchain",         "height_MoM",             &height_MoM,             {"height"}  },
 
 // in validation.cpp
-// in ConnectBlock: komodo_connectblock(pindex,*(CBlock *)&block);
-// in DisconnectBlock: komodo_disconnect((CBlockIndex *)pindex,(CBlock *)&block);
+// at end of ConnectBlock: komodo_connectblock(pindex,*(CBlock *)&block);
+// at beginning DisconnectBlock: komodo_disconnect((CBlockIndex *)pindex,(CBlock *)&block);
 /* add to ContextualCheckBlockHeader
     uint256 hash = block.GetHash();
     int32_t notarized_height;
@@ -63,6 +63,8 @@
 #define KOMODO_ASSETCHAIN_MAXLEN 65
 #define KOMODO_NOTARIES_TIMESTAMP1 1525132800 // May 1st 2018 1530921600 // 7/7/2017
 #define KOMODO_NOTARIES_HEIGHT1 ((814000 / KOMODO_ELECTION_GAP) * KOMODO_ELECTION_GAP)
+
+int32_t gettxout_scriptPubKey(uint8_t *scriptPubKey,int32_t maxsize,uint256 txid,int32_t n);
 
 union _bits256 { uint8_t bytes[32]; uint16_t ushorts[16]; uint32_t uints[8]; uint64_t ulongs[4]; uint64_t txid; };
 typedef union _bits256 bits256;
