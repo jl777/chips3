@@ -902,7 +902,7 @@ void komodo_notarized_update(int32_t nHeight,int32_t notarized_height,uint256 no
                     NOTARIZED_MOMDEPTH = np->MoMdepth;
                     //fprintf(stderr,"%d ",np->notarized_height);
                     fpos = ftell(fp);
-                } else fprintf(stderr,"error with notarization ht.%d %s\n",N.notarized_height,pindex->GetBlockHash().ToString().c_str());
+                } else fprintf(stderr,"%s error with notarization ht.%d %s\n",ASSETCHAINS_SYMBOL,N.notarized_height,pindex->GetBlockHash().ToString().c_str());
             }
             if ( ftell(fp) !=  fpos )
                 fseek(fp,fpos,SEEK_SET);
