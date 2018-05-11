@@ -899,7 +899,7 @@ void komodo_notarized_update(int32_t nHeight,int32_t notarized_height,uint256 no
 #else
         sprintf(fname,"%s/notarizations",GetDefaultDataDir().string().c_str());
 #endif
-        //printf("fname.(%s)\n",fname);
+        printf("fname.(%s)\n",fname);
         if ( (fp= fopen(fname,"rb+")) == 0 )
             fp = fopen(fname,"wb+");
         else
@@ -919,14 +919,14 @@ void komodo_notarized_update(int32_t nHeight,int32_t notarized_height,uint256 no
                     NOTARIZED_DESTTXID = np->notarized_desttxid;
                     NOTARIZED_MOM = np->MoM;
                     NOTARIZED_MOMDEPTH = np->MoMdepth;
-                    //fprintf(stderr,"%d ",np->notarized_height);
+                    fprintf(stderr,"%d ",np->notarized_height);
                     fpos = ftell(fp);
                 } else fprintf(stderr,"%s error with notarization ht.%d %s\n",ASSETCHAINS_SYMBOL,N.notarized_height,pindex->GetBlockHash().ToString().c_str());
             }
             if ( ftell(fp) !=  fpos )
                 fseek(fp,fpos,SEEK_SET);
         }
-        //fprintf(stderr,"finished loading %s [%s]\n",fname,NOTARY_PUBKEY.c_str());
+        fprintf(stderr,"finished loading %s [%s]\n",fname,NOTARY_PUBKEY.c_str());
         didinit = 1;
     }
     if ( notarized_height == 0 )
