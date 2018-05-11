@@ -775,15 +775,12 @@ struct notarized_checkpoint *komodo_npptr(int32_t height)
 int32_t komodo_prevMoMheight()
 {
     static uint256 zero;
-    char symbol[KOMODO_ASSETCHAIN_MAXLEN],dest[KOMODO_ASSETCHAIN_MAXLEN]; int32_t i; struct komodo_state *sp; struct notarized_checkpoint *np = 0;
-    if ( (sp= komodo_stateptr(symbol,dest)) != 0 )
+    int32_t i; struct notarized_checkpoint *np = 0;
+    for (i=NUM_NPOINTS-1; i>=0; i--)
     {
-        for (i=sp->NUM_NPOINTS-1; i>=0; i--)
-        {
-            np = &sp->NPOINTS[i];
-            if ( np->MoM != zero )
-                return(np->notarized_height);
-        }
+        np = &NPOINTS[i];
+        if ( np->MoM != zero )
+            return(np->notarized_height);
     }
     return(0);
 }
