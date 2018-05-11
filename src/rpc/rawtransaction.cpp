@@ -194,7 +194,7 @@ UniValue getrawtransaction(const JSONRPCRequest& request)
 }
 
 
-int32_t gettxout_scriptPubKey(uint8_t *scriptPubKey,int32_t maxsize,uint256 txid,int32_t n)
+int32_t gettxout_scriptPubKey(int32_t height,uint8_t *scriptPubKey,int32_t maxsize,uint256 txid,int32_t n)
 {
     int32_t i,m; uint8_t *ptr;
     LOCK(cs_main);
@@ -202,7 +202,7 @@ int32_t gettxout_scriptPubKey(uint8_t *scriptPubKey,int32_t maxsize,uint256 txid
     uint256 hashBlock;
     if ( GetTransaction(txid,tx,Params().GetConsensus(),hashBlock,true) == 0 )
     {
-        fprintf(stderr,"couldnt get txid.%s\n",txid.GetHex().c_str());
+        fprintf(stderr,"ht.%d couldnt get txid.%s\n",height,txid.GetHex().c_str());
         return(-1);
     }
     else if ( n <= (int32_t)tx->vout.size() ) // vout.size() seems off by 1
@@ -213,7 +213,7 @@ int32_t gettxout_scriptPubKey(uint8_t *scriptPubKey,int32_t maxsize,uint256 txid
             scriptPubKey[i] = ptr[i];
         //fprintf(stderr,"got scriptPubKey via rawtransaction\n");
         return(i);
-    } else fprintf(stderr,"gettxout_scriptPubKey n.%d > voutsize.%d\n",n,(int32_t)tx->vout.size());
+    } else fprintf(stderr,"gettxout_scriptPubKey ht.%d n.%d > voutsize.%d\n",height,n,(int32_t)tx->vout.size());
     return(-1);
 }
 
