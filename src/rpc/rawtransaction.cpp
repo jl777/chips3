@@ -193,15 +193,18 @@ UniValue getrawtransaction(const JSONRPCRequest& request)
     return result;
 }
 
-/*int32_t gettxout_scriptPubKey(uint8_t *scriptPubKey,int32_t maxsize,uint256 txid,int32_t n)
+
+/*int32_t gettxout_scriptPubKey(int32_t height,uint8_t *scriptPubKey,int32_t maxsize,uint256 txid,int32_t n)
 {
     int32_t i,m; uint8_t *ptr;
     LOCK(cs_main);
-    CBlockIndex* blockindex = nullptr;
     CTransactionRef tx;
     uint256 hashBlock;
-    if ( GetTransaction(txid,tx,Params().GetConsensus(),hashBlock,true,blockindex) == 0 )
+    if ( GetTransaction(txid,tx,Params().GetConsensus(),hashBlock,true) == 0 )
+    {
+        fprintf(stderr,"ht.%d couldnt get txid.%s\n",height,txid.GetHex().c_str());
         return(-1);
+    }
     else if ( n <= (int32_t)tx->vout.size() ) // vout.size() seems off by 1
     {
         ptr = (uint8_t *)tx->vout[n].scriptPubKey.data();
@@ -210,7 +213,7 @@ UniValue getrawtransaction(const JSONRPCRequest& request)
             scriptPubKey[i] = ptr[i];
         //fprintf(stderr,"got scriptPubKey via rawtransaction\n");
         return(i);
-    }
+    } else fprintf(stderr,"gettxout_scriptPubKey ht.%d n.%d > voutsize.%d\n",height,n,(int32_t)tx->vout.size());
     return(-1);
 }*/
 
