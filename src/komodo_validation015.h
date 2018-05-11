@@ -689,26 +689,6 @@ uint256 komodo_calcMoM(int32_t height,int32_t MoMdepth)
     return(*(uint256 *)&MoM);
 }
 
-int32_t gettxout_scriptPubKey(uint8_t *scriptPubKey,int32_t maxsize,uint256 txid,int32_t n)
-{
-    int32_t i,m; uint8_t *ptr;
-    LOCK(cs_main);
-    CTransactionRef tx;
-    uint256 hashBlock;
-    if ( GetTransaction(txid,tx,Params().GetConsensus(),hashBlock,true) == 0 )
-        return(-1);
-    else if ( n <= (int32_t)tx->vout.size() ) // vout.size() seems off by 1
-    {
-        ptr = (uint8_t *)tx->vout[n].scriptPubKey.data();
-        m = tx->vout[n].scriptPubKey.size();
-        for (i=0; i<maxsize&&i<m; i++)
-            scriptPubKey[i] = ptr[i];
-        //fprintf(stderr,"got scriptPubKey via rawtransaction\n");
-        return(i);
-    }
-    return(-1);
-}
-
 int32_t komodo_notaries(uint8_t pubkeys[64][33],int32_t height,uint32_t timestamp)
 {
     static uint8_t elected_pubkeys0[64][33],elected_pubkeys1[64][33],did0,did1; static int32_t n0,n1;
