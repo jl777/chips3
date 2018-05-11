@@ -1623,31 +1623,13 @@ UniValue savemempool(const JSONRPCRequest& request)
     return NullUniValue;
 }
 
-
-extern int32_t komodo_MoMdata(int32_t *notarized_htp,uint256 *MoMp,uint256 *kmdtxidp,int32_t height);
-
-int32_t komodo_MoM(int32_t *notarized_heightp,uint256 *MoMp,uint256 *kmdtxidp,int32_t nHeight)
-{
-    int32_t depth,notarized_ht; uint256 MoM,kmdtxid;
-    depth = komodo_MoMdata(&notarized_ht,&MoM,&kmdtxid,nHeight);
-    memset(MoMp,0,sizeof(*MoMp));
-    memset(kmdtxidp,0,sizeof(*kmdtxidp));
-    *notarized_heightp = 0;
-    if ( depth > 0 && notarized_ht > 0 && nHeight > notarized_ht-depth && nHeight <= notarized_ht )
-    {
-        *MoMp = MoM;
-        *notarized_heightp = notarized_ht;
-        *kmdtxidp = kmdtxid;
-    }
-    return(depth);
-}
-
+#include "komodo_rpcblockchain.h"
 
 UniValue txMoMproof(const JSONRPCRequest& request)
 {
-    uint256 hash, notarisationHash, MoM;
-    int32_t notarisedHeight, depth;
-    CBlockIndex* blockIndex;
+    uint256 hash, notarisationHash, MoM,MoMoM;
+    int32_t notarisedHeight, depth,MoMoMdepth,MoMoMoffset,kmdstarti,kmdendi;
+    CBlockIndex* blockIndex = NULL;
     std::vector<uint256> branch;
     int nIndex;
 
@@ -1663,7 +1645,7 @@ UniValue txMoMproof(const JSONRPCRequest& request)
         if (!GetTransaction(hash, txDontNeed, Params().GetConsensus(), blockHash, true, blockIndex))
             throw std::runtime_error("cannot find transaction");
 
-        depth = komodo_MoM(&notarisedHeight, &MoM, &notarisationHash, blockIndex->nHeight);
+        depth = komodo_MoM(&notarisedHeight, &MoM, &notarisationHash, blockIndex->nHeight,&MoMoM,&MoMoMoffset,&MoMoMdepth,&kmdstarti,&kmdendi);
 
         if (!depth)
             throw std::runtime_error("notarisation not found");
@@ -1699,7 +1681,7 @@ UniValue txMoMproof(const JSONRPCRequest& request)
         // Get txids from block
         std::vector<uint256> txids;
         int nTxIndex = -1;
-        for (int i=0; i<block.vtx.size(); i++) {
+        for (int i=0; i<(int32_t)block.vtx.size(); i++) {
             uint256 txid = block.vtx[i]->GetHash();
             txids.push_back(txid);
             if (nTxIndex == -1 && hash == txid) nTxIndex = i;
@@ -1761,6 +1743,8 @@ static const CRPCCommand commands[] =
 
     { "blockchain",         "preciousblock",          &preciousblock,          {"blockhash"} },
     { "blockchain",         "txMoMproof",             &txMoMproof,             {"txid"} },
+    { "blockchain",         "calc_MoM",               &calc_MoM,             {"height", "MoMdepth"}  },
+    { "blockchain",         "height_MoM",             &height_MoM,             {"height"}  },
 
     /* Not shown in help */
     { "hidden",             "invalidateblock",        &invalidateblock,        {"blockhash"} },
