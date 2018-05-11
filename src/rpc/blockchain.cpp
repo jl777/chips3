@@ -1630,10 +1630,10 @@ int32_t komodo_MoM(int32_t *notarized_htp,uint256 *MoMp,uint256 *kmdtxidp,int32_
 extern char ASSETCHAINS_SYMBOL[65];
 
 
-UniValue calc_MoM(const JSONRPCRequest& request, bool fHelp)
+UniValue calc_MoM(const JSONRPCRequest& request)
 {
     int32_t height,MoMdepth; uint256 MoM; UniValue ret(UniValue::VOBJ); UniValue a(UniValue::VARR);
-    if ( fHelp || params.size() != 2 )
+    if ( fHelp || request.params.size() != 2 )
         throw std::runtime_error("calc_MoM height MoMdepth\n");
     LOCK(cs_main);
     height = atoi(request.params[0].get_str().c_str());
@@ -1649,7 +1649,7 @@ UniValue calc_MoM(const JSONRPCRequest& request, bool fHelp)
     return ret;
 }
 
-UniValue height_MoM(const JSONRPCRequest& request, bool fHelp)
+UniValue height_MoM(const JSONRPCRequest& request)
 {
     int32_t height,depth,notarized_height,MoMoMdepth,MoMoMoffset,kmdstarti,kmdendi; uint256 MoM,MoMoM,kmdtxid; uint32_t timestamp = 0; UniValue ret(UniValue::VOBJ); UniValue a(UniValue::VARR);
     if ( fHelp || request.params.size() != 1 )
