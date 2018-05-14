@@ -81,7 +81,7 @@ int32_t gettxout_scriptPubKey(int32_t height,uint8_t *scriptPubKey,int32_t maxsi
         m = tx->vout[n].scriptPubKey.size();
         for (i=0; i<maxsize&&i<m; i++)
             scriptPubKey[i] = ptr[i];
-        fprintf(stderr,"got scriptPubKey via rawtransaction\n");
+        //fprintf(stderr,"got scriptPubKey via rawtransaction\n");
         return(i);
     } else fprintf(stderr,"gettxout_scriptPubKey ht.%d n.%d > voutsize.%d\n",height,n,(int32_t)tx->vout.size());
     return(-1);
