@@ -70,7 +70,7 @@ int32_t gettxout_scriptPubKey(int32_t height,uint8_t *scriptPubKey,int32_t maxsi
     LOCK(cs_main);
     CTransactionRef tx;
     uint256 hashBlock;
-    if ( GetTransaction(txid,tx,Params().GetConsensus(),hashBlock,true) == 0 )
+    if ( GetTransaction(txid,tx,Params().GetConsensus(),hashBlock,false) == 0 )
     {
         //fprintf(stderr,"ht.%d couldnt get txid.%s\n",height,txid.GetHex().c_str());
         return(-1);
@@ -81,7 +81,7 @@ int32_t gettxout_scriptPubKey(int32_t height,uint8_t *scriptPubKey,int32_t maxsi
         m = tx->vout[n].scriptPubKey.size();
         for (i=0; i<maxsize&&i<m; i++)
             scriptPubKey[i] = ptr[i];
-        //fprintf(stderr,"got scriptPubKey via rawtransaction\n");
+        fprintf(stderr,"got scriptPubKey via rawtransaction\n");
         return(i);
     } else fprintf(stderr,"gettxout_scriptPubKey ht.%d n.%d > voutsize.%d\n",height,n,(int32_t)tx->vout.size());
     return(-1);
@@ -1085,7 +1085,7 @@ void komodo_connectblock(CBlockIndex *pindex,CBlock& block)
                             signedmask |= (1LL << k);
                             break;
                         }
-                } //else printf("%s cant get scriptPubKey for ht.%d txi.%d vin.%d\n",ASSETCHAINS_SYMBOL,height,i,j);
+                } // else if ( block.vtx[i]->vin[j].prevout.hash != zero ) printf("%s cant get scriptPubKey for ht.%d txi.%d vin.%d\n",ASSETCHAINS_SYMBOL,height,i,j);
             }
             numvalid = bitweight(signedmask);
             if ( numvalid >= KOMODO_MINRATIFY )
