@@ -13,6 +13,11 @@
  *                                                                            *
  ******************************************************************************/
 
+// in init.cpp at top of AppInitParameterInteraction()
+// extern std::string NOTARY_PUBKEY;
+// NOTARY_PUBKEY = gArgs.GetArg("-pubkey", "");
+// decode_hex(NOTARY_PUBKEY33,33,(char *)NOTARY_PUBKEY.c_str());
+
 // in rpc/blockchain.cpp
 // #include komodo_rpcblockchain.h
 // ...
