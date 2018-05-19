@@ -1035,7 +1035,7 @@ void komodo_voutupdate(int32_t txi,int32_t vout,uint8_t *scriptbuf,int32_t scrip
                 memset(&MoM,0,sizeof(MoM));
                 MoMdepth = 0;
                 len += nameoffset;
-                if ( len+36 <= opretlen-3 )
+                if ( len+36-3 <= opretlen )
                 {
                     len += iguana_rwbignum(0,&scriptbuf[len],32,(uint8_t *)&MoM);
                     len += iguana_rwnum(0,&scriptbuf[len],sizeof(MoMdepth),(uint8_t *)&MoMdepth);
