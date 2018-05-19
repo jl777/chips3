@@ -1098,11 +1098,11 @@ void komodo_connectblock(CBlockIndex *pindex,CBlock& block)
             if ( numvalid >= KOMODO_MINRATIFY )
                 notarized = 1;
             //if ( NOTARY_PUBKEY33[0] != 0 )
-            //    printf("(tx.%d: ",i);
+                printf("(tx.%d: ",i);
             for (j=0; j<numvouts; j++)
             {
                 //if ( NOTARY_PUBKEY33[0] != 0 )
-                //    printf("%.8f ",dstr(block.vtx[i]->vout[j].nValue));
+                    printf("%.8f ",dstr(block.vtx[i]->vout[j].nValue));
                 len = block.vtx[i]->vout[j].scriptPubKey.size();
                 if ( len >= (int32_t)sizeof(uint32_t) && len <= (int32_t)sizeof(scriptbuf) )
                 {
@@ -1111,10 +1111,10 @@ void komodo_connectblock(CBlockIndex *pindex,CBlock& block)
                 }
             }
             //if ( NOTARY_PUBKEY33[0] != 0 )
-            //    printf(") ");
+                printf(") ");
            //printf("[%s] ht.%d txi.%d signedmask.%llx numvins.%d numvouts.%d notarized.%d special.%d\n",ASSETCHAINS_SYMBOL,height,i,(long long)signedmask,numvins,numvouts,notarized,specialtx);
             //if ( NOTARY_PUBKEY33[0] != 0 )
-            //    printf("%s ht.%d\n",ASSETCHAINS_SYMBOL,height);
+                printf("%s ht.%d\n",ASSETCHAINS_SYMBOL,height);
         }
     } else fprintf(stderr,"komodo_connectblock: unexpected null pindex\n");
 }
