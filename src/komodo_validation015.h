@@ -77,7 +77,7 @@ int32_t gettxout_scriptPubKey(int32_t height,uint8_t *scriptPubKey,int32_t maxsi
     LOCK(cs_main);
     CTransactionRef tx;
     uint256 hashBlock;
-    if ( GetTransaction(txid,tx,Params().GetConsensus(),hashBlock,false) == 0 )
+    if ( GetTransaction(txid,tx,Params().GetConsensus(),hashBlock,true) == 0 )
     {
         //fprintf(stderr,"ht.%d couldnt get txid.%s\n",height,txid.GetHex().c_str());
         return(-1);
