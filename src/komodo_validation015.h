@@ -14,7 +14,9 @@
  ******************************************************************************/
 
 // in init.cpp at top of AppInitParameterInteraction()
+// int32_t decode_hex(uint8_t *bytes,int32_t n,char *hex);
 // extern std::string NOTARY_PUBKEY;
+// extern uint8_t NOTARY_PUBKEY33[33];
 // NOTARY_PUBKEY = gArgs.GetArg("-pubkey", "");
 // decode_hex(NOTARY_PUBKEY33,33,(char *)NOTARY_PUBKEY.c_str());
 
@@ -1042,13 +1044,13 @@ void komodo_voutupdate(int32_t txi,int32_t vout,uint8_t *scriptbuf,int32_t scrip
                     }
                     else
                     {
-                        //fprintf(stderr,"VALID %s MoM.%s [%d]\n",ASSETCHAINS_SYMBOL,MoM.ToString().c_str(),MoMdepth);
+                        fprintf(stderr,"VALID %s MoM.%s [%d]\n",ASSETCHAINS_SYMBOL,MoM.ToString().c_str(),MoMdepth);
                     }
                 }
                 len += nameoffset;
                 komodo_notarized_update(height,*notarizedheightp,hash,desttxid,MoM,MoMdepth);
                 fprintf(stderr,"%s ht.%d NOTARIZED.%d %s %sTXID.%s lens.(%d %d)\n",ASSETCHAINS_SYMBOL,height,*notarizedheightp,hash.ToString().c_str(),"KMD",desttxid.ToString().c_str(),opretlen,len);
-            }
+            } else fprintf(stderr,"notarized.%d ht %d vs prev %d vs height.%d\n",notarized,*notarizedheightp,NOTARIZED_HEIGHT,height);
         }
     }
 }
