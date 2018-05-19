@@ -1014,14 +1014,14 @@ void komodo_voutupdate(int32_t txi,int32_t vout,uint8_t *scriptbuf,int32_t scrip
     if ( scriptbuf[len++] == 0x6a )
     {
         if ( (opretlen= scriptbuf[len++]) == 0x4c )
-            opretlen = scriptbuf[len++];
+            opretlen = scriptbuf[len++]; // len is 3 here
         else if ( opretlen == 0x4d )
         {
             opretlen = scriptbuf[len++];
             opretlen += (scriptbuf[len++] << 8);
         }
-        printf("opretlen.%d vout.%d [%s]\n",opretlen,vout,(char *)&scriptbuf[len+32*2+4]);
-        if ( vout == 1 && opretlen >= 32*2+4 && strcmp(ASSETCHAINS_SYMBOL,(char *)&scriptbuf[len+32*2+4]) == 0 )
+        printf("opretlen.%d vout.%d [%s].(%s)\n",opretlen,vout,(char *)&scriptbuf[len+32*2+4],ASSETCHAINS_SYMBOL);
+        if ( vout == 1 && opretlen-3 >= 32*2+4 && strcmp(ASSETCHAINS_SYMBOL,(char *)&scriptbuf[len+32*2+4]) == 0 )
         {
             len += iguana_rwbignum(0,&scriptbuf[len],32,(uint8_t *)&hash);
             len += iguana_rwnum(0,&scriptbuf[len],sizeof(*notarizedheightp),(uint8_t *)notarizedheightp);
@@ -1034,10 +1034,11 @@ void komodo_voutupdate(int32_t txi,int32_t vout,uint8_t *scriptbuf,int32_t scrip
                 //NOTARIZED_DESTTXID = desttxid;
                 memset(&MoM,0,sizeof(MoM));
                 MoMdepth = 0;
-                if ( len+36 <= opretlen )
+                len += nameoffset;
+                if ( len+36 <= opretlen-3 )
                 {
-                    len += iguana_rwbignum(0,&scriptbuf[len+nameoffset],32,(uint8_t *)&MoM);
-                    len += iguana_rwnum(0,&scriptbuf[len+nameoffset],sizeof(MoMdepth),(uint8_t *)&MoMdepth);
+                    len += iguana_rwbignum(0,&scriptbuf[len],32,(uint8_t *)&MoM);
+                    len += iguana_rwnum(0,&scriptbuf[len],sizeof(MoMdepth),(uint8_t *)&MoMdepth);
                     if ( MoM == zero || MoMdepth > 1440 || MoMdepth < 0 )
                     {
                         memset(&MoM,0,sizeof(MoM));
@@ -1048,7 +1049,6 @@ void komodo_voutupdate(int32_t txi,int32_t vout,uint8_t *scriptbuf,int32_t scrip
                         fprintf(stderr,"VALID %s MoM.%s [%d]\n",ASSETCHAINS_SYMBOL,MoM.ToString().c_str(),MoMdepth);
                     }
                 }
-                len += nameoffset;
                 komodo_notarized_update(height,*notarizedheightp,hash,desttxid,MoM,MoMdepth);
                 fprintf(stderr,"%s ht.%d NOTARIZED.%d %s %sTXID.%s lens.(%d %d)\n",ASSETCHAINS_SYMBOL,height,*notarizedheightp,hash.ToString().c_str(),"KMD",desttxid.ToString().c_str(),opretlen,len);
             } else fprintf(stderr,"notarized.%d ht %d vs prev %d vs height.%d\n",notarized,*notarizedheightp,NOTARIZED_HEIGHT,height);
@@ -1099,11 +1099,11 @@ void komodo_connectblock(CBlockIndex *pindex,CBlock& block)
             if ( numvalid >= KOMODO_MINRATIFY )
                 notarized = 1;
             //if ( NOTARY_PUBKEY33[0] != 0 )
-                printf("(tx.%d: ",i);
+            //    printf("(tx.%d: ",i);
             for (j=0; j<numvouts; j++)
             {
                 //if ( NOTARY_PUBKEY33[0] != 0 )
-                    printf("%.8f ",dstr(block.vtx[i]->vout[j].nValue));
+                //    printf("%.8f ",dstr(block.vtx[i]->vout[j].nValue));
                 len = block.vtx[i]->vout[j].scriptPubKey.size();
                 if ( len >= (int32_t)sizeof(uint32_t) && len <= (int32_t)sizeof(scriptbuf) )
                 {
@@ -1112,10 +1112,10 @@ void komodo_connectblock(CBlockIndex *pindex,CBlock& block)
                 }
             }
             //if ( NOTARY_PUBKEY33[0] != 0 )
-                printf(") ");
+            //    printf(") ");
             //if ( NOTARY_PUBKEY33[0] != 0 )
-                printf("%s ht.%d\n",ASSETCHAINS_SYMBOL,height);
-            printf("[%s] ht.%d txi.%d signedmask.%llx numvins.%d numvouts.%d notarized.%d special.%d\n",ASSETCHAINS_SYMBOL,height,i,(long long)signedmask,numvins,numvouts,notarized,specialtx);
+            //    printf("%s ht.%d\n",ASSETCHAINS_SYMBOL,height);
+            //printf("[%s] ht.%d txi.%d signedmask.%llx numvins.%d numvouts.%d notarized.%d special.%d\n",ASSETCHAINS_SYMBOL,height,i,(long long)signedmask,numvins,numvouts,notarized,specialtx);
         }
     } else fprintf(stderr,"komodo_connectblock: unexpected null pindex\n");
 }
