@@ -1039,7 +1039,7 @@ void komodo_voutupdate(int32_t txi,int32_t vout,uint8_t *scriptbuf,int32_t scrip
                 {
                     len += iguana_rwbignum(0,&scriptbuf[len],32,(uint8_t *)&MoM);
                     len += iguana_rwnum(0,&scriptbuf[len],sizeof(MoMdepth),(uint8_t *)&MoMdepth);
-                    if ( MoM == zero || MoMdepth > 1440 || MoMdepth < 0 )
+                    if ( MoM == zero || MoMdepth > 1440*30 || MoMdepth < 0 )
                     {
                         memset(&MoM,0,sizeof(MoM));
                         MoMdepth = 0;
