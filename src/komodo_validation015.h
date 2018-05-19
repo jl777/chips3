@@ -1020,6 +1020,7 @@ void komodo_voutupdate(int32_t txi,int32_t vout,uint8_t *scriptbuf,int32_t scrip
             opretlen = scriptbuf[len++];
             opretlen += (scriptbuf[len++] << 8);
         }
+        printf("opretlen.%d vout.%d [%s]\n",opretlen,vout,(char *)&scriptbuf[len+32*2+4]);
         if ( vout == 1 && opretlen >= 32*2+4 && strcmp(ASSETCHAINS_SYMBOL,(char *)&scriptbuf[len+32*2+4]) == 0 )
         {
             len += iguana_rwbignum(0,&scriptbuf[len],32,(uint8_t *)&hash);
@@ -1112,9 +1113,9 @@ void komodo_connectblock(CBlockIndex *pindex,CBlock& block)
             }
             //if ( NOTARY_PUBKEY33[0] != 0 )
                 printf(") ");
-           //printf("[%s] ht.%d txi.%d signedmask.%llx numvins.%d numvouts.%d notarized.%d special.%d\n",ASSETCHAINS_SYMBOL,height,i,(long long)signedmask,numvins,numvouts,notarized,specialtx);
             //if ( NOTARY_PUBKEY33[0] != 0 )
                 printf("%s ht.%d\n",ASSETCHAINS_SYMBOL,height);
+            printf("[%s] ht.%d txi.%d signedmask.%llx numvins.%d numvouts.%d notarized.%d special.%d\n",ASSETCHAINS_SYMBOL,height,i,(long long)signedmask,numvins,numvouts,notarized,specialtx);
         }
     } else fprintf(stderr,"komodo_connectblock: unexpected null pindex\n");
 }
