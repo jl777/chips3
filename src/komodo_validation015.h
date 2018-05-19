@@ -958,8 +958,11 @@ void komodo_notarized_update(int32_t nHeight,int32_t notarized_height,uint256 no
     NOTARIZED_HEIGHT = np->notarized_height = notarized_height;
     NOTARIZED_HASH = np->notarized_hash = notarized_hash;
     NOTARIZED_DESTTXID = np->notarized_desttxid = notarized_desttxid;
-    NOTARIZED_MOM = np->MoM = MoM;
-    NOTARIZED_MOMDEPTH = np->MoMdepth = MoMdepth;
+    if ( bits256_nonz(MoM) != 0 && MoMdepth > 0 )
+    {
+        NOTARIZED_MOM = np->MoM = MoM;
+        NOTARIZED_MOMDEPTH = np->MoMdepth = MoMdepth;
+    }
     if ( fp != 0 )
     {
         if ( fwrite(np,1,sizeof(*np),fp) == sizeof(*np) )
@@ -1039,7 +1042,7 @@ void komodo_voutupdate(int32_t txi,int32_t vout,uint8_t *scriptbuf,int32_t scrip
                 {
                     len += iguana_rwbignum(0,&scriptbuf[len],32,(uint8_t *)&MoM);
                     len += iguana_rwnum(0,&scriptbuf[len],sizeof(MoMdepth),(uint8_t *)&MoMdepth);
-                    if ( MoM == zero || MoMdepth > 1440*30 || MoMdepth < 0 )
+                    if ( MoM == zero || MoMdepth > *notarizedheightp || MoMdepth < 0 )
                     {
                         memset(&MoM,0,sizeof(MoM));
                         MoMdepth = 0;
