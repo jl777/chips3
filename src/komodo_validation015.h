@@ -894,7 +894,7 @@ int32_t komodo_notarizeddata(int32_t nHeight,uint256 *notarized_hashp,uint256 *n
 
 void komodo_notarized_update(int32_t nHeight,int32_t notarized_height,uint256 notarized_hash,uint256 notarized_desttxid,uint256 MoM,int32_t MoMdepth)
 {
-    static int didinit; static FILE *fp; CBlockIndex *pindex; struct notarized_checkpoint *np,N; long fpos;
+    static int didinit; static uint256 zero; static FILE *fp; CBlockIndex *pindex; struct notarized_checkpoint *np,N; long fpos;
     if ( didinit == 0 )
     {
         char fname[512];int32_t latestht = 0;
@@ -958,7 +958,7 @@ void komodo_notarized_update(int32_t nHeight,int32_t notarized_height,uint256 no
     NOTARIZED_HEIGHT = np->notarized_height = notarized_height;
     NOTARIZED_HASH = np->notarized_hash = notarized_hash;
     NOTARIZED_DESTTXID = np->notarized_desttxid = notarized_desttxid;
-    if ( bits256_nonz(MoM) != 0 && MoMdepth > 0 )
+    if ( MoM != zero && MoMdepth > 0 )
     {
         NOTARIZED_MOM = np->MoM = MoM;
         NOTARIZED_MOMDEPTH = np->MoMdepth = MoMdepth;
