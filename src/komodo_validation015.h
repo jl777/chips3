@@ -699,29 +699,35 @@ struct notarized_checkpoint
 std::string NOTARY_PUBKEY;
 uint8_t NOTARY_PUBKEY33[33];
 uint256 NOTARIZED_HASH,NOTARIZED_DESTTXID,NOTARIZED_MOM;
-int32_t NUM_NPOINTS,last_NPOINTSi,NOTARIZED_HEIGHT,NOTARIZED_MOMDEPTH;
+int32_t NUM_NPOINTS,last_NPOINTSi,NOTARIZED_HEIGHT,NOTARIZED_MOMDEPTH,KOMODO_NEEDPUBKEYS;
 portable_mutex_t komodo_mutex;
+
+void komodo_importpubkeys()
+{
+    int32_t i,n; uint8_t spendscript[35];
+    n = (int32_t)(sizeof(Notaries_elected1)/sizeof(*Notaries_elected1));
+    for (i=0; i<n; i++) // each year add new notaries too
+    {
+        std::string pubkeyspend;
+        pubkeyspend.resize(35);
+        spendscript[0] = 33;
+        decode_hex(spendscript+1,33,(char *)Notaries_elected1[i][1]);
+        spendscript[34] = 0xac;
+        memcpy((uint8_t *)pubkeyspend.data(),spendscript,35);
+        if ( komodo_importpubkey(pubkeyspend) < 0 )
+            fprintf(stderr,"error importing (%s)\n",Notaries_elected1[i][1]);
+    }
+    fprintf(stderr,"Notary pubkeys imported\n");
+}
 
 int32_t komodo_init()
 {
-    int32_t i,n; uint8_t spendscript[35];
     NOTARY_PUBKEY = gArgs.GetArg("-pubkey", "");
     decode_hex(NOTARY_PUBKEY33,33,(char *)NOTARY_PUBKEY.c_str());
     if ( gArgs.GetBoolArg("-txindex", DEFAULT_TXINDEX) == 0 )
     {
-        n = (int32_t)(sizeof(Notaries_elected1)/sizeof(*Notaries_elected1));
-        fprintf(stderr,"txindex is off, import %d notary pubkeys\n",n);
-        for (i=0; i<n; i++) // each year add new notaries too
-        {
-            std::string pubkeyspend;
-            pubkeyspend.resize(35);
-            spendscript[0] = 33;
-            decode_hex(spendscript+1,33,(char *)Notaries_elected1[i][1]);
-            spendscript[34] = 0xac;
-            memcpy((uint8_t *)pubkeyspend.data(),spendscript,35);
-            if ( komodo_importpubkey(pubkeyspend) < 0 )
-                fprintf(stderr,"error importing (%s)\n",Notaries_elected1[i][1]);
-        }
+        fprintf(stderr,"txindex is off, import notary pubkeys\n");
+        KOMODO_NEEDPUBKEYS = 1;
     }
     return(0);
 }
@@ -1112,6 +1118,11 @@ void komodo_connectblock(CBlockIndex *pindex,CBlock& block)
 {
     static int32_t hwmheight;
     uint64_t signedmask; uint8_t scriptbuf[4096],pubkeys[64][33],scriptPubKey[35]; uint256 zero; int32_t i,j,k,numnotaries,notarized,scriptlen,numvalid,specialtx,notarizedheight,len,numvouts,numvins,height,txn_count;
+    if ( KOMODO_NEEDPUBKEYS != 0 )
+    {
+        komodo_importpubkeys();
+        KOMODO_NEEDPUBKEYS = 0;
+    }
     memset(&zero,0,sizeof(zero));
     komodo_notarized_update(0,0,zero,zero,zero,0);
     numnotaries = komodo_notaries(pubkeys,pindex->nHeight,pindex->GetBlockTime());
