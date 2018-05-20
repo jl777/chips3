@@ -125,7 +125,7 @@ int32_t komodo_importaddress(std::string pubkeyspend)
     {
         LOCK2(cs_main, pwallet->cs_wallet);
         std::vector<unsigned char> data(ParseHex(pubkeyspend));
-        if ( !ExtractDestination(CScript(data.begin(), data.end()), address) != 0 && IsValidDestination(address) != 0 )
+        if ( ExtractDestination(CScript(data.begin(), data.end()), address) != 0 && IsValidDestination(address) != 0 )
         {
             printf("komodo_importaddress %s\n",EncodeDestination(address).c_str());
             ImportAddress(pwallet, address, strLabel);
