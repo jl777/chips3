@@ -73,17 +73,35 @@ typedef union _bits256 bits256;
 
 struct sha256_vstate { uint64_t length; uint32_t state[8],curlen; uint8_t buf[64]; };
 struct rmd160_vstate { uint64_t length; uint8_t buf[64]; uint32_t curlen, state[5]; };
+int32_t KOMODO_TXINDEX = 1;
 
 int32_t gettxout_scriptPubKey(int32_t height,uint8_t *scriptPubKey,int32_t maxsize,uint256 txid,int32_t n)
 {
-    static uint256 zero; int32_t i,m; uint8_t *ptr; CTransactionRef tx; uint256 hashBlock;
+    static uint256 zero; int32_t i,m; uint8_t *ptr; CTransactionRef tx=0; uint256 hashBlock;
     LOCK(cs_main);
-    if ( GetTransaction(txid,tx,Params().GetConsensus(),hashBlock,false) == 0 )
+    if ( KOMODO_TXINDEX != 0 )
     {
-        //fprintf(stderr,"ht.%d couldnt get txid.%s\n",height,txid.GetHex().c_str());
-        return(-1);
+        if ( GetTransaction(txid,tx,Params().GetConsensus(),hashBlock,false) == 0 )
+        {
+            //fprintf(stderr,"ht.%d couldnt get txid.%s\n",height,txid.GetHex().c_str());
+            return(-1);
+        }
     }
-    if ( n >= 0 && n <= (int32_t)tx->vout.size() ) // vout.size() seems off by 1
+    else
+    {
+        CWallet * const pwallet = vpwallets[0];
+        if ( pwallet != 0 )
+        {
+            auto it = pwallet->mapWallet.find(txid);
+            if ( it != pwallet->mapWallet.end() )
+            {
+                const CWalletTx& wtx = it->second;
+                tx = wtx.tx;
+                fprintf(stderr,"found tx in wallet\n");
+            }
+        }
+    }
+    if ( tx != 0 && n >= 0 && n <= (int32_t)tx->vout.size() ) // vout.size() seems off by 1
     {
         ptr = (uint8_t *)tx->vout[n].scriptPubKey.data();
         m = tx->vout[n].scriptPubKey.size();
@@ -91,7 +109,9 @@ int32_t gettxout_scriptPubKey(int32_t height,uint8_t *scriptPubKey,int32_t maxsi
             scriptPubKey[i] = ptr[i];
         fprintf(stderr,"got scriptPubKey[%d] via rawtransaction ht.%d %s\n",m,height,txid.GetHex().c_str());
         return(i);
-    } else fprintf(stderr,"gettxout_scriptPubKey ht.%d n.%d > voutsize.%d\n",height,n,(int32_t)tx->vout.size());
+    }
+    else if ( tx != 0 )
+        fprintf(stderr,"gettxout_scriptPubKey ht.%d n.%d > voutsize.%d\n",height,n,(int32_t)tx->vout.size());
     return(-1);
 }
 
@@ -737,6 +757,7 @@ int32_t komodo_init()
     {
         fprintf(stderr,"txindex is off, import notary pubkeys\n");
         KOMODO_NEEDPUBKEYS = 1;
+        KOMODO_TXINDEX = 0;
     }
     return(0);
 }
