@@ -116,22 +116,20 @@ int32_t komodo_importpubkey(std::string pubkeyspend) // doesnt seem to work
     return(-1);
 }
 
-int32_t komodo_importaddress(std::string pubkeyspend)
+int32_t komodo_importaddress(std::string addr)
 {
-    CTxDestination address;
-    CWallet * const pwallet = vpwallets[0];
-    std::string strLabel = pubkeyspend;
+    CTxDestination address; CWallet * const pwallet = vpwallets[0];
     if ( pwallet != 0 )
     {
         LOCK2(cs_main, pwallet->cs_wallet);
-        std::vector<unsigned char> data(ParseHex(pubkeyspend));
-        if ( ExtractDestination(CScript(data.begin(), data.end()), address) != 0 && IsValidDestination(address) != 0 )
+        address = DecodeDestination(addr);
+        if ( IsValidDestination(address) != 0 )
         {
             printf("komodo_importaddress %s\n",EncodeDestination(address).c_str());
-            ImportAddress(pwallet, address, strLabel);
+            ImportAddress(pwallet, address, addr);
             return(0);
         }
-        printf("komodo_importaddress.(%s) failed valid.%d\n",EncodeDestination(address).c_str(),IsValidDestination(address));
+        printf("%s -> komodo_importaddress.(%s) failed valid.%d\n",addr.c_str(),EncodeDestination(address).c_str(),IsValidDestination(address));
     }
     return(-1);
 }
