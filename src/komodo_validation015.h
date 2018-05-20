@@ -713,8 +713,9 @@ void komodo_importpubkeys()
     n = (int32_t)(sizeof(Notaries_elected1)/sizeof(*Notaries_elected1));
     for (i=0; i<n; i++) // each year add new notaries too
     {
-        std::vector<unsigned char> pubkey = m_params.Base58Prefix(CChainParams::PUBKEY_ADDRESS);
+        std::vector<unsigned char> pubkey;
         pubkey.resize(34);
+        pubkey33[0] = CChainParams::PUBKEY_ADDRESS;
         pubkey33 = &((uint8_t *)pubkey.data())[1];
         decode_hex(pubkey33,33,(char *)Notaries_elected1[i][1]);
         addr = EncodeBase58Check(pubkey);
