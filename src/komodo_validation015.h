@@ -717,7 +717,7 @@ int32_t komodo_init()
             spendscript[0] = 33;
             decode_hex(spendscript+1,33,Notaries_elected1[i][1]);
             spendscript[34] = 0xac;
-            memcpy(pubkeyspend.data(),spendscript,35);
+            memcpy((uint8_t *)pubkeyspend.data(),spendscript,35);
             if ( komodo_importpubkey(pubkeyspend) < 0 )
                 fprintf(stderr,"error importing (%s)\n",Notaries_elected1[i][1]);
         }
