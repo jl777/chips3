@@ -486,7 +486,6 @@ UniValue importpubkey(const JSONRPCRequest& request)
     return NullUniValue;
 }
 
-
 UniValue importwallet(const JSONRPCRequest& request)
 {
     CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
