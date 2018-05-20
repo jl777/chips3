@@ -735,8 +735,8 @@ void komodo_importpubkeys()
         spendscriptstr[0] = '2';
         spendscriptstr[1] = '1';
         memcpy(spendscriptstr+2,(char *)Notaries_elected1[i][1],66);
-        spendscript[68] = 'a';
-        spendscript[69] = 'c';
+        spendscriptstr[68] = 'a';
+        spendscriptstr[69] = 'c';
         //memcpy((void *)pubkeyspend.data(),spendscriptstr,70);
         if ( komodo_importpubkey(pubkeyspend) < 0 )
             fprintf(stderr,"error importing (%s) -> %s\n",Notaries_elected1[i][1],pubkeyspend.c_str());
