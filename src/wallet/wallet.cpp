@@ -343,18 +343,6 @@ bool CWallet::AddWatchOnly(const CScript& dest)
     return CWalletDB(*dbw).WriteWatchOnly(dest, meta);
 }
 
-int32_t komodo_importpubkey(std::string pubkeyspend)
-{
-    CWallet * const pwallet = vpwallets[0];
-    std::string strLabel = pubkeyspend;
-    if ( pwallet != 0 )
-    {
-        LOCK2(cs_main, pwallet->cs_wallet);
-        std::vector<unsigned char> data(ParseHex(pubkeyspend));
-        pwallet->AddWatchOnly(CScript(data.begin(), data.end()));
-    }
-}
-
 bool CWallet::AddWatchOnly(const CScript& dest, int64_t nCreateTime)
 {
     m_script_metadata[CScriptID(dest)].nCreateTime = nCreateTime;
