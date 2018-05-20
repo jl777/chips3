@@ -128,6 +128,12 @@ int32_t komodo_importaddress(std::string addr)
         address = DecodeDestination(addr);
         if ( IsValidDestination(address) != 0 )
         {
+            isminetype mine = IsMine(*pwallet, address);
+            if ( (mine & ISMINE_SPENDABLE) != 0 || (mine & ISMINE_WATCH_ONLY) != 0 )
+            {
+                printf("komodo_importaddress %s already there\n",EncodeDestination(address).c_str());
+                return(0)
+            }
             printf("komodo_importaddress %s\n",EncodeDestination(address).c_str());
             ImportAddress(pwallet, address, addr);
             return(0);
