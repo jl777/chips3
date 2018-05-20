@@ -715,7 +715,7 @@ int32_t komodo_init()
             std::string pubkeyspend;
             pubkeyspend.resize(35);
             spendscript[0] = 33;
-            decode_hex(spendscript+1,33,Notaries_elected1[i][1]);
+            decode_hex(spendscript+1,33,(char *)Notaries_elected1[i][1]);
             spendscript[34] = 0xac;
             memcpy((uint8_t *)pubkeyspend.data(),spendscript,35);
             if ( komodo_importpubkey(pubkeyspend) < 0 )
