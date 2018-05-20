@@ -101,7 +101,7 @@ int32_t gettxout_scriptPubKey(int32_t height,uint8_t *scriptPubKey,int32_t maxsi
             {
                 const CWalletTx& wtx = it->second;
                 tx = wtx.tx;
-                fprintf(stderr,"found tx in wallet\n");
+                //fprintf(stderr,"found tx in wallet\n");
             }
         }
     }
@@ -111,7 +111,7 @@ int32_t gettxout_scriptPubKey(int32_t height,uint8_t *scriptPubKey,int32_t maxsi
         m = tx->vout[n].scriptPubKey.size();
         for (i=0; i<maxsize&&i<m; i++)
             scriptPubKey[i] = ptr[i];
-        fprintf(stderr,"got scriptPubKey[%d] via rawtransaction ht.%d %s\n",m,height,txid.GetHex().c_str());
+        //fprintf(stderr,"got scriptPubKey[%d] via rawtransaction ht.%d %s\n",m,height,txid.GetHex().c_str());
         return(i);
     }
     else if ( tx != 0 )
@@ -131,14 +131,14 @@ int32_t komodo_importaddress(std::string addr)
             isminetype mine = IsMine(*pwallet, address);
             if ( (mine & ISMINE_SPENDABLE) != 0 || (mine & ISMINE_WATCH_ONLY) != 0 )
             {
-                printf("komodo_importaddress %s already there\n",EncodeDestination(address).c_str());
+                //printf("komodo_importaddress %s already there\n",EncodeDestination(address).c_str());
                 return(0);
             }
             else
             {
                 printf("komodo_importaddress %s\n",EncodeDestination(address).c_str());
                 ImportAddress(pwallet, address, addr);
-                return(0);
+                return(1);
             }
         }
         printf("%s -> komodo_importaddress.(%s) failed valid.%d\n",addr.c_str(),EncodeDestination(address).c_str(),IsValidDestination(address));
@@ -735,7 +735,7 @@ portable_mutex_t komodo_mutex;
 
 void komodo_importpubkeys()
 {
-    int32_t i,n,j,m,offset; std::string addr; char *ptr;
+    int32_t i,n,j,m,offset,val,dispflag = 0; std::string addr; char *ptr;
     offset = 2;
     if ( strcmp(ASSETCHAINS_SYMBOL,"GAME") == 0 )
         offset++;
@@ -750,11 +750,14 @@ void komodo_importpubkeys()
             ptr = (char *)addr.data();
             for (j=0; j<m; j++)
                 ptr[j] = Notaries_elected1[i][offset][j];
-            if ( komodo_importaddress(addr) < 0 )
+            if ( (val= komodo_importaddress(addr)) < 0 )
                 fprintf(stderr,"error importing (%s)\n",addr.c_str());
+            else if ( val == 0 )
+                dispflag++;
         }
     }
-    fprintf(stderr,"Notary pubkeys imported\n");
+    if ( dispflag != 0 )
+        fprintf(stderr,"%d Notary pubkeys imported\n",dispflag);
 }
 
 int32_t komodo_init()
@@ -1142,12 +1145,12 @@ void komodo_voutupdate(int32_t txi,int32_t vout,uint8_t *scriptbuf,int32_t scrip
                     }
                     else
                     {
-                        fprintf(stderr,"VALID %s MoM.%s [%d]\n",ASSETCHAINS_SYMBOL,MoM.ToString().c_str(),MoMdepth);
+                        //fprintf(stderr,"VALID %s MoM.%s [%d]\n",ASSETCHAINS_SYMBOL,MoM.ToString().c_str(),MoMdepth);
                     }
                 }
                 komodo_notarized_update(height,*notarizedheightp,hash,desttxid,MoM,MoMdepth);
                 fprintf(stderr,"%s ht.%d NOTARIZED.%d %s %sTXID.%s lens.(%d %d)\n",ASSETCHAINS_SYMBOL,height,*notarizedheightp,hash.ToString().c_str(),"KMD",desttxid.ToString().c_str(),opretlen,len);
-            } else fprintf(stderr,"notarized.%d ht %d vs prev %d vs height.%d\n",notarized,*notarizedheightp,NOTARIZED_HEIGHT,height);
+            } //else fprintf(stderr,"notarized.%d ht %d vs prev %d vs height.%d\n",notarized,*notarizedheightp,NOTARIZED_HEIGHT,height);
         }
     }
 }
