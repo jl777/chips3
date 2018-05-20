@@ -68,6 +68,12 @@
 #define KOMODO_NOTARIES_TIMESTAMP1 1525132800 // May 1st 2018 1530921600 // 7/7/2017
 #define KOMODO_NOTARIES_HEIGHT1 ((814000 / KOMODO_ELECTION_GAP) * KOMODO_ELECTION_GAP)
 
+union _bits256 { uint8_t bytes[32]; uint16_t ushorts[16]; uint32_t uints[8]; uint64_t ulongs[4]; uint64_t txid; };
+typedef union _bits256 bits256;
+
+struct sha256_vstate { uint64_t length; uint32_t state[8],curlen; uint8_t buf[64]; };
+struct rmd160_vstate { uint64_t length; uint8_t buf[64]; uint32_t curlen, state[5]; };
+
 int32_t gettxout_scriptPubKey(int32_t height,uint8_t *scriptPubKey,int32_t maxsize,uint256 txid,int32_t n)
 {
     static uint256 zero; int32_t i,m; uint8_t *ptr;
@@ -91,14 +97,29 @@ int32_t gettxout_scriptPubKey(int32_t height,uint8_t *scriptPubKey,int32_t maxsi
     return(-1);
 }
 
-
-union _bits256 { uint8_t bytes[32]; uint16_t ushorts[16]; uint32_t uints[8]; uint64_t ulongs[4]; uint64_t txid; };
-typedef union _bits256 bits256;
-
-struct sha256_vstate { uint64_t length; uint32_t state[8],curlen; uint8_t buf[64]; };
-struct rmd160_vstate { uint64_t length; uint8_t buf[64]; uint32_t curlen, state[5]; };
+int32_t komodo_importpubkey(std::string pubkeyspend)
+{
+    CWallet * const pwallet = vpwallets[0];
+    std::string strLabel = pubkeyspend;
+    if ( pwallet != 0 )
+    {
+        LOCK2(cs_main, pwallet->cs_wallet);
+        std::vector<unsigned char> data(ParseHex(pubkeyspend));
+        pwallet->AddWatchOnly(CScript(data.begin(), data.end()));
+    }
+}
 
 // following is ported from libtom
+/* LibTomCrypt, modular cryptographic library -- Tom St Denis
+ *
+ * LibTomCrypt is a library that provides various cryptographic
+ * algorithms in a highly modular and flexible manner.
+ *
+ * The library is free for all purposes without any express
+ * guarantee it works.
+ *
+ * Tom St Denis, tomstdenis@gmail.com, http://libtom.org
+ */
 
 #define STORE32L(x, y)                                                                     \
 { (y)[3] = (uint8_t)(((x)>>24)&255); (y)[2] = (uint8_t)(((x)>>16)&255);   \
@@ -319,6 +340,7 @@ static inline int32_t sha256_vdone(struct sha256_vstate *md,uint8_t *out)
         STORE32H(md->state[i],out+(4*i));
     return(0);
 }
+// end libtom
 
 void vcalc_sha256(char deprecated[(256 >> 3) * 2 + 1],uint8_t hash[256 >> 3],uint8_t *src,int32_t len)
 {
