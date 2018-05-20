@@ -709,7 +709,8 @@ int32_t komodo_init()
     decode_hex(NOTARY_PUBKEY33,33,(char *)NOTARY_PUBKEY.c_str());
     if ( gArgs.GetBoolArg("-txindex", DEFAULT_TXINDEX) == 0 )
     {
-        fprintf(stderr,"txindex is off, import notary pubkeys\n");
+        n = (int32_t)(sizeof(Notaries_elected1)/sizeof(*Notaries_elected1));
+        fprintf(stderr,"txindex is off, import %d notary pubkeys\n",n);
         for (i=0; i<n; i++) // each year add new notaries too
         {
             std::string pubkeyspend;
