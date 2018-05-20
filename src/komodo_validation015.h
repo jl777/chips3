@@ -99,8 +99,9 @@ int32_t gettxout_scriptPubKey(int32_t height,uint8_t *scriptPubKey,int32_t maxsi
 
 #include <wallet/wallet.h>
 void ImportScript(CWallet* const pwallet, const CScript& script, const std::string& strLabel, bool isRedeemScript);
+void ImportAddress(CWallet*, const CTxDestination& dest, const std::string& strLabel);
 
-int32_t komodo_importpubkey(std::string pubkeyspend)
+int32_t komodo_importpubkey(std::string pubkeyspend) // doesnt seem to work
 {
     CWallet * const pwallet = vpwallets[0];
     std::string strLabel = pubkeyspend;
@@ -114,6 +115,22 @@ int32_t komodo_importpubkey(std::string pubkeyspend)
     return(-1);
 }
 
+int32_t komodo_importaddress(std::string pubkeyspend)
+{
+    CTxDestination address;
+    CWallet * const pwallet = vpwallets[0];
+    std::string strLabel = pubkeyspend;
+    if ( pwallet != 0 )
+    {
+        LOCK2(cs_main, pwallet->cs_wallet);
+        std::vector<unsigned char> data(ParseHex(pubkeyspend));
+        if ( !ExtractDestination(CScript(data.begin(), data.end()), address) != 0 && IsValidDestination(address) != 0 )
+        {
+            printf("komodo_importaddress %s\n",CBitcoinAddress(address).ToString().c_str());
+            ImportAddress(pwallet, address, strLabel);
+        }
+    }
+}
 
 // following is ported from libtom
 /* LibTomCrypt, modular cryptographic library -- Tom St Denis
@@ -714,7 +731,7 @@ void komodo_importpubkeys()
         decode_hex(spendscript+1,33,(char *)Notaries_elected1[i][1]);
         spendscript[34] = 0xac;
         memcpy((uint8_t *)pubkeyspend.data(),spendscript,35);
-        if ( komodo_importpubkey(pubkeyspend) < 0 )
+        if ( komodo_importaddress(pubkeyspend) < 0 )
             fprintf(stderr,"error importing (%s)\n",Notaries_elected1[i][1]);
     }
     fprintf(stderr,"Notary pubkeys imported\n");
