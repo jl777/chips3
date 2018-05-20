@@ -716,7 +716,9 @@ void komodo_importpubkeys()
     n = (int32_t)(sizeof(Notaries_elected1)/sizeof(*Notaries_elected1));
     for (i=0; i<n; i++) // each year add new notaries too
     {
-        if ( (m= (int32_t)strlen((char *)Notaries_elected1[i][2])) > 0 )
+        if ( Notaries_elected1[i][offset] == 0 )
+            continue;
+        if ( (m= (int32_t)strlen((char *)Notaries_elected1[i][offset])) > 0 )
         {
             addr.resize(m);
             ptr = (char *)addr.data();
