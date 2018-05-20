@@ -642,7 +642,7 @@ const char *Notaries_elected0[][2] =
     { "xxspot2_XX", "03d85b221ea72ebcd25373e7961f4983d12add66a92f899deaf07bab1d8b6f5573" }
 };
 
-const char *Notaries_elected1[][2] =
+const char *Notaries_elected1[][3] =
 {
     {"0dev1_jl777", "03b7621b44118017a16043f19b30cc8a4cfe068ac4e42417bae16ba460c80f3828" },
     {"0dev2_kolo", "030f34af4b908fb8eb2099accb56b8d157d49f6cfb691baa80fdd34f385efed961" },
@@ -723,21 +723,17 @@ portable_mutex_t komodo_mutex;
 
 void komodo_importpubkeys()
 {
-    int32_t i,n; char *spendscriptstr;
+    int32_t i,n; std::string addr; uint8_t *pubkey33;
     n = (int32_t)(sizeof(Notaries_elected1)/sizeof(*Notaries_elected1));
     for (i=0; i<n; i++) // each year add new notaries too
     {
-        std::string pubkeyspend;
-        spendscriptstr = (char *)pubkeyspend.data();
-        pubkeyspend.resize(70);
-        spendscriptstr[0] = '2';
-        spendscriptstr[1] = '1';
-        memcpy(spendscriptstr+2,(char *)Notaries_elected1[i][1],66);
-        spendscriptstr[68] = 'a';
-        spendscriptstr[69] = 'c';
-        //memcpy((void *)pubkeyspend.data(),spendscriptstr,70);
-        if ( komodo_importaddress(pubkeyspend) < 0 )
-            fprintf(stderr,"error importing (%s) -> %s\n",Notaries_elected1[i][1],pubkeyspend.c_str());
+        std::vector<unsigned char> pubkey;
+        pubkey.resize(33);
+        pubkey33 = (uint8_t)pubkey.data();
+        decode_hex(pubkey33,33,(char *)Notaries_elected1[i][1]);
+        addr = EncodeBase58Check(data);
+        if ( komodo_importaddress(addr) < 0 )
+            fprintf(stderr,"error importing (%s) -> %s\n",Notaries_elected1[i][1],addr.c_str());
     }
     fprintf(stderr,"Notary pubkeys imported\n");
 }
