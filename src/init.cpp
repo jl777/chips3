@@ -893,9 +893,7 @@ bool AppInitBasicSetup()
     return true;
 }
 
-extern std::string NOTARY_PUBKEY;
-extern uint8_t NOTARY_PUBKEY33[33];
-int32_t decode_hex(uint8_t *bytes,int32_t n,char *hex);
+int32_t komodo_init();
 
 bool AppInitParameterInteraction()
 {
@@ -907,8 +905,7 @@ bool AppInitParameterInteraction()
     if (!fs::is_directory(GetBlocksDir(false))) {
         return InitError(strprintf(_("Specified blocks directory \"%s\" does not exist.\n"), gArgs.GetArg("-blocksdir", "").c_str()));
     }
-    NOTARY_PUBKEY = gArgs.GetArg("-pubkey", "");
-    decode_hex(NOTARY_PUBKEY33,33,(char *)NOTARY_PUBKEY.c_str());
+    komodo_init();
 
     // if using block pruning, then disallow txindex
     if (gArgs.GetArg("-prune", 0)) {

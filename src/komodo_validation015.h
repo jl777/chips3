@@ -14,11 +14,8 @@
  ******************************************************************************/
 
 // in init.cpp at top of AppInitParameterInteraction()
-// int32_t decode_hex(uint8_t *bytes,int32_t n,char *hex);
-// extern std::string NOTARY_PUBKEY;
-// extern uint8_t NOTARY_PUBKEY33[33];
-// NOTARY_PUBKEY = gArgs.GetArg("-pubkey", "");
-// decode_hex(NOTARY_PUBKEY33,33,(char *)NOTARY_PUBKEY.c_str());
+// int32_t komodo_init();
+// komodo_init();
 
 // in rpc/blockchain.cpp
 // #include komodo_rpcblockchain.h
@@ -79,7 +76,7 @@ int32_t gettxout_scriptPubKey(int32_t height,uint8_t *scriptPubKey,int32_t maxsi
     uint256 hashBlock;
     if ( GetTransaction(txid,tx,Params().GetConsensus(),hashBlock,false) == 0 )
     {
-        fprintf(stderr,"ht.%d couldnt get txid.%s\n",height,txid.GetHex().c_str());
+        //fprintf(stderr,"ht.%d couldnt get txid.%s\n",height,txid.GetHex().c_str());
         return(-1);
     }
     if ( n >= 0 && n <= (int32_t)tx->vout.size() ) // vout.size() seems off by 1
@@ -676,6 +673,13 @@ uint8_t NOTARY_PUBKEY33[33];
 uint256 NOTARIZED_HASH,NOTARIZED_DESTTXID,NOTARIZED_MOM;
 int32_t NUM_NPOINTS,last_NPOINTSi,NOTARIZED_HEIGHT,NOTARIZED_MOMDEPTH;
 portable_mutex_t komodo_mutex;
+
+int32_t komodo_init()
+{
+    NOTARY_PUBKEY = gArgs.GetArg("-pubkey", "");
+    decode_hex(NOTARY_PUBKEY33,33,(char *)NOTARY_PUBKEY.c_str());
+    return(0);
+}
 
 bits256 iguana_merkle(bits256 *tree,int32_t txn_count)
 {
