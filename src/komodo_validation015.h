@@ -126,10 +126,12 @@ int32_t komodo_importaddress(std::string pubkeyspend)
         std::vector<unsigned char> data(ParseHex(pubkeyspend));
         if ( !ExtractDestination(CScript(data.begin(), data.end()), address) != 0 && IsValidDestination(address) != 0 )
         {
-            printf("komodo_importaddress %s\n",CBitcoinAddress(address).ToString().c_str());
+            printf("komodo_importaddress %s\n",EncodeDestination(address).ToString().c_str());
             ImportAddress(pwallet, address, strLabel);
+            return(0);
         }
     }
+    return(-1);
 }
 
 // following is ported from libtom
