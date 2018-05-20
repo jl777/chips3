@@ -131,6 +131,7 @@ int32_t komodo_importaddress(std::string pubkeyspend)
             ImportAddress(pwallet, address, strLabel);
             return(0);
         }
+        printf("komodo_importaddress %s failed valid.%d\n",EncodeDestination(address).c_str(),IsValidDestination(address));
     }
     return(-1);
 }
