@@ -729,7 +729,7 @@ void komodo_importpubkeys()
     {
         std::vector<unsigned char> pubkey;
         pubkey.resize(33);
-        pubkey33 = (uint8_t)pubkey.data();
+        pubkey33 = (uint8_t *)pubkey.data();
         decode_hex(pubkey33,33,(char *)Notaries_elected1[i][1]);
         addr = EncodeBase58Check(pubkey);
         if ( komodo_importaddress(addr) < 0 )
