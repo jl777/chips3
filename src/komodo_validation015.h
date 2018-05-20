@@ -628,9 +628,9 @@ const char *Notaries_elected0[][2] =
     { "xxspot2_XX", "03d85b221ea72ebcd25373e7961f4983d12add66a92f899deaf07bab1d8b6f5573" }
 };
 
-const char *Notaries_elected1[][3] =
+const char *Notaries_elected1[][4] =
 {
-    {"0dev1_jl777", "03b7621b44118017a16043f19b30cc8a4cfe068ac4e42417bae16ba460c80f3828" },
+    {"0dev1_jl777", "03b7621b44118017a16043f19b30cc8a4cfe068ac4e42417bae16ba460c80f3828", "RNJmgYaFF5DbnrNUX6pMYz9rcnDKC2tuAc", "GWsW2A1ud72KoKJZysVLtEAYmgYZZzbMxG" },
     {"0dev2_kolo", "030f34af4b908fb8eb2099accb56b8d157d49f6cfb691baa80fdd34f385efed961" },
     {"0dev3_kolo", "025af9d2b2a05338478159e9ac84543968fd18c45fd9307866b56f33898653b014" },
     {"0dev4_decker", "028eea44a09674dda00d88ffd199a09c9b75ba9782382cc8f1e97c0fd565fe5707" },
@@ -709,18 +709,22 @@ portable_mutex_t komodo_mutex;
 
 void komodo_importpubkeys()
 {
-    int32_t i,n; std::string addr; uint8_t *pubkey33;
+    int32_t i,n,j,m,offset; std::string addr; char *ptr;
+    offset = 2;
+    if ( strcmp(ASSETCHAINS_SYMBOL,"GAME") == 0 )
+        offset++;
     n = (int32_t)(sizeof(Notaries_elected1)/sizeof(*Notaries_elected1));
     for (i=0; i<n; i++) // each year add new notaries too
     {
-        std::vector<unsigned char> pubkey;
-        pubkey.resize(34);
-        pubkey33[0] = CChainParams::PUBKEY_ADDRESS;
-        pubkey33 = &((uint8_t *)pubkey.data())[1];
-        decode_hex(pubkey33,33,(char *)Notaries_elected1[i][1]);
-        addr = EncodeBase58Check(pubkey);
-        if ( komodo_importaddress(addr) < 0 )
-            fprintf(stderr,"error importing (%s) -> %s\n",pubkey.ToString.c_str(),addr.c_str());
+        if ( (m= (int32_t)strlen((char *)Notaries_elected1[i][2])) > 0 )
+        {
+            addr.resize(m);
+            ptr = (char *)addr.data();
+            for (j=0; j<m; j++)
+                ptr[j] = Notaries_elected1[i][offset][j];
+            if ( komodo_importaddress(addr) < 0 )
+                fprintf(stderr,"error importing (%s)\n",addr.c_str());
+        }
     }
     fprintf(stderr,"Notary pubkeys imported\n");
 }
