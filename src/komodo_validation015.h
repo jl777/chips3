@@ -97,6 +97,7 @@ int32_t gettxout_scriptPubKey(int32_t height,uint8_t *scriptPubKey,int32_t maxsi
     return(-1);
 }
 
+#include <wallet/wallet.h>
 int32_t komodo_importpubkey(std::string pubkeyspend)
 {
     CWallet * const pwallet = vpwallets[0];
@@ -106,7 +107,9 @@ int32_t komodo_importpubkey(std::string pubkeyspend)
         LOCK2(cs_main, pwallet->cs_wallet);
         std::vector<unsigned char> data(ParseHex(pubkeyspend));
         ImportScript(pwallet, CScript(data.begin(), data.end()), strLabel, false);
+        return(0);
     }
+    return(-1);
 }
 
 // following is ported from libtom
