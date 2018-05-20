@@ -731,7 +731,7 @@ void komodo_importpubkeys()
         pubkey.resize(33);
         pubkey33 = (uint8_t)pubkey.data();
         decode_hex(pubkey33,33,(char *)Notaries_elected1[i][1]);
-        addr = EncodeBase58Check(data);
+        addr = EncodeBase58Check(pubkey);
         if ( komodo_importaddress(addr) < 0 )
             fprintf(stderr,"error importing (%s) -> %s\n",Notaries_elected1[i][1],addr.c_str());
     }
