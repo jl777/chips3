@@ -99,6 +99,7 @@ int32_t gettxout_scriptPubKey(int32_t height,uint8_t *scriptPubKey,int32_t maxsi
 
 #include <wallet/wallet.h>
 void ImportScript(CWallet* const pwallet, const CScript& script, const std::string& strLabel, bool isRedeemScript);
+
 int32_t komodo_importpubkey(std::string pubkeyspend)
 {
     CWallet * const pwallet = vpwallets[0];
@@ -112,6 +113,7 @@ int32_t komodo_importpubkey(std::string pubkeyspend)
     }
     return(-1);
 }
+
 
 // following is ported from libtom
 /* LibTomCrypt, modular cryptographic library -- Tom St Denis
@@ -702,11 +704,23 @@ portable_mutex_t komodo_mutex;
 
 int32_t komodo_init()
 {
+    int32_t i,n; uint8_t spendscript[35];
     NOTARY_PUBKEY = gArgs.GetArg("-pubkey", "");
     decode_hex(NOTARY_PUBKEY33,33,(char *)NOTARY_PUBKEY.c_str());
     if ( gArgs.GetBoolArg("-txindex", DEFAULT_TXINDEX) == 0 )
     {
-        fprintf(stderr,"txindex is off\n");
+        fprintf(stderr,"txindex is off, import notary pubkeys\n");
+        for (i=0; i<n; i++) // each year add new notaries too
+        {
+            std::string pubkeyspend;
+            pubkeyspend.resize(35);
+            spendscript[0] = 33;
+            decode_hex(spendscript+1,33,Notaries_elected1[i][1]);
+            spendscript[34] = 0xac;
+            memcpy(pubkeyspend.data(),spendscript,35);
+            if ( komodo_importpubkey(pubkeyspend) < 0 )
+                fprintf(stderr,"error importing (%s)\n",Notaries_elected1[i][1]);
+        }
     }
     return(0);
 }
