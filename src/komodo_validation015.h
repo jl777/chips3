@@ -98,6 +98,7 @@ int32_t gettxout_scriptPubKey(int32_t height,uint8_t *scriptPubKey,int32_t maxsi
 }
 
 #include <wallet/wallet.h>
+void ImportScript(CWallet* const pwallet, const CScript& script, const std::string& strLabel, bool isRedeemScript);
 int32_t komodo_importpubkey(std::string pubkeyspend)
 {
     CWallet * const pwallet = vpwallets[0];
