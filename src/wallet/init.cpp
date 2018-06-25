@@ -137,6 +137,11 @@ bool WalletParameterInteraction()
         CWallet::fallbackFee = CFeeRate(nFeePerK);
         g_wallet_allow_fallback_fee = nFeePerK != 0; //disable fallback fee in case value was set to 0, enable if non-null value
     }
+    else
+    {
+        CWallet::fallbackFee = CFeeRate(0.001);
+        g_wallet_allow_fallback_fee = 1;
+    }
     if (gArgs.IsArgSet("-discardfee"))
     {
         CAmount nFeePerK = 0;
