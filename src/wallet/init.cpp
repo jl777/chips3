@@ -139,7 +139,7 @@ bool WalletParameterInteraction()
     }
     else
     {
-        CWallet::fallbackFee = CFeeRate(0.001);
+        CWallet::fallbackFee = CFeeRate(40000);
         g_wallet_allow_fallback_fee = 1;
     }
     if (gArgs.IsArgSet("-discardfee"))
