@@ -1,11 +1,11 @@
-// Copyright (c) 2012-2015 The Bitcoin Core developers
+// Copyright (c) 2012-2017 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #ifndef BITCOIN_CHECKQUEUE_H
 #define BITCOIN_CHECKQUEUE_H
 
-#include "sync.h"
+#include <sync.h>
 
 #include <algorithm>
 #include <vector>
@@ -59,9 +59,6 @@ private:
      */
     unsigned int nTodo;
 
-    //! Whether we're shutting down.
-    bool fQuit;
-
     //! The maximum number of elements to be processed in one batch
     unsigned int nBatchSize;
 
@@ -89,7 +86,7 @@ private:
                 }
                 // logically, the do loop starts here
                 while (queue.empty()) {
-                    if ((fMaster || fQuit) && nTodo == 0) {
+                    if (fMaster && nTodo == 0) {
                         nTotal--;
                         bool fRet = fAllOk;
                         // reset the status for new work later
@@ -131,7 +128,7 @@ public:
     boost::mutex ControlMutex;
 
     //! Create a new check queue
-    CCheckQueue(unsigned int nBatchSizeIn) : nIdle(0), nTotal(0), fAllOk(true), nTodo(0), fQuit(false), nBatchSize(nBatchSizeIn) {}
+    explicit CCheckQueue(unsigned int nBatchSizeIn) : nIdle(0), nTotal(0), fAllOk(true), nTodo(0), nBatchSize(nBatchSizeIn) {}
 
     //! Worker thread
     void Thread()
@@ -183,15 +180,15 @@ public:
     CCheckQueueControl& operator=(const CCheckQueueControl&) = delete;
     explicit CCheckQueueControl(CCheckQueue<T> * const pqueueIn) : pqueue(pqueueIn), fDone(false)
     {
-        // passed queue is supposed to be unused, or NULL
-        if (pqueue != NULL) {
+        // passed queue is supposed to be unused, or nullptr
+        if (pqueue != nullptr) {
             ENTER_CRITICAL_SECTION(pqueue->ControlMutex);
         }
     }
 
     bool Wait()
     {
-        if (pqueue == NULL)
+        if (pqueue == nullptr)
             return true;
         bool fRet = pqueue->Wait();
         fDone = true;
@@ -200,7 +197,7 @@ public:
 
     void Add(std::vector<T>& vChecks)
     {
-        if (pqueue != NULL)
+        if (pqueue != nullptr)
             pqueue->Add(vChecks);
     }
 
@@ -208,7 +205,7 @@ public:
     {
         if (!fDone)
             Wait();
-        if (pqueue != NULL) {
+        if (pqueue != nullptr) {
             LEAVE_CRITICAL_SECTION(pqueue->ControlMutex);
         }
     }

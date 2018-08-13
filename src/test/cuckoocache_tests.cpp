@@ -1,11 +1,11 @@
-// Copyright (c) 2012-2016 The Bitcoin Core developers
+// Copyright (c) 2012-2017 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 #include <boost/test/unit_test.hpp>
-#include "cuckoocache.h"
-#include "script/sigcache.h"
-#include "test/test_bitcoin.h"
-#include "random.h"
+#include <cuckoocache.h>
+#include <script/serverchecker.h>
+#include <test/test_bitcoin.h>
+#include <random.h>
 #include <thread>
 
 /** Test Suite for CuckooCache
@@ -163,7 +163,7 @@ void test_cache_erase(size_t megabytes)
     for (uint32_t i = (n_insert / 2); i < n_insert; ++i)
         set.insert(hashes_insert_copy[i]);
 
-    /** elements that we marked erased but that are still there */
+    /** elements that we marked as erased but are still there */
     size_t count_erased_but_contained = 0;
     /** elements that we did not erase but are older */
     size_t count_stale = 0;
@@ -303,7 +303,7 @@ void test_cache_generations()
     local_rand_ctx = FastRandomContext(true);
 
     // block_activity models a chunk of network activity. n_insert elements are
-    // adde to the cache. The first and last n/4 are stored for removal later
+    // added to the cache. The first and last n/4 are stored for removal later
     // and the middle n/2 are not stored. This models a network which uses half
     // the signatures of recently (since the last block) added transactions
     // immediately and never uses the other half.

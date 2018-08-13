@@ -1,18 +1,18 @@
-// Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2009-2017 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "core_io.h"
+#include <core_io.h>
 
-#include "primitives/block.h"
-#include "primitives/transaction.h"
-#include "script/script.h"
-#include "serialize.h"
-#include "streams.h"
+#include <primitives/block.h>
+#include <primitives/transaction.h>
+#include <script/script.h>
+#include <serialize.h>
+#include <streams.h>
 #include <univalue.h>
-#include "util.h"
-#include "utilstrencodings.h"
-#include "version.h"
+#include <util.h>
+#include <utilstrencodings.h>
+#include <version.h>
 
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/predicate.hpp>
@@ -33,14 +33,14 @@ CScript ParseScript(const std::string& s)
             if (op < OP_NOP && op != OP_RESERVED)
                 continue;
 
-            const char* name = GetOpName((opcodetype)op);
+            const char* name = GetOpName(static_cast<opcodetype>(op));
             if (strcmp(name, "OP_UNKNOWN") == 0)
                 continue;
             std::string strName(name);
-            mapOpNames[strName] = (opcodetype)op;
+            mapOpNames[strName] = static_cast<opcodetype>(op);
             // Convenience: OP_ADD and just ADD are both recognized:
             boost::algorithm::replace_first(strName, "OP_", "");
-            mapOpNames[strName] = (opcodetype)op;
+            mapOpNames[strName] = static_cast<opcodetype>(op);
         }
     }
 
@@ -108,39 +108,39 @@ bool CheckTxScriptsSanity(const CMutableTransaction& tx)
     return true;
 }
 
-bool DecodeHexTx(CMutableTransaction& tx, const std::string& strHexTx, bool fTryNoWitness)
+bool DecodeHexTx(CMutableTransaction& tx, const std::string& hex_tx, bool try_no_witness, bool try_witness)
 {
-    if (!IsHex(strHexTx)) {
+    if (!IsHex(hex_tx)) {
         return false;
     }
 
-    std::vector<unsigned char> txData(ParseHex(strHexTx));
+    std::vector<unsigned char> txData(ParseHex(hex_tx));
 
-    if (fTryNoWitness) {
+    if (try_no_witness) {
         CDataStream ssData(txData, SER_NETWORK, PROTOCOL_VERSION | SERIALIZE_TRANSACTION_NO_WITNESS);
         try {
             ssData >> tx;
-            if (ssData.eof() && CheckTxScriptsSanity(tx)) {
+            if (ssData.eof() && (!try_witness || CheckTxScriptsSanity(tx))) {
                 return true;
             }
-        }
-        catch (const std::exception&) {
+        } catch (const std::exception&) {
             // Fall through.
         }
     }
 
-    CDataStream ssData(txData, SER_NETWORK, PROTOCOL_VERSION);
-    try {
-        ssData >> tx;
-        if (!ssData.empty()) {
-            return false;
+    if (try_witness) {
+        CDataStream ssData(txData, SER_NETWORK, PROTOCOL_VERSION);
+        try {
+            ssData >> tx;
+            if (ssData.empty()) {
+                return true;
+            }
+        } catch (const std::exception&) {
+            // Fall through.
         }
     }
-    catch (const std::exception&) {
-        return false;
-    }
-
-    return true;
+    
+    return false;
 }
 
 bool DecodeHexBlk(CBlock& block, const std::string& strHexBlk)

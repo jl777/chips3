@@ -1,0 +1,26 @@
+
+DIST_SUBDIRS += test-komodo/googletest/googletest
+
+# Google Test target
+LIBGTEST=test-komodo/googletest/googletest/lib/libgtest.la
+
+$(LIBGTEST):
+	$(MAKE) $(AM_MAKEFLAGS) -C test-komodo/googletest/googletest lib/libgtest.la
+
+
+# Tests for Komodo
+
+TESTS += komodo-test
+bin_PROGRAMS += komodo-test
+
+# tool for generating our public parameters
+komodo_test_SOURCES = \
+	test-komodo/main.cpp \
+	test-komodo/test_cryptoconditions.cpp \
+	test-komodo/test_eval_bet.cpp \
+	test-komodo/test_eval_notarisation.cpp
+
+komodo_test_CPPFLAGS = $(chipsd_CPPFLAGS) -I$(srcdir)/test-komodo/googletest/googletest/include/
+komodo_test_CXXFLAGS = $(chipsd_CXXFLAGS)
+komodo_test_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS) -static
+komodo_test_LDADD = $(chipsd_LDADD) $(LIBGTEST)
