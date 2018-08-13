@@ -24,6 +24,8 @@
 
 #include <stdio.h>
 
+#include "../bet/privatebet/bet.h"
+
 /* Introduction text for doxygen: */
 
 /*! \mainpage Developer documentation
@@ -192,5 +194,15 @@ int main(int argc, char* argv[])
     // Connect bitcoind signal handlers
     noui_connect();
 
+
+	test_123(argc,argv);
+
+
+
+
+
+
+
+//    printf("\n%s:%d",__FUNCTION__,__LINE__);	
     return (AppInit(argc, argv) ? EXIT_SUCCESS : EXIT_FAILURE);
 }
