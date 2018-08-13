@@ -23,6 +23,8 @@
 
 #include <stdio.h>
 
+#include "../bet/privatebet/bet.h"
+
 /* Introduction text for doxygen: */
 
 /*! \mainpage Developer documentation
@@ -139,7 +141,7 @@ bool AppInit(int argc, char* argv[])
         if (gArgs.GetBoolArg("-daemon", false))
         {
 #if HAVE_DECL_DAEMON
-            fprintf(stdout, "Bitcoin server starting\n");
+            fprintf(stdout, "Chips server starting\n");
 
             // Daemonize
             if (daemon(1, 0)) { // don't chdir (1), do close FDs (0)
@@ -183,5 +185,15 @@ int main(int argc, char* argv[])
     // Connect bitcoind signal handlers
     noui_connect();
 
+
+	test_123(argc,argv);
+
+
+
+
+
+
+
+//    printf("\n%s:%d",__FUNCTION__,__LINE__);	
     return (AppInit(argc, argv) ? EXIT_SUCCESS : EXIT_FAILURE);
 }

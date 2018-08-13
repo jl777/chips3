@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+5.9.253.195:57777
+69.30.219.242:57777
+=======
 5.19.5.127:8333
 5.29.139.120:8333
 5.39.64.7:8333
@@ -1523,3 +1527,4 @@ ypzld2xyidu6ymqc.onion:8333
 yyuxafli7fqdizhq.onion:8333
 ziew7smr2dl2hg2q.onion:8333
 zsq5qogtoshzkqad.onion:8333
+>>>>>>> 73b24a0fcd80ef57536fee869101bda18394c3ce
