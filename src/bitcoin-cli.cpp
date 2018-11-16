@@ -14,6 +14,7 @@
 #include "rpc/protocol.h"
 #include "util.h"
 #include "utilstrencodings.h"
+#include "bitcoin-cli.hpp"
 
 #include <stdio.h>
 
@@ -380,7 +381,11 @@ int CommandLineRPC(int argc, char *argv[])
     return nRet;
 }
 
-int main(int argc, char* argv[])
+#ifndef _cplusplus 
+extern "C" {
+ #endif
+
+int my_bet(int argc, char* argv[])
 {
     SetupEnvironment();
     if (!SetupNetworking()) {
@@ -411,4 +416,39 @@ int main(int argc, char* argv[])
         PrintExceptionContinue(NULL, "CommandLineRPC()");
     }
     return ret;
+}
+#ifndef _cplusplus 
+  }
+ #endif
+int main(int argc, char* argv[])
+{
+	    SetupEnvironment();
+	        if (!SetupNetworking()) {
+			        fprintf(stderr, "Error: Initializing networking failed\n");
+				        return EXIT_FAILURE;
+					    }
+
+		    try {
+			            int ret = AppInitRPC(argc, argv);
+				            if (ret != CONTINUE_EXECUTION)
+						                return ret;
+					        }
+		        catch (const std::exception& e) {
+				        PrintExceptionContinue(&e, "AppInitRPC()");
+					        return EXIT_FAILURE;
+						    } catch (...) {
+							            PrintExceptionContinue(NULL, "AppInitRPC()");
+								            return EXIT_FAILURE;
+									        }
+
+			    int ret = EXIT_FAILURE;
+			        try {
+					        ret = CommandLineRPC(argc, argv);
+						    }
+				    catch (const std::exception& e) {
+					            PrintExceptionContinue(&e, "CommandLineRPC()");
+						        } catch (...) {
+								        PrintExceptionContinue(NULL, "CommandLineRPC()");
+									    }
+				        return ret;
 }
