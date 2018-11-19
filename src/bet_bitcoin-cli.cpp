@@ -14,7 +14,7 @@
 #include "rpc/protocol.h"
 #include "util.h"
 #include "utilstrencodings.h"
-#include "bitcoin-cli.hpp"
+#include "bet_bitcoin-cli.hpp"
 
 #include <stdio.h>
 
@@ -385,7 +385,7 @@ std::string bet_CommandLineRPC(int argc, char *argv[])
 extern "C" {
  #endif
 
-char* my_bet(int argc, char* argv[])
+int my_bet(int argc, char* argv[],char *resultStr)
 {
 	std::string result;
     SetupEnvironment();
@@ -401,7 +401,7 @@ char* my_bet(int argc, char* argv[])
     }
     catch (const std::exception& e) {
         PrintExceptionContinue(&e, "AppInitRPC()");
-        return EXIT_FAILURE;
+       	return EXIT_FAILURE;
     } catch (...) {
         PrintExceptionContinue(NULL, "AppInitRPC()");
         return EXIT_FAILURE;
@@ -416,7 +416,8 @@ char* my_bet(int argc, char* argv[])
     } catch (...) {
         PrintExceptionContinue(NULL, "CommandLineRPC()");
     }
-    return result.c_str();
+    strcpy(resultStr, result.c_str());
+    return ret;
 }
 #ifndef _cplusplus 
   }
