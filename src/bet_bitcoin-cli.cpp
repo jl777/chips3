@@ -284,7 +284,7 @@ UniValue CallRPC(const std::string& strMethod, const UniValue& params)
     return reply;
 }
 
-int CommandLineRPC(int argc, char *argv[])
+std::string bet_CommandLineRPC(int argc, char *argv[])
 {
     std::string strPrint;
     int nRet = 0;
@@ -378,15 +378,16 @@ int CommandLineRPC(int argc, char *argv[])
     if (strPrint != "") {
         fprintf((nRet == 0 ? stdout : stderr), "%s\n", strPrint.c_str());
     }
-    return nRet;
+    return strPrint;
 }
 
 #ifndef _cplusplus 
 extern "C" {
  #endif
 
-int my_bet(int argc, char* argv[])
+char* my_bet(int argc, char* argv[])
 {
+	std::string result;
     SetupEnvironment();
     if (!SetupNetworking()) {
         fprintf(stderr, "Error: Initializing networking failed\n");
@@ -408,14 +409,14 @@ int my_bet(int argc, char* argv[])
 
     int ret = EXIT_FAILURE;
     try {
-        ret = CommandLineRPC(argc, argv);
+        result = bet_CommandLineRPC(argc, argv);
     }
     catch (const std::exception& e) {
         PrintExceptionContinue(&e, "CommandLineRPC()");
     } catch (...) {
         PrintExceptionContinue(NULL, "CommandLineRPC()");
     }
-    return ret;
+    return result.c_str();
 }
 #ifndef _cplusplus 
   }
