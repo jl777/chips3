@@ -112,3 +112,5 @@ contrib/devtools/split-debug.sh
 
 bet/
 src/chipsd
+src/chips-tx
+src/chips-cli
