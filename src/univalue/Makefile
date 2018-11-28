@@ -147,10 +147,6 @@ am__dirstamp = $(am__leading_dot)dirstamp
 am_libunivalue_la_OBJECTS = lib/libunivalue_la-univalue.lo \
 	lib/libunivalue_la-univalue_read.lo \
 	lib/libunivalue_la-univalue_write.lo
-am_libunivalue_so_OBJECTS = lib/libunivalue_la-univalue.o \
-	lib/libunivalue_la-univalue_read.o \
-	lib/libunivalue_la-univalue_write.o
-libunivalue_so_OBJECTS = $(am_libunivalue_so_OBJECTS)
 libunivalue_la_OBJECTS = $(am_libunivalue_la_OBJECTS)
 AM_V_lt = $(am__v_lt_$(V))
 am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
@@ -744,10 +740,9 @@ lib/libunivalue_la-univalue_read.lo: lib/$(am__dirstamp) \
 lib/libunivalue_la-univalue_write.lo: lib/$(am__dirstamp) \
 	lib/$(DEPDIR)/$(am__dirstamp)
 
-libunivalue.la: $(libunivalue_la_OBJECTS) $(libunivalue_la_DEPENDENCIES) $(EXTRA_libunivalue_la_DEPENDENCIES) libunivalue.so
-	echo $(AM_V_CXXLD)$(libunivalue_la_LINK) -rpath $(libdir) $(libunivalue_la_OBJECTS) $(libunivalue_la_LIBADD) $(LIBS)
-libunivalue.so:
-	g++  -shared -o libunivalue.so $(libunivalue_so_OBJECTS)
+libunivalue.la: $(libunivalue_la_OBJECTS) $(libunivalue_la_DEPENDENCIES) $(EXTRA_libunivalue_la_DEPENDENCIES) 
+	$(AM_V_CXXLD)$(libunivalue_la_LINK) -rpath $(libdir) $(libunivalue_la_OBJECTS) $(libunivalue_la_LIBADD) $(LIBS)
+
 clean-noinstPROGRAMS:
 	@list='$(noinst_PROGRAMS)'; test -n "$$list" || exit 0; \
 	echo " rm -f" $$list; \
@@ -1330,7 +1325,6 @@ clean: clean-am
 
 clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
 	clean-noinstPROGRAMS mostlyclean-am
-	-rm -f libunivalue.so
 
 distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)

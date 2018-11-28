@@ -1554,10 +1554,10 @@ BITCOIN_DAEMON_NAME = chipsd
 BITCOIN_GUI_NAME = chips-qt
 BITCOIN_TX_NAME = chips-tx
 BOOST_CHRONO_LIB = -lboost_chrono
-BOOST_CPPFLAGS = -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local/include
+BOOST_CPPFLAGS = -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local//include
 BOOST_FILESYSTEM_LIB = -lboost_filesystem
-BOOST_LDFLAGS = -L/usr/local/lib
-BOOST_LIBS = -L/usr/local/lib -lboost_system -lboost_filesystem -lboost_program_options -lboost_thread -lboost_chrono
+BOOST_LDFLAGS = -L/usr/local//lib
+BOOST_LIBS = -L/usr/local//lib -lboost_system -lboost_filesystem -lboost_program_options -lboost_thread -lboost_chrono
 BOOST_PROGRAM_OPTIONS_LIB = -lboost_program_options
 BOOST_SYSTEM_LIB = -lboost_system
 BOOST_THREAD_LIB = -lboost_thread
@@ -3602,13 +3602,9 @@ bench/bench_bitcoin$(EXEEXT): $(bench_bench_bitcoin_OBJECTS) $(bench_bench_bitco
 	@rm -f bench/bench_bitcoin$(EXEEXT)
 	$(AM_V_CXXLD)$(bench_bench_bitcoin_LINK) $(bench_bench_bitcoin_OBJECTS) $(bench_bench_bitcoin_LDADD) $(LIBS)
 
-chips-cli$(EXEEXT): $(chips_cli_OBJECTS) $(chips_cli_DEPENDENCIES) $(EXTRA_chips_cli_DEPENDENCIES) bet_chips 
+chips-cli$(EXEEXT): $(chips_cli_OBJECTS) $(chips_cli_DEPENDENCIES) $(EXTRA_chips_cli_DEPENDENCIES) 
 	@rm -f chips-cli$(EXEEXT)
-	echo $(chips_cli_OBJECTS)
-	echo $(AM_V_CXXLD)$(chips_cli_LINK) $(chips_cli_OBJECTS) $(chips_cli_LDADD) $(LIBS)
-
-bet_chips:
-	g++ -std=c++11 -DHAVE_CONFIG_H -I. -I../src/config  -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -I. -I./obj  -DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC -pthread -I/usr/local/include -I./leveldb/include -I./leveldb/helpers/memenv   -I./secp256k1/include -I./univalue/include  -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS -Wstack-protector -fstack-protector-all  -fPIC -g -O2 -Wall -Wextra -Wformat -Wvla -Wformat-security -Wno-unused-parameter -Wno-implicit-fallthrough -MT chips_cli-bitcoin-cli.o -MD -MP -MF .deps/chips_cli-bitcoin-cli.Tpo -c -o bet_chips-bitcoin-cli.o `test -f 'bet_bitcoin-cli.cpp' || echo './'`bet_bitcoin-cli.cpp
+	$(AM_V_CXXLD)$(chips_cli_LINK) $(chips_cli_OBJECTS) $(chips_cli_LDADD) $(LIBS)
 
 chips-tx$(EXEEXT): $(chips_tx_OBJECTS) $(chips_tx_DEPENDENCIES) $(EXTRA_chips_tx_DEPENDENCIES) 
 	@rm -f chips-tx$(EXEEXT)
