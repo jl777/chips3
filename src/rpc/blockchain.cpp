@@ -48,6 +48,8 @@ static std::mutex cs_blockchange;
 static std::condition_variable cond_blockchange;
 static CUpdatedBlock latestblock;
 
+int32_t komodo_dpowconfs(int32_t height,int32_t numconfs);
+
 extern void TxToJSON(const CTransaction& tx, const uint256 hashBlock, UniValue& entry);
 
 /* Calculate the difficulty for a given block index,
@@ -95,7 +97,8 @@ UniValue blockheaderToJSON(const CBlockIndex* blockindex)
     // Only report confirmations if the block is on the main chain
     if (chainActive.Contains(blockindex))
         confirmations = chainActive.Height() - blockindex->nHeight + 1;
-    result.pushKV("confirmations", confirmations);
+    result.pushKV("rawconfirmations", confirmations);
+    result.pushKV("confirmations", komodo_dpowconfs(blockindex->nHeight,confirmations));
     result.pushKV("height", blockindex->nHeight);
     result.pushKV("version", blockindex->nVersion);
     result.pushKV("versionHex", strprintf("%08x", blockindex->nVersion));
@@ -124,7 +127,8 @@ UniValue blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool tx
     // Only report confirmations if the block is on the main chain
     if (chainActive.Contains(blockindex))
         confirmations = chainActive.Height() - blockindex->nHeight + 1;
-    result.pushKV("confirmations", confirmations);
+    result.pushKV("rawconfirmations", confirmations);
+    result.pushKV("confirmations", komodo_dpowconfs(blockindex->nHeight,confirmations));
     result.pushKV("strippedsize", (int)::GetSerializeSize(block, SER_NETWORK, PROTOCOL_VERSION | SERIALIZE_TRANSACTION_NO_WITNESS));
     result.pushKV("size", (int)::GetSerializeSize(block, SER_NETWORK, PROTOCOL_VERSION));
     result.pushKV("weight", (int)::GetBlockWeight(block));
