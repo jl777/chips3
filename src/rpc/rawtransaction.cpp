@@ -36,6 +36,7 @@
 
 #include <univalue.h>
 
+int32_t komodo_dpowconfs(int32_t height,int32_t numconfs);
 
 void TxToJSON(const CTransaction& tx, const uint256 hashBlock, UniValue& entry)
 {
@@ -51,12 +52,15 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, UniValue& entry)
         CBlockIndex* pindex = LookupBlockIndex(hashBlock);
         if (pindex) {
             if (chainActive.Contains(pindex)) {
-                entry.pushKV("confirmations", 1 + chainActive.Height() - pindex->nHeight);
+                entry.pushKV("rawconfirmations", 1 + chainActive.Height() - pindex->nHeight);
+                entry.pushKV("confirmations", komodo_dpowconfs(pindex->nHeight,1 + chainActive.Height() - pindex->nHeight));
+
                 entry.pushKV("time", pindex->GetBlockTime());
                 entry.pushKV("blocktime", pindex->GetBlockTime());
-            }
-            else
+            } else {
                 entry.pushKV("confirmations", 0);
+                entry.pushKV("rawconfirmations", 0);
+            }
         }
     }
 }
