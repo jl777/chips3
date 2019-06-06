@@ -1539,6 +1539,7 @@ UniValue ListReceived(CWallet * const pwallet, const UniValue& params, bool by_l
         {
             CAmount nAmount = entry.second.nAmount;
             int nConf = entry.second.nConf;
+            int nHeight = entry.second.nHeight;
             UniValue obj(UniValue::VOBJ);
             if (entry.second.fIsWatchonly)
                 obj.pushKV("involvesWatchonly", true);
