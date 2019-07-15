@@ -1,11 +1,11 @@
-// Copyright (c) 2011-2016 The Bitcoin Core developers
+// Copyright (c) 2011-2017 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #ifndef BITCOIN_QT_SENDCOINSDIALOG_H
 #define BITCOIN_QT_SENDCOINSDIALOG_H
 
-#include "walletmodel.h"
+#include <qt/walletmodel.h>
 
 #include <QDialog>
 #include <QMessageBox>
@@ -54,6 +54,9 @@ public Q_SLOTS:
     void setBalance(const CAmount& balance, const CAmount& unconfirmedBalance, const CAmount& immatureBalance,
                     const CAmount& watchOnlyBalance, const CAmount& watchUnconfBalance, const CAmount& watchImmatureBalance);
 
+Q_SIGNALS:
+    void coinsSent(const uint256& txid);
+
 private:
     Ui::SendCoinsDialog *ui;
     ClientModel *clientModel;
@@ -76,6 +79,7 @@ private Q_SLOTS:
     void on_buttonChooseFee_clicked();
     void on_buttonMinimizeFee_clicked();
     void removeEntry(SendCoinsEntry* entry);
+    void useAvailableBalance(SendCoinsEntry* entry);
     void updateDisplayUnit();
     void coinControlFeatureChanged(bool);
     void coinControlButtonClicked();

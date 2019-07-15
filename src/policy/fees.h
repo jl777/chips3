@@ -1,15 +1,15 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2009-2017 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 #ifndef BITCOIN_POLICYESTIMATOR_H
 #define BITCOIN_POLICYESTIMATOR_H
 
-#include "amount.h"
-#include "feerate.h"
-#include "uint256.h"
-#include "random.h"
-#include "sync.h"
+#include <amount.h>
+#include <policy/feerate.h>
+#include <uint256.h>
+#include <random.h>
+#include <sync.h>
 
 #include <map>
 #include <string>
@@ -68,7 +68,7 @@ class TxConfirmStats;
 
 /* Identifier for each of the 3 different TxConfirmStats which will track
  * history over different time horizons. */
-enum FeeEstimateHorizon {
+enum class FeeEstimateHorizon {
     SHORT_HALFLIFE = 0,
     MED_HALFLIFE = 1,
     LONG_HALFLIFE = 2
@@ -223,7 +223,7 @@ public:
     bool Read(CAutoFile& filein);
 
     /** Empty mempool transactions on shutdown to record failure to confirm for txs still in mempool */
-    void FlushUnconfirmed(CTxMemPool& pool);
+    void FlushUnconfirmed();
 
     /** Calculation of highest target that estimates are tracked for */
     unsigned int HighestTargetTracked(FeeEstimateHorizon horizon) const;
@@ -245,9 +245,9 @@ private:
     std::map<uint256, TxStatsInfo> mapMemPoolTxs;
 
     /** Classes to track historical data on transaction confirmations */
-    TxConfirmStats* feeStats;
-    TxConfirmStats* shortStats;
-    TxConfirmStats* longStats;
+    std::unique_ptr<TxConfirmStats> feeStats;
+    std::unique_ptr<TxConfirmStats> shortStats;
+    std::unique_ptr<TxConfirmStats> longStats;
 
     unsigned int trackedTxs;
     unsigned int untrackedTxs;
@@ -284,7 +284,7 @@ private:
 
 public:
     /** Create new FeeFilterRounder */
-    FeeFilterRounder(const CFeeRate& minIncrementalFee);
+    explicit FeeFilterRounder(const CFeeRate& minIncrementalFee);
 
     /** Quantize a minimum fee for privacy purpose before broadcast **/
     CAmount round(CAmount currentMinFee);

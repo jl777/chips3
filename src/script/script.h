@@ -1,14 +1,14 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2009-2017 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #ifndef BITCOIN_SCRIPT_SCRIPT_H
 #define BITCOIN_SCRIPT_SCRIPT_H
 
-#include "crypto/common.h"
-#include "prevector.h"
-#include "serialize.h"
+#include <crypto/common.h>
+#include <prevector.h>
+#include <serialize.h>
 
 #include <assert.h>
 #include <climits>
@@ -21,6 +21,9 @@
 
 // Maximum number of bytes pushable to the stack
 static const unsigned int MAX_SCRIPT_ELEMENT_SIZE = 520;
+
+// Max size of pushdata in a CC sig in bytes
+static const unsigned int MAX_SCRIPT_CRYPTOCONDITION_FULFILLMENT_SIZE = 2048;
 
 // Maximum number of non-push operations per script
 static const int MAX_OPS_PER_SCRIPT = 201;
@@ -166,6 +169,9 @@ enum opcodetype
     OP_CHECKSIGVERIFY = 0xad,
     OP_CHECKMULTISIG = 0xae,
     OP_CHECKMULTISIGVERIFY = 0xaf,
+    OP_CHECKCRYPTOCONDITION = 0xcc,
+    OP_CHECKCRYPTOCONDITIONVERIFY = 0xcd,
+
 
     // expansion
     OP_NOP1 = 0xb0,
@@ -185,6 +191,7 @@ enum opcodetype
     // template matching params
     OP_SMALLINTEGER = 0xfa,
     OP_PUBKEYS = 0xfb,
+    OP_CRYPTOCONDITION = 0xfc,
     OP_PUBKEYHASH = 0xfd,
     OP_PUBKEY = 0xfe,
 
@@ -377,6 +384,12 @@ private:
     int64_t m_value;
 };
 
+/**
+ * We use a prevector for the script to reduce the considerable memory overhead
+ *  of vectors in cases where they normally contain a small number of small elements.
+ * Tests in October 2015 showed use of this reduced dbcache memory usage by 23%
+ *  and made an initial sync 13% faster.
+ */
 typedef prevector<28, unsigned char> CScriptBase;
 
 /** Serialized script, used inside transaction inputs and outputs */
@@ -414,6 +427,7 @@ public:
 
     CScript& operator+=(const CScript& b)
     {
+        reserve(size() + b.size());
         insert(end(), b.begin(), b.end());
         return *this;
     }
@@ -498,7 +512,7 @@ public:
     bool GetOp(iterator& pc, opcodetype& opcodeRet)
     {
          const_iterator pc2 = pc;
-         bool fRet = GetOp2(pc2, opcodeRet, NULL);
+         bool fRet = GetOp2(pc2, opcodeRet, nullptr);
          pc = begin() + (pc2 - begin());
          return fRet;
     }
@@ -510,7 +524,7 @@ public:
 
     bool GetOp(const_iterator& pc, opcodetype& opcodeRet) const
     {
-        return GetOp2(pc, opcodeRet, NULL);
+        return GetOp2(pc, opcodeRet, nullptr);
     }
 
     bool GetOp2(const_iterator& pc, opcodetype& opcodeRet, std::vector<unsigned char>* pvchRet) const
@@ -561,7 +575,7 @@ public:
             pc += nSize;
         }
 
-        opcodeRet = (opcodetype)opcode;
+        opcodeRet = static_cast<opcodetype>(opcode);
         return true;
     }
 
@@ -636,6 +650,8 @@ public:
     bool IsPayToScriptHash() const;
     bool IsPayToWitnessScriptHash() const;
     bool IsWitnessProgram(int& version, std::vector<unsigned char>& program) const;
+    bool IsPayToCryptoCondition() const;
+    bool MayAcceptCryptoCondition() const;
 
     /** Called by IsStandardTx and P2SH/BIP62 VerifyScript (which makes it consensus-critical). */
     bool IsPushOnly(const_iterator pc) const;

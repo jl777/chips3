@@ -1,29 +1,25 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2009-2017 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "ismine.h"
+#include <script/ismine.h>
 
-#include "key.h"
-#include "keystore.h"
-#include "script/script.h"
-#include "script/standard.h"
-#include "script/sign.h"
+#include <key.h>
+#include <keystore.h>
+#include <script/script.h>
+#include <script/sign.h>
 
 
 typedef std::vector<unsigned char> valtype;
 
-unsigned int HaveKeys(const std::vector<valtype>& pubkeys, const CKeyStore& keystore)
+static bool HaveKeys(const std::vector<valtype>& pubkeys, const CKeyStore& keystore)
 {
-    unsigned int nResult = 0;
-    for (const valtype& pubkey : pubkeys)
-    {
+    for (const valtype& pubkey : pubkeys) {
         CKeyID keyID = CPubKey(pubkey).GetID();
-        if (keystore.HaveKey(keyID))
-            ++nResult;
+        if (!keystore.HaveKey(keyID)) return false;
     }
-    return nResult;
+    return true;
 }
 
 isminetype IsMine(const CKeyStore& keystore, const CScript& scriptPubKey, SigVersion sigversion)
@@ -46,6 +42,8 @@ isminetype IsMine(const CKeyStore &keystore, const CTxDestination& dest, bool& i
 
 isminetype IsMine(const CKeyStore &keystore, const CScript& scriptPubKey, bool& isInvalid, SigVersion sigversion)
 {
+    isInvalid = false;
+
     std::vector<valtype> vSolutions;
     txnouttype whichType;
     if (!Solver(scriptPubKey, whichType, vSolutions)) {
@@ -59,10 +57,11 @@ isminetype IsMine(const CKeyStore &keystore, const CScript& scriptPubKey, bool& 
     {
     case TX_NONSTANDARD:
     case TX_NULL_DATA:
+    case TX_WITNESS_UNKNOWN:
         break;
     case TX_PUBKEY:
         keyID = CPubKey(vSolutions[0]).GetID();
-        if (sigversion != SIGVERSION_BASE && vSolutions[0].size() != 33) {
+        if (sigversion != SigVersion::BASE && vSolutions[0].size() != 33) {
             isInvalid = true;
             return ISMINE_NO;
         }
@@ -77,14 +76,14 @@ isminetype IsMine(const CKeyStore &keystore, const CScript& scriptPubKey, bool& 
             // This also applies to the P2WSH case.
             break;
         }
-        isminetype ret = ::IsMine(keystore, GetScriptForDestination(CKeyID(uint160(vSolutions[0]))), isInvalid, SIGVERSION_WITNESS_V0);
+        isminetype ret = ::IsMine(keystore, GetScriptForDestination(CKeyID(uint160(vSolutions[0]))), isInvalid, SigVersion::WITNESS_V0);
         if (ret == ISMINE_SPENDABLE || ret == ISMINE_WATCH_SOLVABLE || (ret == ISMINE_NO && isInvalid))
             return ret;
         break;
     }
     case TX_PUBKEYHASH:
         keyID = CKeyID(uint160(vSolutions[0]));
-        if (sigversion != SIGVERSION_BASE) {
+        if (sigversion != SigVersion::BASE) {
             CPubKey pubkey;
             if (keystore.GetPubKey(keyID, pubkey) && !pubkey.IsCompressed()) {
                 isInvalid = true;
@@ -115,7 +114,7 @@ isminetype IsMine(const CKeyStore &keystore, const CScript& scriptPubKey, bool& 
         CScriptID scriptID = CScriptID(hash);
         CScript subscript;
         if (keystore.GetCScript(scriptID, subscript)) {
-            isminetype ret = IsMine(keystore, subscript, isInvalid, SIGVERSION_WITNESS_V0);
+            isminetype ret = IsMine(keystore, subscript, isInvalid, SigVersion::WITNESS_V0);
             if (ret == ISMINE_SPENDABLE || ret == ISMINE_WATCH_SOLVABLE || (ret == ISMINE_NO && isInvalid))
                 return ret;
         }
@@ -130,7 +129,7 @@ isminetype IsMine(const CKeyStore &keystore, const CScript& scriptPubKey, bool& 
         // them) enable spend-out-from-under-you attacks, especially
         // in shared-wallet situations.
         std::vector<valtype> keys(vSolutions.begin()+1, vSolutions.begin()+vSolutions.size()-1);
-        if (sigversion != SIGVERSION_BASE) {
+        if (sigversion != SigVersion::BASE) {
             for (size_t i = 0; i < keys.size(); i++) {
                 if (keys[i].size() != 33) {
                     isInvalid = true;
@@ -138,7 +137,7 @@ isminetype IsMine(const CKeyStore &keystore, const CScript& scriptPubKey, bool& 
                 }
             }
         }
-        if (HaveKeys(keys, keystore) == keys.size())
+        if (HaveKeys(keys, keystore))
             return ISMINE_SPENDABLE;
         break;
     }

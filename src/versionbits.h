@@ -1,11 +1,11 @@
-// Copyright (c) 2016 The Bitcoin Core developers
+// Copyright (c) 2016-2017 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #ifndef BITCOIN_CONSENSUS_VERSIONBITS
 #define BITCOIN_CONSENSUS_VERSIONBITS
 
-#include "chain.h"
+#include <chain.h>
 #include <map>
 
 /** What block version to use for new blocks (pre versionbits) */
@@ -17,17 +17,17 @@ static const int32_t VERSIONBITS_TOP_MASK = 0xE0000000UL;
 /** Total bits available for versionbits */
 static const int32_t VERSIONBITS_NUM_BITS = 29;
 
-enum ThresholdState {
-    THRESHOLD_DEFINED,
-    THRESHOLD_STARTED,
-    THRESHOLD_LOCKED_IN,
-    THRESHOLD_ACTIVE,
-    THRESHOLD_FAILED,
+enum class ThresholdState {
+    DEFINED,
+    STARTED,
+    LOCKED_IN,
+    ACTIVE,
+    FAILED,
 };
 
 // A map that gives the state for blocks whose height is a multiple of Period().
 // The map is indexed by the block's parent, however, so all keys in the map
-// will either be NULL or a block with (height + 1) % Period() == 0.
+// will either be nullptr or a block with (height + 1) % Period() == 0.
 typedef std::map<const CBlockIndex*, ThresholdState> ThresholdConditionCache;
 
 struct VBDeploymentInfo {
