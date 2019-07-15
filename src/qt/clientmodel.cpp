@@ -1,24 +1,24 @@
-// Copyright (c) 2011-2016 The Bitcoin Core developers
+// Copyright (c) 2011-2017 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "clientmodel.h"
+#include <qt/clientmodel.h>
 
-#include "bantablemodel.h"
-#include "guiconstants.h"
-#include "guiutil.h"
-#include "peertablemodel.h"
+#include <qt/bantablemodel.h>
+#include <qt/guiconstants.h>
+#include <qt/guiutil.h>
+#include <qt/peertablemodel.h>
 
-#include "chain.h"
-#include "chainparams.h"
-#include "checkpoints.h"
-#include "clientversion.h"
-#include "validation.h"
-#include "net.h"
-#include "txmempool.h"
-#include "ui_interface.h"
-#include "util.h"
-#include "warnings.h"
+#include <chain.h>
+#include <chainparams.h>
+#include <checkpoints.h>
+#include <clientversion.h>
+#include <validation.h>
+#include <net.h>
+#include <txmempool.h>
+#include <ui_interface.h>
+#include <util.h>
+#include <warnings.h>
 
 #include <stdint.h>
 
@@ -138,9 +138,9 @@ size_t ClientModel::getMempoolDynamicUsage() const
 double ClientModel::getVerificationProgress(const CBlockIndex *tipIn) const
 {
     CBlockIndex *tip = const_cast<CBlockIndex *>(tipIn);
+    LOCK(cs_main);
     if (!tip)
     {
-        LOCK(cs_main);
         tip = chainActive.Tip();
     }
     return GuessVerificationProgress(Params().TxData(), tip);
@@ -177,13 +177,13 @@ bool ClientModel::inInitialBlockDownload() const
 enum BlockSource ClientModel::getBlockSource() const
 {
     if (fReindex)
-        return BLOCK_SOURCE_REINDEX;
+        return BlockSource::REINDEX;
     else if (fImporting)
-        return BLOCK_SOURCE_DISK;
+        return BlockSource::DISK;
     else if (getNumConnections() > 0)
-        return BLOCK_SOURCE_NETWORK;
+        return BlockSource::NETWORK;
 
-    return BLOCK_SOURCE_NONE;
+    return BlockSource::NONE;
 }
 
 void ClientModel::setNetworkActive(bool active)

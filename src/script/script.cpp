@@ -1,12 +1,14 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2009-2017 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "script.h"
+#include <script/cc.h>
+#include <script/script.h>
 
-#include "tinyformat.h"
-#include "utilstrencodings.h"
+#include <cryptoconditions.h>
+#include <tinyformat.h>
+#include <utilstrencodings.h>
 
 const char* GetOpName(opcodetype opcode)
 {
@@ -126,6 +128,9 @@ const char* GetOpName(opcodetype opcode)
     case OP_CHECKSIGVERIFY         : return "OP_CHECKSIGVERIFY";
     case OP_CHECKMULTISIG          : return "OP_CHECKMULTISIG";
     case OP_CHECKMULTISIGVERIFY    : return "OP_CHECKMULTISIGVERIFY";
+    case OP_CHECKCRYPTOCONDITION   : return "OP_CHECKCRYPTOCONDITION";
+    case OP_CHECKCRYPTOCONDITIONVERIFY:
+                                     return "OP_CHECKCRYPTOCONDITIONVERIFY";
 
     // expansion
     case OP_NOP1                   : return "OP_NOP1";
@@ -232,6 +237,36 @@ bool CScript::IsWitnessProgram(int& version, std::vector<unsigned char>& program
         return true;
     }
     return false;
+}
+
+bool CScript::IsPayToCryptoCondition() const
+{
+    const_iterator pc = this->begin();
+    std::vector<unsigned char> data;
+    opcodetype opcode;
+    if (this->GetOp(pc, opcode, data))
+        // Sha256 conditions are <76 bytes
+        if (opcode > OP_0 && opcode < OP_PUSHDATA1)
+            if (this->GetOp(pc, opcode, data))
+                if (opcode == OP_CHECKCRYPTOCONDITION)
+                    if (pc == this->end())
+                        return 1;
+    return 0;
+}
+
+bool CScript::MayAcceptCryptoCondition() const
+{
+    // Get the type mask of the condition
+    const_iterator pc = this->begin();
+    std::vector<unsigned char> data;
+    opcodetype opcode;
+    if (!this->GetOp(pc, opcode, data)) return false;
+    if (!(opcode > OP_0 && opcode < OP_PUSHDATA1)) return false;
+    CC *cond = cc_readConditionBinary(data.data(), data.size());
+    if (!cond) return false;
+    bool out = IsSupportedCryptoCondition(cond);
+    cc_free(cond);
+    return out;
 }
 
 bool CScript::IsPushOnly(const_iterator pc) const

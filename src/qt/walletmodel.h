@@ -1,19 +1,26 @@
-// Copyright (c) 2011-2016 The Bitcoin Core developers
+// Copyright (c) 2011-2017 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #ifndef BITCOIN_QT_WALLETMODEL_H
 #define BITCOIN_QT_WALLETMODEL_H
 
-#include "paymentrequestplus.h"
-#include "walletmodeltransaction.h"
+#include <amount.h>
+#include <key.h>
+#include <serialize.h>
+#include <script/standard.h>
 
-#include "support/allocators/secure.h"
+#include <qt/paymentrequestplus.h>
+#include <qt/walletmodeltransaction.h>
+
+#include <support/allocators/secure.h>
 
 #include <map>
 #include <vector>
 
 #include <QObject>
+
+enum class OutputType;
 
 class AddressTableModel;
 class OptionsModel;
@@ -129,7 +136,9 @@ public:
     TransactionTableModel *getTransactionTableModel();
     RecentRequestsTableModel *getRecentRequestsTableModel();
 
-    CAmount getBalance(const CCoinControl *coinControl = NULL) const;
+    CWallet *getWallet() const { return wallet; };
+
+    CAmount getBalance(const CCoinControl *coinControl = nullptr) const;
     CAmount getUnconfirmedBalance() const;
     CAmount getImmatureBalance() const;
     bool haveWatchOnly() const;
@@ -190,7 +199,7 @@ public:
     UnlockContext requestUnlock();
 
     bool getPubKey(const CKeyID &address, CPubKey& vchPubKeyOut) const;
-    bool havePrivKey(const CKeyID &address) const;
+    bool IsSpendable(const CTxDestination& dest) const;
     bool getPrivKey(const CKeyID &address, CKey& vchPrivKeyOut) const;
     void getOutputs(const std::vector<COutPoint>& vOutpoints, std::vector<COutput>& vOutputs);
     bool isSpent(const COutPoint& outpoint) const;
@@ -214,10 +223,13 @@ public:
 
     bool hdEnabled() const;
 
+    OutputType getDefaultAddressType() const;
+
     int getDefaultConfirmTarget() const;
 
-    bool getDefaultWalletRbf() const;
+    QString getWalletName() const;
 
+    static bool isMultiwallet();
 private:
     CWallet *wallet;
     bool fHaveWatchOnly;
@@ -253,7 +265,7 @@ Q_SIGNALS:
                         const CAmount& watchOnlyBalance, const CAmount& watchUnconfBalance, const CAmount& watchImmatureBalance);
 
     // Encryption status of wallet changed
-    void encryptionStatusChanged(int status);
+    void encryptionStatusChanged();
 
     // Signal emitted when wallet needs to be unlocked
     // It is valid behaviour for listeners to keep the wallet locked after this signal;
