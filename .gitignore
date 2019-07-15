@@ -73,7 +73,7 @@ src/qt/test/moc*.cpp
 
 # Compilation and Qt preprocessor part
 *.qm
-Makefile
+# Makefile -->commented by sg777
 bitcoin-qt
 Bitcoin-Qt.app
 
@@ -109,3 +109,7 @@ test/cache/*
 
 libbitcoinconsensus.pc
 contrib/devtools/split-debug.sh
+
+src/chipsd
+src/chips-tx
+src/chips-cli
