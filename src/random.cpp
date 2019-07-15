@@ -1,18 +1,18 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2009-2017 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "random.h"
+#include <random.h>
 
-#include "crypto/sha512.h"
-#include "support/cleanse.h"
+#include <crypto/sha512.h>
+#include <support/cleanse.h>
 #ifdef WIN32
-#include "compat.h" // for Windows API
+#include <compat.h> // for Windows API
 #include <wincrypt.h>
 #endif
-#include "util.h"             // for LogPrint()
-#include "utilstrencodings.h" // for GetTime()
+#include <util.h>             // for LogPrint()
+#include <utilstrencodings.h> // for GetTime()
 
 #include <stdlib.h>
 #include <limits>
@@ -46,10 +46,10 @@
 #include <openssl/err.h>
 #include <openssl/rand.h>
 
-static void RandFailure()
+[[noreturn]] static void RandFailure()
 {
     LogPrintf("Failed to read randomness, aborting\n");
-    abort();
+    std::abort();
 }
 
 static inline int64_t GetPerformanceCounter()
@@ -155,7 +155,7 @@ static void RandAddSeedPerfmon()
     const size_t nMaxSize = 10000000; // Bail out at more than 10MB of performance data
     while (true) {
         nSize = vData.size();
-        ret = RegQueryValueExA(HKEY_PERFORMANCE_DATA, "Global", NULL, NULL, vData.data(), &nSize);
+        ret = RegQueryValueExA(HKEY_PERFORMANCE_DATA, "Global", nullptr, nullptr, vData.data(), &nSize);
         if (ret != ERROR_MORE_DATA || vData.size() >= nMaxSize)
             break;
         vData.resize(std::max((vData.size() * 3) / 2, nMaxSize)); // Grow size of buffer exponentially
@@ -203,7 +203,7 @@ void GetOSRand(unsigned char *ent32)
 {
 #if defined(WIN32)
     HCRYPTPROV hProvider;
-    int ret = CryptAcquireContextW(&hProvider, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT);
+    int ret = CryptAcquireContextW(&hProvider, nullptr, nullptr, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT);
     if (!ret) {
         RandFailure();
     }
@@ -242,7 +242,7 @@ void GetOSRand(unsigned char *ent32)
     }
 #elif defined(HAVE_GETENTROPY_RAND) && defined(MAC_OSX)
     // We need a fallback for OSX < 10.12
-    if (&getentropy != NULL) {
+    if (&getentropy != nullptr) {
         if (getentropy(ent32, NUM_OS_RANDOM_BYTES) != 0) {
             RandFailure();
         }
@@ -257,7 +257,7 @@ void GetOSRand(unsigned char *ent32)
     int have = 0;
     do {
         size_t len = NUM_OS_RANDOM_BYTES - have;
-        if (sysctl(name, ARRAYLEN(name), ent32 + have, &len, NULL, 0) != 0) {
+        if (sysctl(name, ARRAYLEN(name), ent32 + have, &len, nullptr, 0) != 0) {
             RandFailure();
         }
         have += len;

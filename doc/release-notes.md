@@ -3,12 +3,12 @@ release-notes at release time)
 
 Bitcoin Core version *version* is now available from:
 
-  <https://bitcoin.org/bin/bitcoin-core-*version*/>
+  <https://bitcoincore.org/bin/bitcoin-core-*version*/>
 
 This is a new major version release, including new features, various bugfixes
 and performance improvements, as well as updated translations.
 
-Please report bugs using the issue tracker at github:
+Please report bugs using the issue tracker at GitHub:
 
   <https://github.com/bitcoin/bitcoin/issues>
 
@@ -16,16 +16,39 @@ To receive security and update notifications, please subscribe to:
 
   <https://bitcoincore.org/en/list/announcements/join/>
 
+How to Upgrade
+==============
+
+If you are running an older version, shut it down. Wait until it has completely
+shut down (which might take a few minutes for older versions), then run the
+installer (on Windows) or just copy over `/Applications/Bitcoin-Qt` (on Mac)
+or `bitcoind`/`bitcoin-qt` (on Linux).
+
+The first time you run version 0.15.0, your chainstate database will be converted to a
+new format, which will take anywhere from a few minutes to half an hour,
+depending on the speed of your machine.
+
+Note that the block database format also changed in version 0.8.0 and there is no
+automatic upgrade code from before version 0.8 to version 0.15.0. Upgrading
+directly from 0.7.x and earlier without redownloading the blockchain is not supported.
+However, as usual, old wallet versions are still supported.
+
+Downgrading warning
+-------------------
+
+The chainstate database for this release is not compatible with previous
+releases, so if you run 0.15 and then decide to switch back to any
+older version, you will need to run the old release with the `-reindex-chainstate`
+option to rebuild the chainstate data structures in the old format.
+
+If your node has pruning enabled, this will entail re-downloading and
+processing the entire blockchain.
+
 Compatibility
 ==============
 
 Bitcoin Core is extensively tested on multiple operating systems using
-the Linux kernel, macOS 10.8+, and Windows Vista and later.
-
-Microsoft ended support for Windows XP on [April 8th, 2014](https://www.microsoft.com/en-us/WindowsForBusiness/end-of-xp-support).
-No attempt is made to prevent installing or running the software on Windows XP, you
-can still do so at your own risk but be aware that there are known instabilities.
-Please do not report issues about Windows XP to the issue tracker.
+the Linux kernel, macOS 10.8+, and Windows 7 and newer (Windows XP is not supported).
 
 Bitcoin Core should also work on most other Unix-like systems but is not
 frequently tested on them.
@@ -33,69 +56,71 @@ frequently tested on them.
 Notable changes
 ===============
 
+RPC changes
+------------
+
+### Low-level changes
+
+- The `createrawtransaction` RPC will now accept an array or dictionary (kept for compatibility) for the `outputs` parameter. This means the order of transaction outputs can be specified by the client.
+- The `fundrawtransaction` RPC will reject the previously deprecated `reserveChangeKey` option.
+- Wallet `getnewaddress` and `addmultisigaddress` RPC `account` named
+  parameters have been renamed to `label` with no change in behavior.
+- Wallet `getlabeladdress`, `getreceivedbylabel`, `listreceivedbylabel`, and
+  `setlabel` RPCs have been added to replace `getaccountaddress`,
+  `getreceivedbyaccount`, `listreceivedbyaccount`, and `setaccount` RPCs,
+  which are now deprecated. There is no change in behavior between the
+  new RPCs and deprecated RPCs.
+- Wallet `listreceivedbylabel`, `listreceivedbyaccount` and `listunspent` RPCs
+  add `label` fields to returned JSON objects that previously only had
+  `account` fields.
+- `sendmany` now shuffles outputs to improve privacy, so any previously expected behavior with regards to output ordering can no longer be relied upon.
+
+External wallet files
+---------------------
+
+The `-wallet=<path>` option now accepts full paths instead of requiring wallets
+to be located in the -walletdir directory.
+
+Newly created wallet format
+---------------------------
+
+If `-wallet=<path>` is specified with a path that does not exist, it will now
+create a wallet directory at the specified location (containing a wallet.dat
+data file, a db.log file, and database/log.?????????? files) instead of just
+creating a data file at the path and storing log files in the parent
+directory. This should make backing up wallets more straightforward than
+before because the specified wallet path can just be directly archived without
+having to look in the parent directory for transaction log files.
+
+For backwards compatibility, wallet paths that are names of existing data files
+in the `-walletdir` directory will continue to be accepted and interpreted the
+same as before.
+
 Low-level RPC changes
 ---------------------
 
-- The new database model no longer stores information about transaction
-  versions of unspent outputs. This means that:
-  - The `gettxout` RPC no longer has a `version` field in the response.
-  - The `gettxoutsetinfo` RPC reports `hash_serialized_2` instead of `hash_serialized`,
-    which does not commit to the transaction versions of unspent outputs, but does
-    commit to the height and coinbase information.
-  - The `gettxoutsetinfo` response now contains `disk_size` and `bogosize` instead of
-    `bytes_serialized`. The first is a more accurate estimate of actual disk usage, but
-    is not deterministic. The second is unrelated to disk usage, but is a
-    database-independent metric of UTXO set size: it counts every UTXO entry as 50 + the
-    length of its scriptPubKey.
-  - The `getutxos` REST path no longer reports the `txvers` field in JSON format,
-    and always reports 0 for transaction versions in the binary format
+- When bitcoin is not started with any `-wallet=<path>` options, the name of
+  the default wallet returned by `getwalletinfo` and `listwallets` RPCs is
+  now the empty string `""` instead of `"wallet.dat"`. If bitcoin is started
+  with any `-wallet=<path>` options, there is no change in behavior, and the
+  name of any wallet is just its `<path>` string.
 
+### Logging
 
-- Error codes have been updated to be more accurate for the following error cases:
-  - `getblock` now returns RPC_MISC_ERROR if the block can't be found on disk (for
-  example if the block has been pruned). Previously returned RPC_INTERNAL_ERROR.
-  - `pruneblockchain` now returns RPC_MISC_ERROR if the blocks cannot be pruned
-  because the node is not in pruned mode. Previously returned RPC_METHOD_NOT_FOUND.
-  - `pruneblockchain` now returns RPC_INVALID_PARAMETER if the blocks cannot be pruned
-  because the supplied timestamp is too late. Previously returned RPC_INTERNAL_ERROR.
-  - `pruneblockchain` now returns RPC_MISC_ERROR if the blocks cannot be pruned
-  because the blockchain is too short. Previously returned RPC_INTERNAL_ERROR.
-  - `setban` now returns RPC_CLIENT_INVALID_IP_OR_SUBNET if the supplied IP address
-  or subnet is invalid. Previously returned RPC_CLIENT_NODE_ALREADY_ADDED.
-  - `setban` now returns RPC_CLIENT_INVALID_IP_OR_SUBNET if the user tries to unban
-  a node that has not previously been banned. Previously returned RPC_MISC_ERROR.
-  - `removeprunedfunds` now returns RPC_WALLET_ERROR if bitcoind is unable to remove
-  the transaction. Previously returned RPC_INTERNAL_ERROR.
-  - `removeprunedfunds` now returns RPC_INVALID_PARAMETER if the transaction does not
-  exist in the wallet. Previously returned RPC_INTERNAL_ERROR.
-  - `fundrawtransaction` now returns RPC_INVALID_ADDRESS_OR_KEY if an invalid change
-  address is provided. Previously returned RPC_INVALID_PARAMETER.
-  - `fundrawtransaction` now returns RPC_WALLET_ERROR if bitcoind is unable to create
-  the transaction. The error message provides further details. Previously returned
-  RPC_INTERNAL_ERROR.
-  - `bumpfee` now returns RPC_INVALID_PARAMETER if the provided transaction has
-  descendants in the wallet. Previously returned RPC_MISC_ERROR.
-  - `bumpfee` now returns RPC_INVALID_PARAMETER if the provided transaction has
-  descendants in the mempool. Previously returned RPC_MISC_ERROR.
-  - `bumpfee` now returns RPC_WALLET_ERROR if the provided transaction has
-  has been mined or conflicts with a mined transaction. Previously returned
-  RPC_INVALID_ADDRESS_OR_KEY.
-  - `bumpfee` now returns RPC_WALLET_ERROR if the provided transaction is not
-  BIP 125 replaceable. Previously returned RPC_INVALID_ADDRESS_OR_KEY.
-  - `bumpfee` now returns RPC_WALLET_ERROR if the provided transaction has already
-  been bumped by a different transaction. Previously returned RPC_INVALID_REQUEST.
-  - `bumpfee` now returns RPC_WALLET_ERROR if the provided transaction contains
-  inputs which don't belong to this wallet. Previously returned RPC_INVALID_ADDRESS_OR_KEY.
-  - `bumpfee` now returns RPC_WALLET_ERROR if the provided transaction has multiple change
-  outputs. Previously returned RPC_MISC_ERROR.
-  - `bumpfee` now returns RPC_WALLET_ERROR if the provided transaction has no change
-  output. Previously returned RPC_MISC_ERROR.
-  - `bumpfee` now returns RPC_WALLET_ERROR if the fee is too high. Previously returned
-  RPC_MISC_ERROR.
-  - `bumpfee` now returns RPC_WALLET_ERROR if the fee is too low. Previously returned
-  RPC_MISC_ERROR.
-  - `bumpfee` now returns RPC_WALLET_ERROR if the change output is too small to bump the
-  fee. Previously returned RPC_MISC_ERROR.
+- The log timestamp format is now ISO 8601 (e.g. "2018-02-28T12:34:56Z").
+
+Miner block size removed
+------------------------
+
+The `-blockmaxsize` option for miners to limit their blocks' sizes was
+deprecated in V0.15.1, and has now been removed. Miners should use the
+`-blockmaxweight` option if they want to limit the weight of their blocks'
+weights.
+
+Python Support
+--------------
+
+Support for Python 2 has been discontinued for all test files and tools.
 
 Credits
 =======
