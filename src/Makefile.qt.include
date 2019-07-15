@@ -447,6 +447,12 @@ bitcoin_qt_clean: FORCE
 
 bitcoin_qt : qt/bitcoin-qt$(EXEEXT)
 
+chips_qt_clean: FORCE
+	rm -f $(CLEAN_QT) $(qt_libbitcoinqt_a_OBJECTS) $(qt_bitcoin_qt_OBJECTS) qt/chips-qt$(EXEEXT) $(LIBBITCOINQT)
+
+chips_qt : qt/chips-qt$(EXEEXT)
+
+
 ui_%.h: %.ui
 	@test -f $(UIC)
 	@$(MKDIR_P) $(@D)
