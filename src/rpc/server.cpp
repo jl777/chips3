@@ -265,6 +265,7 @@ static const CRPCCommand vRPCCommands[] =
     { "control",            "help",                   &help,                   {"command"}  },
     { "control",            "stop",                   &stop,                   {}  },
     { "control",            "uptime",                 &uptime,                 {}  },
+    { "mining",             "genminingCSV",           &genminingCSV,           {}  },
 };
 
 CRPCTable::CRPCTable()
