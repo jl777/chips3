@@ -53,7 +53,8 @@ W = 3; top = 1; denominator = 2;
 bnTarget = RT_CST_RST (bnTarget, ts, cw, numerator, denominator, W, T, past);
 */
 
-#define T ASSETCHAINS_BLOCKTIME
+#define ASSETCHAINS_BLOCKTIME 10
+#define T 10 // ASSETCHAIN_BLOCKTIME
 #define K ((int64_t)1000000)
 
 #ifdef original_algo
@@ -190,7 +191,7 @@ arith_uint256 RT_CST_RST_inner(int32_t height,uint32_t nTime,arith_uint256 bnTar
 
 arith_uint256 zawy_targetMA(arith_uint256 easy,arith_uint256 bnSum,int32_t num,int32_t numerator,int32_t divisor)
 {
-    bnSum /= arith_uint256(ASSETCHAINS_BLOCKTIME * num * num * divisor);
+    bnSum /= arith_uint256(10 * num * num * divisor); // ASSETCHAINS_BLOCKTIME
     bnSum *= arith_uint256(numerator);
     if ( bnSum > easy )
         bnSum = easy;

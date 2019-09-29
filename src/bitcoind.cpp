@@ -22,6 +22,37 @@
 #include <boost/thread.hpp>
 
 #include <stdio.h>
+#include "arith_uint256.h"
+#include <pow.h>
+#include <consensus/validation.h>
+
+// shit
+
+#include "amount.h"
+#include "chain.h"
+#include "chainparams.h"
+#include "coins.h"
+#include "consensus/consensus.h"
+#include "consensus/tx_verify.h"
+#include "consensus/merkle.h"
+#include "consensus/validation.h"
+#include "hash.h"
+#include "validation.h"
+#include "net.h"
+#include "policy/feerate.h"
+#include "policy/policy.h"
+#include "pow.h"
+#include "primitives/transaction.h"
+#include "script/standard.h"
+#include "timedata.h"
+#include "txmempool.h"
+#include "util.h"
+#include "utilmoneystr.h"
+#include "validationinterface.h"
+
+#include <algorithm>
+#include <queue>
+#include <utility>
 
 /* Introduction text for doxygen: */
 
@@ -176,19 +207,19 @@ bool AppInit(int argc, char* argv[])
     return fRet;
 }
 
-arith_uint256 komodo_adaptivepow_target(int32_t height,arith_uint256 bnTarget,uint32_t nTime)
+arith_uint256 komodo_adaptivepow_target(int32_t height,arith_uint256 bnTarget,uint32_t nTime, const Consensus::Params& consensusParams)
 {
     arith_uint256 origtarget,easy; int32_t diff; int64_t mult; bool fNegative,fOverflow; CBlockIndex *tipindex;
-    if ( height > 10 && (tipindex= komodo_chainactive(height - 1)) != 0 )
+    if ( height > 10 && (tipindex= chainActive.Tip()) != 0 )
     {
         diff = (nTime - tipindex->GetMedianTimePast());
-        if ( diff > 20 * ASSETCHAINS_BLOCKTIME )
+        if ( diff > 20 * consensusParams.nPowTargetSpacing )
         {
-            mult = diff - 19 * ASSETCHAINS_BLOCKTIME;
-            mult = (mult / ASSETCHAINS_BLOCKTIME) * ASSETCHAINS_BLOCKTIME + ASSETCHAINS_BLOCKTIME / 3;
+            mult = diff - 19 * consensusParams.nPowTargetSpacing;
+            mult = (mult / consensusParams.nPowTargetSpacing) * consensusParams.nPowTargetSpacing + consensusParams.nPowTargetSpacing / 3;
             origtarget = bnTarget;
             bnTarget = bnTarget * arith_uint256(mult * mult);
-            easy.SetCompact(KOMODO_MINDIFF_NBITS,&fNegative,&fOverflow);
+            easy.SetCompact(0x1e007fff,&fNegative,&fOverflow);
             if ( bnTarget < origtarget || bnTarget > easy ) // deal with overflow
             {
                 bnTarget = easy;
