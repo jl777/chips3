@@ -210,14 +210,9 @@ bool AppInit(int argc, char* argv[])
 int32_t komodo_nextheight()
 {
     CBlockIndex *pindex; int32_t ht;
-    if ( (pindex= chainActive.LastTip()) != 0 && (ht= pindex->GetHeight()) > 0 )
+    if ( (pindex= chainActive.LastTip()) != 0 && (ht= pindex->nHeight()) > 0 )
         return(ht+1);
     else return(komodo_longestchain() + 1);
-}
-
-int32_t komodo_nextheight()
-{
-    return(100000000);
 }
 
 arith_uint256 komodo_adaptivepow_target(int32_t height,arith_uint256 bnTarget,uint32_t nTime, const Consensus::Params& consensusParams)
