@@ -434,11 +434,11 @@ unsigned int CalculateNextWorkRequired(arith_uint256 bnAvg,
     // Limit adjustment step
     // Use medians to prevent time-warp attacks
     int64_t nActualTimespan = nLastBlockTime - nFirstBlockTime;
-    LogPrint("pow", "  nActualTimespan = %d  before dampening\n", nActualTimespan);
+    printf("pow   nActualTimespan = %d  before dampening\n", nActualTimespan);
     nActualTimespan = params.AveragingWindowTimespan() + (nActualTimespan - params.AveragingWindowTimespan())/4;
-    LogPrint("pow", "  nActualTimespan = %d  before bounds\n", nActualTimespan);
+    printf("pow   nActualTimespan = %d  before bounds\n", nActualTimespan);
 
-    if ( ASSETCHAINS_ADAPTIVEPOW <= 0 )
+    if ( 1 <= 0 )
     {
         if (nActualTimespan < params.MinActualTimespan())
             nActualTimespan = params.MinActualTimespan();
@@ -447,10 +447,10 @@ unsigned int CalculateNextWorkRequired(arith_uint256 bnAvg,
     }
     // Retarget
     arith_uint256 bnLimit;
-    if (ASSETCHAINS_ALGO == ASSETCHAINS_EQUIHASH)
+    if (1) //ASSETCHAINS_ALGO == ASSETCHAINS_EQUIHASH)
         bnLimit = UintToArith256(params.powLimit);
-    else
-        bnLimit = UintToArith256(params.powAlternate);
+//    else
+//        bnLimit = UintToArith256(params.powAlternate);
 
     const arith_uint256 bnPowLimit = bnLimit; //UintToArith256(params.powLimit);
     arith_uint256 bnNew {bnAvg};
