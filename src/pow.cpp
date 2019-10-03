@@ -683,7 +683,7 @@ uint32_t lwmaGetNextPOSRequired(const CBlockIndex* pindexLast, const Consensus::
 
 unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nFirstBlockTime, const Consensus::Params& params)
 {
-//    if (pindexLast->nHeight < params.nAdaptativePoWActivationThreshold) {
+    if (pindexLast->nHeight < params.nAdaptativePoWActivationThreshold) {
         if (params.fPowNoRetargeting)
             return pindexLast->nBits;
 
@@ -752,6 +752,7 @@ unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nF
     printf("pow After:  %08x  %s\n", bnNew.GetCompact(), bnNew.ToString());
 
     return bnNew.GetCompact();
+    }
 }
 
 bool DoesHashQualify(const CBlockIndex *pbindex)
