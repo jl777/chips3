@@ -732,10 +732,10 @@ unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nF
     }
     // Retarget
     arith_uint256 bnLimit;
-    if (ASSETCHAINS_ALGO == ASSETCHAINS_EQUIHASH)
+ //   if (ASSETCHAINS_ALGO == ASSETCHAINS_EQUIHASH)
         bnLimit = UintToArith256(params.powLimit);
-    else
-        bnLimit = UintToArith256(params.powAlternate);
+ //   else
+ //       bnLimit = UintToArith256(params.powAlternate);
 
     const arith_uint256 bnPowLimit = bnLimit; //UintToArith256(params.powLimit);
     arith_uint256 bnNew {bnAvg};
@@ -746,69 +746,12 @@ unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nF
         bnNew = bnPowLimit;
 
     /// debug print
-    LogPrint("pow", "GetNextWorkRequired RETARGET\n");
-    LogPrint("pow", "params.nPowTargetTimespan = %d    nActualTimespan = %d\n", params.nPowTargetTimespan, nActualTimespan);
-    LogPrint("pow", "Current average: %08x  %s\n", bnAvg.GetCompact(), bnAvg.ToString());
-    LogPrint("pow", "After:  %08x  %s\n", bnNew.GetCompact(), bnNew.ToString());
+    printf("pow GetNextWorkRequired RETARGET\n");
+    printf("pow params.nPowTargetTimespan = %d    nActualTimespan = %d\n", params.nPowTargetTimespan, nActualTimespan);
+    printf("pow Current average: %08x  %s\n", bnAvg.GetCompact(), bnAvg.ToString());
+    printf("pow After:  %08x  %s\n", bnNew.GetCompact(), bnNew.ToString());
 
     return bnNew.GetCompact();
-}
-
-unsigned int lwmaGetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params)
-{
-    return lwmaCalculateNextWorkRequired(pindexLast, params);
-}
-
-unsigned int lwmaCalculateNextWorkRequired(const CBlockIndex* pindexLast, const Consensus::Params& params)
-{
-    arith_uint256 nextTarget {0}, sumTarget {0}, bnTmp, bnLimit;
-    if (ASSETCHAINS_ALGO == ASSETCHAINS_EQUIHASH)
-        bnLimit = UintToArith256(params.powLimit);
-    else
-        bnLimit = UintToArith256(params.powAlternate);
-
-    unsigned int nProofOfWorkLimit = bnLimit.GetCompact();
-    
-    //printf("PoWLimit: %u\n", nProofOfWorkLimit);
-
-    // Find the first block in the averaging interval as we total the linearly weighted average
-    const CBlockIndex* pindexFirst = pindexLast;
-    const CBlockIndex* pindexNext;
-    int64_t t = 0, solvetime, k = params.nLwmaAjustedWeight, N = params.nPowAveragingWindow;
-
-    for (int i = 0, j = N - 1; pindexFirst && i < N; i++, j--) {
-        pindexNext = pindexFirst;
-        pindexFirst = pindexFirst->pprev;
-        if (!pindexFirst)
-            break;
-
-        solvetime = pindexNext->GetBlockTime() - pindexFirst->GetBlockTime();
-
-        // weighted sum
-        t += solvetime * j;
-
-        // Target sum divided by a factor, (k N^2).
-        // The factor is a part of the final equation. However we divide 
-        // here to avoid potential overflow.
-        bnTmp.SetCompact(pindexNext->nBits);
-        sumTarget += bnTmp / (k * N * N);
-    }
-
-    // Check we have enough blocks
-    if (!pindexFirst)
-        return nProofOfWorkLimit;
-
-    // Keep t reasonable in case strange solvetimes occurred.
-    if (t < N * k / 3)
-        t = N * k / 3;
-
-    bnTmp = bnLimit;
-    nextTarget = t * sumTarget;
-    if (nextTarget > bnTmp)
-        nextTarget = bnTmp;
-
-    return nextTarget.GetCompact();
-        }
 }
 
 bool DoesHashQualify(const CBlockIndex *pbindex)
