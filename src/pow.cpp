@@ -755,18 +755,6 @@ unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nF
     }
 }
 
-bool DoesHashQualify(const CBlockIndex *pbindex)
-{
-    // if it fails hash test and PoW validation, consider it POS. it could also be invalid
-    arith_uint256 hash = UintToArith256(pbindex->GetBlockHash());
-    // to be considered POS, we first can't qualify as POW
-    if (hash > hash.SetCompact(pbindex->nBits))
-    {
-        return false;
-    }
-    return true;
-}
-
 bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params& params)
 {
     bool fNegative;
