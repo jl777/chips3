@@ -461,10 +461,10 @@ unsigned int CalculateNextWorkRequired(arith_uint256 bnAvg,
         bnNew = bnPowLimit;
 
     /// debug print
-    LogPrint("pow", "GetNextWorkRequired RETARGET\n");
-    LogPrint("pow", "params.AveragingWindowTimespan() = %d    nActualTimespan = %d\n", params.AveragingWindowTimespan(), nActualTimespan);
-    LogPrint("pow", "Current average: %08x  %s\n", bnAvg.GetCompact(), bnAvg.ToString());
-    LogPrint("pow", "After:  %08x  %s\n", bnNew.GetCompact(), bnNew.ToString());
+    printf("pow GetNextWorkRequired RETARGET\n");
+    printf("pow params.AveragingWindowTimespan() = %d    nActualTimespan = %d\n", params.AveragingWindowTimespan(), nActualTimespan);
+    printf("pow Current average: %08x  %s\n", bnAvg.GetCompact(), bnAvg.ToString());
+    printf("pow After:  %08x  %s\n", bnNew.GetCompact(), bnNew.ToString());
 
     return bnNew.GetCompact();
 }
@@ -477,10 +477,10 @@ unsigned int lwmaGetNextWorkRequired(const CBlockIndex* pindexLast, const CBlock
 unsigned int lwmaCalculateNextWorkRequired(const CBlockIndex* pindexLast, const Consensus::Params& params)
 {
     arith_uint256 nextTarget {0}, sumTarget {0}, bnTmp, bnLimit;
-    if (ASSETCHAINS_ALGO == ASSETCHAINS_EQUIHASH)
+    //if (ASSETCHAINS_ALGO == ASSETCHAINS_EQUIHASH)
         bnLimit = UintToArith256(params.powLimit);
-    else
-        bnLimit = UintToArith256(params.powAlternate);
+    //else
+    //    bnLimit = UintToArith256(params.powAlternate);
 
     unsigned int nProofOfWorkLimit = bnLimit.GetCompact();
     
@@ -542,6 +542,7 @@ bool DoesHashQualify(const CBlockIndex *pbindex)
 uint32_t lwmaGetNextPOSRequired(const CBlockIndex* pindexLast, const Consensus::Params& params)
 {
     arith_uint256 nextTarget {0}, sumTarget {0}, bnTmp, bnLimit;
+ /*
     bnLimit = UintToArith256(params.posLimit);
     uint32_t nProofOfStakeLimit = bnLimit.GetCompact();
     int64_t t = 0, solvetime = 0;
@@ -675,7 +676,7 @@ uint32_t lwmaGetNextPOSRequired(const CBlockIndex* pindexLast, const Consensus::
     nextTarget = t * sumTarget;
     if (nextTarget > bnLimit)
         nextTarget = bnLimit;
-
+*/
     return nextTarget.GetCompact();
 }
 
