@@ -471,7 +471,7 @@ unsigned int CalculateNextWorkRequired(arith_uint256 bnAvg,
 
 unsigned int lwmaGetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params)
 {
-    return lwmaCalculateNextWorkRequired(pindexLast, params, const Consensus::Params& params);
+    return lwmaCalculateNextWorkRequired(pindexLast, params, params);
 }
 
 unsigned int lwmaCalculateNextWorkRequired(const CBlockIndex* pindexLast, const Consensus::Params& params)
@@ -719,11 +719,11 @@ unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nF
             // Limit adjustment step
     // Use medians to prevent time-warp attacks
     int64_t nActualTimespan = nLastBlockTime - nFirstBlockTime;
-    LogPrint("pow", "  nActualTimespan = %d  before dampening\n", nActualTimespan);
+    printf("pow   nActualTimespan = %d  before dampening\n", nActualTimespan);
     nActualTimespan = params.AveragingWindowTimespan() + (nActualTimespan - params.AveragingWindowTimespan())/4;
-    LogPrint("pow", "  nActualTimespan = %d  before bounds\n", nActualTimespan);
+    printf("pow   nActualTimespan = %d  before bounds\n", nActualTimespan);
 
-    if ( ASSETCHAINS_ADAPTIVEPOW <= 0 )
+    if ( 1 <= 0 )
     {
         if (nActualTimespan < params.MinActualTimespan())
             nActualTimespan = params.MinActualTimespan();
