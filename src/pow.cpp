@@ -471,7 +471,7 @@ unsigned int CalculateNextWorkRequired(arith_uint256 bnAvg,
 
 unsigned int lwmaGetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params)
 {
-    return lwmaCalculateNextWorkRequired(pindexLast, params);
+    return lwmaCalculateNextWorkRequired(pindexLast, params, const Consensus::Params& params);
 }
 
 unsigned int lwmaCalculateNextWorkRequired(const CBlockIndex* pindexLast, const Consensus::Params& params)
