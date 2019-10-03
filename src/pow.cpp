@@ -255,9 +255,9 @@ arith_uint256 zawy_TSA_EMA(int32_t height,int32_t tipdiff,arith_uint256 prevTarg
 
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params)
 {
-    if (ASSETCHAINS_ALGO != ASSETCHAINS_EQUIHASH && ASSETCHAINS_STAKED == 0)
+//    if (ASSETCHAINS_ALGO != ASSETCHAINS_EQUIHASH && ASSETCHAINS_STAKED == 0)
         return lwmaGetNextWorkRequired(pindexLast, pblock, params);
-
+/*
     arith_uint256 bnLimit;
     if (ASSETCHAINS_ALGO == ASSETCHAINS_EQUIHASH)
         bnLimit = UintToArith256(params.powLimit);
@@ -424,6 +424,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
         nbits = (nbits & 0xfffffffc) | zawyflag;
     }
     return(nbits);
+    */
 }
 
 unsigned int CalculateNextWorkRequired(arith_uint256 bnAvg,
