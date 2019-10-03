@@ -192,9 +192,9 @@ UniValue genminingCSV(const UniValue& params, bool fHelp)
 {
     int32_t i,z,height; uint32_t solvetime,prevtime=0; FILE *fp; char str[65],str2[65],fname[256]; uint256 hash; arith_uint256 bnTarget; CBlockIndex *pindex; bool fNegative,fOverflow; UniValue result(UniValue::VOBJ);
     if (fHelp || params.size() != 0 )
-        throw runtime_error("genminingCSV\n");
+        throw std::runtime_error("genminingCSV\n");
     LOCK(cs_main);
-    sprintf(fname,"%s_mining.csv",ASSETCHAINS_SYMBOL[0] == 0 ? "KMD" : ASSETCHAINS_SYMBOL);
+    sprintf(fname,"%s_mining.csv","CHIPS");
     if ( (fp= fopen(fname,"wb")) != 0 )
     {
         fprintf(fp,"height,nTime,nBits,bnTarget,bnTargetB,diff,solvetime\n");
