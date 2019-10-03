@@ -65,6 +65,55 @@ UniValue ping(const JSONRPCRequest& request)
     return NullUniValue;
 }
 
+int32_t KOMODO_LONGESTCHAIN;
+int32_t komodo_longestchain()
+{
+    static int32_t depth;
+    int32_t ht,n=0,num=0,maxheight=0,height = 0;
+    if ( depth < 0 )
+        depth = 0;
+    if ( depth == 0 )
+    {
+        depth++;
+        vector<CNodeStats> vstats;
+        {
+            //LOCK(cs_main);
+            CopyNodeStats(vstats);
+        }
+        BOOST_FOREACH(const CNodeStats& stats, vstats)
+        {
+            //fprintf(stderr,"komodo_longestchain iter.%d\n",n);
+            CNodeStateStats statestats;
+            bool fStateStats = GetNodeStateStats(stats.nodeid,statestats);
+            if ( statestats.nSyncHeight < 0 )
+                continue;
+            ht = 0;
+            if ( stats.nStartingHeight > ht )
+                ht = stats.nStartingHeight;
+            if ( statestats.nSyncHeight > ht )
+                ht = statestats.nSyncHeight;
+            if ( statestats.nCommonHeight > ht )
+                ht = statestats.nCommonHeight;
+            if ( maxheight == 0 || ht > maxheight*1.01 )
+                maxheight = ht, num = 1;
+            else if ( ht > maxheight*0.99 )
+                num++;
+            if ( ht > height )
+                height = ht;
+        }
+        depth--;
+        if ( num > (n >> 1) )
+        {
+            if ( 0 && height != KOMODO_LONGESTCHAIN )
+                fprintf(stderr,"set %s KOMODO_LONGESTCHAIN <- %d\n","CHIPS",height);
+            KOMODO_LONGESTCHAIN = height;
+            return(height);
+        }
+        KOMODO_LONGESTCHAIN = 0;
+    }
+    return(KOMODO_LONGESTCHAIN);
+}
+
 UniValue getpeerinfo(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() != 0)
