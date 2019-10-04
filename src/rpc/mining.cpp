@@ -188,38 +188,6 @@ UniValue generatetoaddress(const JSONRPCRequest& request)
 CBlockIndex *komodo_chainactive(int32_t height);
 arith_uint256 zawy_ctB(arith_uint256 bnTarget,uint32_t solvetime);
 
-int32_t komodo_longestchain();
-
-int32_t komodo_nextheight()
-{
-    CBlockIndex *pindex; int32_t ht;
-    if ( (pindex= chainActive.LastTip()) != 0 && (ht= pindex->nHeight) > 0 )
-        return(ht+1);
-    else return(komodo_longestchain() + 1);
-}
-
-arith_uint256 komodo_adaptivepow_target(int32_t height,arith_uint256 bnTarget,uint32_t nTime, const Consensus::Params& consensusParams)
-{
-    arith_uint256 origtarget,easy; int32_t diff; int64_t mult; bool fNegative,fOverflow; CBlockIndex *tipindex;
-    if ( height > 10 && (tipindex= chainActive.Tip()) != 0 )
-    {
-        diff = (nTime - tipindex->GetMedianTimePast());
-        if ( diff > 20 * consensusParams.nPowTargetSpacing )
-        {
-            mult = diff - 19 * consensusParams.nPowTargetSpacing;
-            mult = (mult / consensusParams.nPowTargetSpacing) * consensusParams.nPowTargetSpacing + consensusParams.nPowTargetSpacing / 3;
-            origtarget = bnTarget;
-            bnTarget = bnTarget * arith_uint256(mult * mult);
-            easy.SetCompact(0x1e007fff,&fNegative,&fOverflow);
-            if ( bnTarget < origtarget || bnTarget > easy ) // deal with overflow
-            {
-                bnTarget = easy;
-                fprintf(stderr,"miner overflowed mult.%lld, set to mindiff\n",(long long)mult);
-            } else fprintf(stderr,"miner elapsed %d, adjust by factor of %lld\n",diff,(long long)mult);
-        }
-    } //else fprintf(stderr,"cant find height.%d\n",height);
-    return(bnTarget);
-}
 
 UniValue genminingCSV(const UniValue& params, bool fHelp)
 {
@@ -227,40 +195,7 @@ UniValue genminingCSV(const UniValue& params, bool fHelp)
     if (fHelp || params.size() != 0 )
         throw std::runtime_error("genminingCSV\n");
     LOCK(cs_main);
-    sprintf(fname,"%s_mining.csv","CHIPS");
-    if ( (fp= fopen(fname,"wb")) != 0 )
-    {
-        fprintf(fp,"height,nTime,nBits,bnTarget,bnTargetB,diff,solvetime\n");
-        height = komodo_nextheight();
-        for (i=0; i<height; i++)
-        {
-            if ( (pindex= komodo_chainactive(i)) != 0 )
-            {
-                bnTarget.SetCompact(pindex->nBits,&fNegative,&fOverflow);
-                solvetime = (prevtime==0) ? 0 : (int32_t)(pindex->nTime - prevtime);
-                for (z=0; z<16; z++)
-                    sprintf(&str[z<<1],"%02x",((uint8_t *)&bnTarget)[31-z]);
-                str[32] = 0;
-                //hash = pindex->GetBlockHash();
-                memset(&hash,0,sizeof(hash));
-                if ( i >= 64 && (pindex->nBits & 3) != 0 )
-                    hash = ArithToUint256(zawy_ctB(bnTarget,solvetime));
-                for (z=0; z<16; z++)
-                    sprintf(&str2[z<<1],"%02x",((uint8_t *)&hash)[31-z]);
-                str2[32] = 0; fprintf(fp,"%d,%u,%08x,%s,%s,%.1f,%d\n",i,pindex->nTime,pindex->nBits,str,str2,GetDifficulty(pindex),solvetime);
-                prevtime = pindex->nTime;
-            }
-        }
-        fclose(fp);
-        result.push_back(Pair("result", "success"));
-        result.push_back(Pair("created", fname));
-    }
-    else
-    {
-        result.push_back(Pair("result", "success"));
-        result.push_back(Pair("error", "couldnt create mining.csv"));
-        result.push_back(Pair("filename", fname));
-    }
+
     return(result);
 }
 
