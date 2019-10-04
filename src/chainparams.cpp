@@ -84,16 +84,16 @@ public:
         consensus.nPowTargetSpacing = 10;// * 60;
 	
         consensus.nPowAveragingWindow = 17;
-//        assert(maxUint/UintToArith256(consensus.powLimit) >= consensus.nPowAveragingWindow);
+//      assert(maxUint/UintToArith256(consensus.powLimit) >= consensus.nPowAveragingWindow);
         consensus.nPowMaxAdjustDown = 32; // 32% adjustment down
         consensus.nPowMaxAdjustUp = 16; // 16% adjustment up
         //consensus.nPowTargetSpacing = 1 * 60;
         
-	consensus.fPowAllowMinDifficultyBlocks = false;
+        consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.nPowTargetTimespan = 17 * consensus.nPowTargetSpacing;
         consensus.fPowNoRetargeting = false;
         consensus.nRuleChangeActivationThreshold = 1916; // 95% of 2016
-	consensus.nAdaptativePoWActivationThreshold = 4799777;
+        consensus.nAdaptativePoWActivationThreshold = 4799777;
         consensus.nMinerConfirmationWindow = 2016; // nPowTargetTimespan / nPowTargetSpacing
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 1199145601; // January 1, 2008
