@@ -84,7 +84,7 @@ public:
         consensus.nPowTargetSpacing = 10;// * 60;
 	
 	consensus.nPowAveragingWindow = 17;
-	assert(maxUint/UintToArith256(consensus.powLimit) >= consensus.nPowAveragingWindow);
+//	assert(maxUint/UintToArith256(consensus.powLimit) >= consensus.nPowAveragingWindow);
         consensus.nPowMaxAdjustDown = 32; // 32% adjustment down
         consensus.nPowMaxAdjustUp = 16; // 16% adjustment up
         consensus.nPowTargetSpacing = 1 * 60;
