@@ -207,10 +207,12 @@ bool AppInit(int argc, char* argv[])
     return fRet;
 }
 
+int32_t komodo_longestchain();
+
 int32_t komodo_nextheight()
 {
     CBlockIndex *pindex; int32_t ht;
-    if ( (pindex= chainActive.LastTip()) != 0 && (ht= pindex->nHeight()) > 0 )
+    if ( (pindex= chainActive.LastTip()) != 0 && (ht= pindex->nHeight) > 0 )
         return(ht+1);
     else return(komodo_longestchain() + 1);
 }
