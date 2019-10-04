@@ -207,39 +207,6 @@ bool AppInit(int argc, char* argv[])
     return fRet;
 }
 
-int32_t komodo_longestchain();
-
-int32_t komodo_nextheight()
-{
-    CBlockIndex *pindex; int32_t ht;
-    if ( (pindex= chainActive.LastTip()) != 0 && (ht= pindex->nHeight) > 0 )
-        return(ht+1);
-    else return(komodo_longestchain() + 1);
-}
-
-arith_uint256 komodo_adaptivepow_target(int32_t height,arith_uint256 bnTarget,uint32_t nTime, const Consensus::Params& consensusParams)
-{
-    arith_uint256 origtarget,easy; int32_t diff; int64_t mult; bool fNegative,fOverflow; CBlockIndex *tipindex;
-    if ( height > 10 && (tipindex= chainActive.Tip()) != 0 )
-    {
-        diff = (nTime - tipindex->GetMedianTimePast());
-        if ( diff > 20 * consensusParams.nPowTargetSpacing )
-        {
-            mult = diff - 19 * consensusParams.nPowTargetSpacing;
-            mult = (mult / consensusParams.nPowTargetSpacing) * consensusParams.nPowTargetSpacing + consensusParams.nPowTargetSpacing / 3;
-            origtarget = bnTarget;
-            bnTarget = bnTarget * arith_uint256(mult * mult);
-            easy.SetCompact(0x1e007fff,&fNegative,&fOverflow);
-            if ( bnTarget < origtarget || bnTarget > easy ) // deal with overflow
-            {
-                bnTarget = easy;
-                fprintf(stderr,"miner overflowed mult.%lld, set to mindiff\n",(long long)mult);
-            } else fprintf(stderr,"miner elapsed %d, adjust by factor of %lld\n",diff,(long long)mult);
-        }
-    } //else fprintf(stderr,"cant find height.%d\n",height);
-    return(bnTarget);
-}
-
 int main(int argc, char* argv[])
 {
     SetupEnvironment();
