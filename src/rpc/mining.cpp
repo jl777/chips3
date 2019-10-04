@@ -185,20 +185,6 @@ UniValue generatetoaddress(const JSONRPCRequest& request)
     return generateBlocks(coinbaseScript, nGenerate, nMaxTries, false);
 }
 
-CBlockIndex *komodo_chainactive(int32_t height);
-arith_uint256 zawy_ctB(arith_uint256 bnTarget,uint32_t solvetime);
-
-
-UniValue genminingCSV(const UniValue& params, bool fHelp)
-{
-    int32_t i,z,height; uint32_t solvetime,prevtime=0; FILE *fp; char str[65],str2[65],fname[256]; uint256 hash; arith_uint256 bnTarget; CBlockIndex *pindex; bool fNegative,fOverflow; UniValue result(UniValue::VOBJ);
-    if (fHelp || params.size() != 0 )
-        throw std::runtime_error("genminingCSV\n");
-    LOCK(cs_main);
-
-    return(result);
-}
-
 UniValue getmininginfo(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() != 0)
