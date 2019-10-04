@@ -20,7 +20,7 @@
 #include <utilstrencodings.h>
 #include <version.h>
 #include <warnings.h>
-#include <rpc/protocol.h>
+#include <fs.h>
 
 #include <univalue.h>
 
