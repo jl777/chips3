@@ -255,8 +255,44 @@ arith_uint256 zawy_TSA_EMA(int32_t height,int32_t tipdiff,arith_uint256 prevTarg
 
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params)
 {
+    if (pindexLast->nHeight < params.nAdaptativePoWActivationThreshold) {
+        assert(pindexLast != nullptr);
+    unsigned int nProofOfWorkLimit = UintToArith256(params.powLimit).GetCompact();
+
+    // Only change once per difficulty adjustment interval
+    if ((pindexLast->nHeight+1) % params.DifficultyAdjustmentInterval() != 0)
+    {
+        if (params.fPowAllowMinDifficultyBlocks)
+        {
+            // Special difficulty rule for testnet:
+            // If the new block's timestamp is more than 2* 10 minutes
+            // then allow mining of a min-difficulty block.
+            if (pblock->GetBlockTime() > pindexLast->GetBlockTime() + params.nPowTargetSpacing*2)
+                return nProofOfWorkLimit;
+            else
+            {
+                // Return the last non-special-min-difficulty-rules-block
+                const CBlockIndex* pindex = pindexLast;
+                while (pindex->pprev && pindex->nHeight % params.DifficultyAdjustmentInterval() != 0 && pindex->nBits == nProofOfWorkLimit)
+                    pindex = pindex->pprev;
+                return pindex->nBits;
+            }
+        }
+        return pindexLast->nBits;
+    }
+
+    // Go back by what we want to be 14 days worth of blocks
+    int nHeightFirst = pindexLast->nHeight - (params.DifficultyAdjustmentInterval()-1);
+    assert(nHeightFirst >= 0);
+    const CBlockIndex* pindexFirst = pindexLast->GetAncestor(nHeightFirst);
+    assert(pindexFirst);
+
+    return CalculateNextWorkRequired(pindexLast, pindexFirst->GetBlockTime(), params);
+ }
+ else {
 //    if (ASSETCHAINS_ALGO != ASSETCHAINS_EQUIHASH && ASSETCHAINS_STAKED == 0)
-        return lwmaGetNextWorkRequired(pindexLast, pblock, params);
+     return lwmaGetNextWorkRequired(pindexLast, pblock, params);
+ }
 /*
     arith_uint256 bnLimit;
     if (ASSETCHAINS_ALGO == ASSETCHAINS_EQUIHASH)
@@ -682,52 +718,52 @@ uint32_t lwmaGetNextPOSRequired(const CBlockIndex* pindexLast, const Consensus::
     return nextTarget.GetCompact();
 }
 
-unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, arith_uint256 bnAvg,
+unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nFirstBlockTime, const Consensus::Params& params)
+{
+    if (params.fPowNoRetargeting)
+        return pindexLast->nBits;
+
+    // Limit adjustment step
+    int64_t nActualTimespan = pindexLast->GetBlockTime() - nFirstBlockTime;
+    if (nActualTimespan < params.nPowTargetTimespan/4)
+        nActualTimespan = params.nPowTargetTimespan/4;
+    if (nActualTimespan > params.nPowTargetTimespan*4)
+        nActualTimespan = params.nPowTargetTimespan*4;
+
+    // Retarget
+    const arith_uint256 bnPowLimit = UintToArith256(params.powLimit);
+    arith_uint256 bnNew;
+    bnNew.SetCompact(pindexLast->nBits);
+    bnNew *= nActualTimespan;
+    bnNew /= params.nPowTargetTimespan;
+    if ( 0 )
+    {
+        int32_t i;
+        for (i=31; i>=0; i--)
+            printf("%02x",((uint8_t *)&bnNew)[i]);
+        printf("bnNew vs limit ");
+        for (i=31; i>=0; i--)
+            printf("%02x",((uint8_t *)&bnPowLimit)[i]);
+        printf("\n");
+    }
+    if (bnNew > bnPowLimit)
+        bnNew = bnPowLimit;
+
+    return bnNew.GetCompact();
+}
+
+unsigned int CalculateNextWorkRequired(arith_uint256 bnAvg,
                                        int64_t nLastBlockTime, int64_t nFirstBlockTime,
                                        const Consensus::Params& params)
-//unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nFirstBlockTime, const Consensus::Params& params)
 {
-    if (pindexLast->nHeight < params.nAdaptativePoWActivationThreshold) {
-        if (params.fPowNoRetargeting)
-            return pindexLast->nBits;
-
-        // Limit adjustment step
-        int64_t nActualTimespan = pindexLast->GetBlockTime() - nFirstBlockTime;
-        if (nActualTimespan < params.nPowTargetTimespan/4)
-            nActualTimespan = params.nPowTargetTimespan/4;
-        if (nActualTimespan > params.nPowTargetTimespan*4)
-            nActualTimespan = params.nPowTargetTimespan*4;
-
-        // Retarget
-        const arith_uint256 bnPowLimit = UintToArith256(params.powLimit);
-        arith_uint256 bnNew;
-        bnNew.SetCompact(pindexLast->nBits);
-        bnNew *= nActualTimespan;
-        bnNew /= params.nPowTargetTimespan;
-        if ( 0 )
-        {
-            int32_t i;
-            for (i=31; i>=0; i--)
-                printf("%02x",((uint8_t *)&bnNew)[i]);
-            printf("bnNew vs limit ");
-            for (i=31; i>=0; i--)
-                printf("%02x",((uint8_t *)&bnPowLimit)[i]);
-            printf("\n");
-        }
-        if (bnNew > bnPowLimit)
-            bnNew = bnPowLimit;
-
-        return bnNew.GetCompact();
-        }
-    else    {
-            // Limit adjustment step
+    // Limit adjustment step
     // Use medians to prevent time-warp attacks
     int64_t nActualTimespan = nLastBlockTime - nFirstBlockTime;
-    printf("pow   nActualTimespan = %d  before dampening\n", nActualTimespan);
+    LogPrint("pow", "  nActualTimespan = %d  before dampening\n", nActualTimespan);
     nActualTimespan = params.AveragingWindowTimespan() + (nActualTimespan - params.AveragingWindowTimespan())/4;
-    printf("pow   nActualTimespan = %d  before bounds\n", nActualTimespan);
+    LogPrint("pow", "  nActualTimespan = %d  before bounds\n", nActualTimespan);
 
-    if ( 1 <= 0 )
+    if ( ASSETCHAINS_ADAPTIVEPOW <= 0 )
     {
         if (nActualTimespan < params.MinActualTimespan())
             nActualTimespan = params.MinActualTimespan();
@@ -736,27 +772,26 @@ unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, arith_uint
     }
     // Retarget
     arith_uint256 bnLimit;
- //   if (ASSETCHAINS_ALGO == ASSETCHAINS_EQUIHASH)
+    if (ASSETCHAINS_ALGO == ASSETCHAINS_EQUIHASH)
         bnLimit = UintToArith256(params.powLimit);
- //   else
- //       bnLimit = UintToArith256(params.powAlternate);
+    else
+        bnLimit = UintToArith256(params.powAlternate);
 
     const arith_uint256 bnPowLimit = bnLimit; //UintToArith256(params.powLimit);
     arith_uint256 bnNew {bnAvg};
-    bnNew /= params.nPowTargetTimespan;
+    bnNew /= params.AveragingWindowTimespan();
     bnNew *= nActualTimespan;
 
     if (bnNew > bnPowLimit)
         bnNew = bnPowLimit;
 
     /// debug print
-    printf("pow GetNextWorkRequired RETARGET\n");
-    printf("pow params.nPowTargetTimespan = %d    nActualTimespan = %d\n", params.nPowTargetTimespan, nActualTimespan);
-    printf("pow Current average: %08x  %s\n", bnAvg.GetCompact(), bnAvg.ToString());
-    printf("pow After:  %08x  %s\n", bnNew.GetCompact(), bnNew.ToString());
+    LogPrint("pow", "GetNextWorkRequired RETARGET\n");
+    LogPrint("pow", "params.AveragingWindowTimespan() = %d    nActualTimespan = %d\n", params.AveragingWindowTimespan(), nActualTimespan);
+    LogPrint("pow", "Current average: %08x  %s\n", bnAvg.GetCompact(), bnAvg.ToString());
+    LogPrint("pow", "After:  %08x  %s\n", bnNew.GetCompact(), bnNew.ToString());
 
     return bnNew.GetCompact();
-    }
 }
 
 bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params& params)
