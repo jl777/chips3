@@ -1622,8 +1622,8 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         }
 
         if (!vRecv.empty() && 
-                ((nVersion < MIN_PEER_PROTO_VERSION_BEFORE_APOW && vRecv < chainparams.nAdaptativePoWActivationThreshold) || 
-                (nVersion < MIN_PEER_PROTO_VERSION && vRecv >= chainparams.nAdaptativePoWActivationThreshold)))
+                ((nVersion < MIN_PEER_PROTO_VERSION_BEFORE_APOW && vRecv < chainparams.GetConsensus().nAdaptativePoWActivationThreshold) || 
+                (nVersion < MIN_PEER_PROTO_VERSION && vRecv >= chainparams.GetConsensus().nAdaptativePoWActivationThreshold)))
         {
             // disconnect from peers older than this proto version
             LogPrint(BCLog::NET, "peer=%d using obsolete version %i; disconnecting\n", pfrom->GetId(), nVersion);
