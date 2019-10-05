@@ -1621,9 +1621,6 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
             }
         }
 
-        bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStream& vRecv, int64_t nTimeReceived, 
-                                   const CChainParams& chainparams, CConnman* connman, const std::atomic<bool>& interruptMsgProc)
-            
         if (!vRecv.empty() && 
                 ((nVersion < MIN_PEER_PROTO_VERSION_BEFORE_APOW && vRecv < chainparams.nAdaptativePoWActivationThreshold) || 
                 (nVersion < MIN_PEER_PROTO_VERSION && vRecv >= chainparams.nAdaptativePoWActivationThreshold)))
