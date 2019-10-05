@@ -25,6 +25,7 @@
 #include <chain.h>
 #include <primitives/block.h>
 #include <uint256.h>
+#include <util.h>
 
 /* from zawy repo
  Preliminary code for super-fast increases in difficulty.
