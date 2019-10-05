@@ -271,9 +271,11 @@ arith_uint256 zawy_TSA_EMA(int32_t height,int32_t tipdiff,arith_uint256 prevTarg
 
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params)
 {
+ printf("Current nHeight = %d nAdaptativePoWActivationThreshold = %d\n", pindexLast->nHeight, params.nAdaptativePoWActivationThreshold);
     if (pindexLast->nHeight < params.nAdaptativePoWActivationThreshold) {
+        printf("OLD Diff algo\n");
         assert(pindexLast != nullptr);
-    unsigned int nProofOfWorkLimit = UintToArith256(params.powLimit).GetCompact();
+        unsigned int nProofOfWorkLimit = UintToArith256(params.powLimit).GetCompact();
 
     // Only change once per difficulty adjustment interval
     if ((pindexLast->nHeight+1) % params.DifficultyAdjustmentInterval() != 0)
@@ -306,6 +308,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     return CalculateNextWorkRequired(pindexLast, pindexFirst->GetBlockTime(), params);
  }
  else {
+  printf("New Diff algo\n");
 //    if (ASSETCHAINS_ALGO != ASSETCHAINS_EQUIHASH && ASSETCHAINS_STAKED == 0)
      return lwmaGetNextWorkRequired(pindexLast, pblock, params);
  }
@@ -736,6 +739,7 @@ uint32_t lwmaGetNextPOSRequired(const CBlockIndex* pindexLast, const Consensus::
 
 unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nFirstBlockTime, const Consensus::Params& params)
 {
+ printf("OLD CalculateNextWorkRequired\n");
     if (params.fPowNoRetargeting)
         return pindexLast->nBits;
 
@@ -775,7 +779,7 @@ unsigned int CalculateNextWorkRequired(arith_uint256 bnAvg,
     // Limit adjustment step
     // Use medians to prevent time-warp attacks
     int64_t nActualTimespan = nLastBlockTime - nFirstBlockTime;
-    printf("pow   nActualTimespan = %d  before dampening\n", nActualTimespan);
+    printf("NEW pow   nActualTimespan = %d  before dampening\n", nActualTimespan);
     nActualTimespan = params.AveragingWindowTimespan() + (nActualTimespan - params.AveragingWindowTimespan())/4;
     printf("pow   nActualTimespan = %d  before bounds\n", nActualTimespan);
 
