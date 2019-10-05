@@ -1623,6 +1623,8 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         if (!vRecv.empty()) {
             vRecv >> nStartingHeight;
         }
+        LogPrint(BCLog::NET, "nVersion=%d MIN_PEER_PROTO_VERSION_BEFORE_APOW=%d MIN_PEER_PROTO_VERSION=%d nStartingHeight=%d apowfork=%d\n",
+                 nVersion, MIN_PEER_PROTO_VERSION_BEFORE_APOW, MIN_PEER_PROTO_VERSION, nStartingHeight, chainparams.GetConsensus().nAdaptativePoWActivationThreshold);
         if (!vRecv.empty() && 
                 ((nVersion < MIN_PEER_PROTO_VERSION_BEFORE_APOW && nStartingHeight < chainparams.GetConsensus().nAdaptativePoWActivationThreshold) || 
                 (nVersion < MIN_PEER_PROTO_VERSION && nStartingHeight >= chainparams.GetConsensus().nAdaptativePoWActivationThreshold)))
