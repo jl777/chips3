@@ -310,7 +310,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     return CalculateNextWorkRequired(pindexLast, pindexFirst->GetBlockTime(), params);
  }
  else {
-  LogPrint("New Diff algo\n");
+  LogPrint(BCLog::NET, "New Diff algo\n");
 //    if (ASSETCHAINS_ALGO != ASSETCHAINS_EQUIHASH && ASSETCHAINS_STAKED == 0)
      return lwmaGetNextWorkRequired(pindexLast, pblock, params);
  }
