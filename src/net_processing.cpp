@@ -1620,10 +1620,12 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
                 return false;
             }
         }
-
+        if (!vRecv.empty()) {
+            vRecv >> nStartingHeight;
+        }
         if (!vRecv.empty() && 
-                ((nVersion < MIN_PEER_PROTO_VERSION_BEFORE_APOW && vRecv < chainparams.GetConsensus().nAdaptativePoWActivationThreshold) || 
-                (nVersion < MIN_PEER_PROTO_VERSION && vRecv >= chainparams.GetConsensus().nAdaptativePoWActivationThreshold)))
+                ((nVersion < MIN_PEER_PROTO_VERSION_BEFORE_APOW && nStartingHeight < chainparams.GetConsensus().nAdaptativePoWActivationThreshold) || 
+                (nVersion < MIN_PEER_PROTO_VERSION && nStartingHeight >= chainparams.GetConsensus().nAdaptativePoWActivationThreshold)))
         {
             // disconnect from peers older than this proto version
             LogPrint(BCLog::NET, "peer=%d using obsolete version %i; disconnecting\n", pfrom->GetId(), nVersion);
@@ -1640,9 +1642,6 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         if (!vRecv.empty()) {
             vRecv >> LIMITED_STRING(strSubVer, MAX_SUBVERSION_LENGTH);
             cleanSubVer = SanitizeString(strSubVer);
-        }
-        if (!vRecv.empty()) {
-            vRecv >> nStartingHeight;
         }
         if (!vRecv.empty())
             vRecv >> fRelay;
