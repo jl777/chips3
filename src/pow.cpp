@@ -488,50 +488,6 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     */
 }
 
-/*
-unsigned int CalculateNextWorkRequired(arith_uint256 bnAvg,
-                                       int64_t nLastBlockTime, int64_t nFirstBlockTime,
-                                       const Consensus::Params& params)
-{
-    // Limit adjustment step
-    // Use medians to prevent time-warp attacks
-    int64_t nActualTimespan = nLastBlockTime - nFirstBlockTime;
-    printf("pow   nActualTimespan = %d  before dampening\n", nActualTimespan);
-    nActualTimespan = params.AveragingWindowTimespan() + (nActualTimespan - params.AveragingWindowTimespan())/4;
-    printf("pow   nActualTimespan = %d  before bounds\n", nActualTimespan);
-
-    if ( 1 <= 0 )
-    {
-        if (nActualTimespan < params.MinActualTimespan())
-            nActualTimespan = params.MinActualTimespan();
-        if (nActualTimespan > params.MaxActualTimespan())
-            nActualTimespan = params.MaxActualTimespan();
-    }
-    // Retarget
-    arith_uint256 bnLimit;
-    if (1) //ASSETCHAINS_ALGO == ASSETCHAINS_EQUIHASH)
-        bnLimit = UintToArith256(params.powLimit);
-//    else
-//        bnLimit = UintToArith256(params.powAlternate);
-
-    const arith_uint256 bnPowLimit = bnLimit; //UintToArith256(params.powLimit);
-    arith_uint256 bnNew {bnAvg};
-    bnNew /= params.AveragingWindowTimespan();
-    bnNew *= nActualTimespan;
-
-    if (bnNew > bnPowLimit)
-        bnNew = bnPowLimit;
-
-    /// debug print
-    printf("pow GetNextWorkRequired RETARGET\n");
-    printf("pow params.AveragingWindowTimespan() = %d    nActualTimespan = %d\n", params.AveragingWindowTimespan(), nActualTimespan);
-    printf("pow Current average: %08x  %s\n", bnAvg.GetCompact(), bnAvg.ToString());
-    printf("pow After:  %08x  %s\n", bnNew.GetCompact(), bnNew.ToString());
-
-    return bnNew.GetCompact();
-}
-*/
-
 unsigned int lwmaGetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params)
 {
     return lwmaCalculateNextWorkRequired(pindexLast, params);
