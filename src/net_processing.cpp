@@ -1620,6 +1620,9 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
                 return false;
             }
         }
+        if (!vRecv.empty())
+            vRecv >> nStartingHeight;
+        LogPrintf("nVersion %d | MIN_PEER_PROTO_VERSION %d | nHeight %d\n", nVersion, MIN_PEER_PROTO_VERSION, nStartingHeight);
         if (nVersion < MIN_PEER_PROTO_VERSION)
         {
             // disconnect from peers older than this proto version
