@@ -272,10 +272,12 @@ arith_uint256 zawy_TSA_EMA(int32_t height,int32_t tipdiff,arith_uint256 prevTarg
 
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params)
 {
+ /*
  LogPrint(BCLog::NET, "Current nHeight = %d nAdaptativePoWActivationThreshold = %d\n", pindexLast->nHeight, params.nAdaptativePoWActivationThreshold);
     if (pindexLast->nHeight < params.nAdaptativePoWActivationThreshold) {
         LogPrint(BCLog::NET, "OLD Diff algo\n");
         printf("OLD Diff algo\n");
+     */
         assert(pindexLast != nullptr);
         unsigned int nProofOfWorkLimit = UintToArith256(params.powLimit).GetCompact();
 
@@ -308,12 +310,14 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     assert(pindexFirst);
 
     return CalculateNextWorkRequired(pindexLast, pindexFirst->GetBlockTime(), params);
+ /*
  }
  else {
   LogPrint(BCLog::NET, "New Diff algo\n");
 //    if (ASSETCHAINS_ALGO != ASSETCHAINS_EQUIHASH && ASSETCHAINS_STAKED == 0)
      return lwmaGetNextWorkRequired(pindexLast, pblock, params);
  }
+ */
 /*
     arith_uint256 bnLimit;
     if (ASSETCHAINS_ALGO == ASSETCHAINS_EQUIHASH)
@@ -741,7 +745,7 @@ uint32_t lwmaGetNextPOSRequired(const CBlockIndex* pindexLast, const Consensus::
 
 unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nFirstBlockTime, const Consensus::Params& params)
 {
- printf("OLD CalculateNextWorkRequired\n");
+// printf("OLD CalculateNextWorkRequired\n");
     if (params.fPowNoRetargeting)
         return pindexLast->nBits;
 
