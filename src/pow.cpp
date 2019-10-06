@@ -274,7 +274,6 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
 {
  LogPrintf("Current nHeight = %d nAdaptativePoWActivationThreshold = %d\n", pindexLast->nHeight, params.nAdaptativePoWActivationThreshold);
     if (pindexLast->nHeight < params.nAdaptativePoWActivationThreshold) {
-        LogPrint(BCLog::NET, "OLD Diff algo\n");
         LogPrintf("OLD Diff algo\n");
      
         assert(pindexLast != nullptr);
