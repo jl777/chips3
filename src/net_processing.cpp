@@ -1620,9 +1620,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
                 return false;
             }
         }
-        if (!vRecv.empty())
-            vRecv >> nStartingHeight;
-        LogPrintf("nVersion %d | MIN_PEER_PROTO_VERSION %d | nHeight %d\n", nVersion, MIN_PEER_PROTO_VERSION, nStartingHeight);
+        // pindex->nHeight
         if (nVersion < MIN_PEER_PROTO_VERSION)
         {
             // disconnect from peers older than this proto version
@@ -1644,6 +1642,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         if (!vRecv.empty()) {
             vRecv >> nStartingHeight;
         }
+        LogPrintf("nVersion %d | MIN_PEER_PROTO_VERSION %d | nHeight %d\n", nVersion, MIN_PEER_PROTO_VERSION, nStartingHeight);
         if (!vRecv.empty())
             vRecv >> fRelay;
         // Disconnect if we connected to ourself
