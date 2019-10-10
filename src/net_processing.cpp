@@ -1647,7 +1647,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
             nVersion < MIN_PEER_PROTO_VERSION_AFTER_APOW)
         {
             // disconnect from peers older than this proto version
-            LogPrint(BCLog::NET, "[apow fork] peer=%d using obsolete (apow fork) version %i; disconnecting\n", pfrom->GetId(), nVersion);
+            LogPrintf("[apow fork] peer=%d using obsolete (apow fork) version %i; disconnecting\n", pfrom->GetId(), nVersion);
             connman->PushMessage(pfrom, CNetMsgMaker(INIT_PROTO_VERSION).Make(NetMsgType::REJECT, strCommand, REJECT_OBSOLETE,
                                strprintf("Version must be %d or greater", MIN_PEER_PROTO_VERSION_AFTER_APOW)));
             pfrom->fDisconnect = true;
