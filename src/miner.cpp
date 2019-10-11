@@ -52,7 +52,7 @@ int64_t UpdateTime(CBlockHeader* pblock, const Consensus::Params& consensusParam
     // Updating time can change work required on testnet and apow (?):
     // if (consensusParams.fPowAllowMinDifficultyBlocks)
         pblock->nBits = GetNextWorkRequired(pindexPrev, pblock, consensusParams);
-    printf(">>>>>>> miner pblock->nBits %x\n",pblock->nBits);
+    LogPrintf(">>>>>>> miner pblock->nBits %x\n",pblock->nBits);
     
     return nNewTime - nOldTime;
 }
@@ -173,12 +173,13 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
     UpdateTime(pblock, chainparams.GetConsensus(), pindexPrev);
     LogPrintf("CreateNewBlock(): UpdateTime ok\n");
     pblock->nBits          = GetNextWorkRequired(pindexPrev, pblock, chainparams.GetConsensus());
-    printf(">>>>>>>> miner: pblock->nBits %x\n",pblock->nBits);
+    LogPrintf(">>>>>>>> miner: pblock->nBits %x\n",pblock->nBits);
         pblock->nNonce         = 0;
     pblocktemplate->vTxSigOpsCost[0] = WITNESS_SCALE_FACTOR * GetLegacySigOpCount(*pblock->vtx[0]);
 
     CValidationState state;
     if (!TestBlockValidity(state, chainparams, *pblock, pindexPrev, false, false)) {
+        LogPrintf("%s: TestBlockValidity failed: %s", __func__, FormatStateMessage(state));
         throw std::runtime_error(strprintf("%s: TestBlockValidity failed: %s", __func__, FormatStateMessage(state)));
     }
     int64_t nTime2 = GetTimeMicros();
