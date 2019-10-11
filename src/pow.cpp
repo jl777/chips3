@@ -273,7 +273,7 @@ arith_uint256 zawy_TSA_EMA(int32_t height,int32_t tipdiff,arith_uint256 prevTarg
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params)
 {
  LogPrintf("Current nHeight = %d nAdaptativePoWActivationThreshold = %d\n", pindexLast->nHeight, params.nAdaptativePoWActivationThreshold);
-    if (pindexLast->nHeight <= params.nAdaptativePoWActivationThreshold) {
+    if (pindexLast->nHeight + 1 <= params.nAdaptativePoWActivationThreshold) {
         LogPrintf("OLD Diff algo\n");
      
         assert(pindexLast != nullptr);
