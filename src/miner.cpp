@@ -40,12 +40,15 @@ uint64_t nLastBlockWeight = 0;
 
 int64_t UpdateTime(CBlockHeader* pblock, const Consensus::Params& consensusParams, const CBlockIndex* pindexPrev)
 {
+    LogPrintf("UpdateTime pindexPrev->->nHeight %d\n, pindexPrev->->nHeight);
     int64_t nOldTime = pblock->nTime;
     int64_t nNewTime = std::max(pindexPrev->GetMedianTimePast()+1, GetAdjustedTime());
 
     if (nOldTime < nNewTime)
         pblock->nTime = nNewTime;
 
+    LogPrintf("UpdateTime before call to GetNextWorkRequired\n");
+                        
     // Updating time can change work required on testnet and apow (?):
     // if (consensusParams.fPowAllowMinDifficultyBlocks)
         pblock->nBits = GetNextWorkRequired(pindexPrev, pblock, consensusParams);
@@ -166,7 +169,9 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
 
     // Fill in header
     pblock->hashPrevBlock  = pindexPrev->GetBlockHash();
+    LogPrintf("CreateNewBlock(): GetBlockHash ok\n");
     UpdateTime(pblock, chainparams.GetConsensus(), pindexPrev);
+    LogPrintf("CreateNewBlock(): UpdateTime ok\n");
     pblock->nBits          = GetNextWorkRequired(pindexPrev, pblock, chainparams.GetConsensus());
     printf(">>>>>>>> miner: pblock->nBits %x\n",pblock->nBits);
         pblock->nNonce         = 0;
