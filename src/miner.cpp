@@ -40,7 +40,7 @@ uint64_t nLastBlockWeight = 0;
 
 int64_t UpdateTime(CBlockHeader* pblock, const Consensus::Params& consensusParams, const CBlockIndex* pindexPrev)
 {
-    LogPrintf("UpdateTime pindexPrev->->nHeight %d\n", pindexPrev->->nHeight);
+    LogPrintf("UpdateTime pindexPrev->nHeight %d\n", pindexPrev->nHeight);
     int64_t nOldTime = pblock->nTime;
     int64_t nNewTime = std::max(pindexPrev->GetMedianTimePast()+1, GetAdjustedTime());
 
