@@ -128,9 +128,13 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
             LOCK(cs_main);
             IncrementExtraNonce(pblock, chainActive.Tip(), nExtraNonce);
         }
+        CBlockIndex* const pindexPrev = chainActive.Tip();
+        pblock->nBits = GetNextWorkRequired(pindexPrev, pblock, Params().GetConsensus());
         while (nMaxTries > 0 && pblock->nNonce < nInnerLoopCount && !CheckProofOfWork(pblock->GetHash(), pblock->nBits, Params().GetConsensus())) {
             ++pblock->nNonce;
             --nMaxTries;
+            pindexPrev = chainActive.Tip(); // in case there is a new block on the network
+            pblock->nBits = GetNextWorkRequired(pindexPrev, pblock, Params().GetConsensus()); // in case nBits changed due to huge delay without block
         }
         if (nMaxTries == 0) {
             break;
