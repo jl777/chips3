@@ -3013,6 +3013,15 @@ static bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state,
     if (fCheckPOW && !CheckProofOfWork(block.GetHash(), block.nBits, consensusParams))
         return state.DoS(50, false, REJECT_INVALID, "high-hash", false, "proof of work failed");
 
+    if ( block->nHeight > consensusParams.nAdaptativePoWActivationThreshold )
+    {
+        if (block.GetBlockTime() > GetAdjustedTime() + 4)
+        {
+            LogPrintf("CheckBlockHeader block from future %d error",block.GetBlockTime() - GetAdjustedTime());
+            return false;
+        }
+    }
+    
     return true;
 }
 
@@ -3162,7 +3171,7 @@ static bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationSta
     
     // Check proof of work
     const Consensus::Params& consensusParams = params.GetConsensus();
-    LogPrintf("block.nBits = %d GetNextWorkRequired = %d\n", block.nBits, GetNextWorkRequired(pindexPrev, &block, consensusParams));
+    LogPrintf(" === ContextualCheckBlockHeader: block.nBits = %d GetNextWorkRequired = %d\n", block.nBits, GetNextWorkRequired(pindexPrev, &block, consensusParams));
     if (block.nBits != GetNextWorkRequired(pindexPrev, &block, consensusParams))
         return state.DoS(100, false, REJECT_INVALID, "bad-diffbits", false, "incorrect proof of work");
 
@@ -3186,9 +3195,20 @@ static bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationSta
         }
     }
 
-    // Check timestamp against prev
-    if (block.GetBlockTime() <= pindexPrev->GetMedianTimePast())
-        return state.Invalid(false, REJECT_INVALID, "time-too-old", "block's timestamp is too early");
+    if ( pindexPrev->nHeight + 1 <= consensusParams.nAdaptativePoWActivationThreshold || nHeight < 30 )
+    {
+        // Check timestamp against prev
+        if (block.GetBlockTime() <= pindexPrev->GetMedianTimePast())
+            return state.Invalid(false, REJECT_INVALID, "time-too-old", "block's timestamp is too early");
+    }
+    else    { // apow
+        if ( block.GetBlockTime() <= pindexPrev->nTime )
+        {
+            fprintf(stderr,"ht.%d too early2 %u vs %u\n",(int32_t)nHeight,(uint32_t)block.GetBlockTime(),(uint32_t)pindexPrev->nTime);
+            return state.Invalid(error("%s: block's timestamp is too early2", __func__),
+                                 REJECT_INVALID, "time-too-old");
+        }
+    }
 
     // Check timestamp
     if (block.GetBlockTime() > nAdjustedTime + MAX_FUTURE_BLOCK_TIME)
