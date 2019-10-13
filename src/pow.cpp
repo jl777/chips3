@@ -272,7 +272,7 @@ arith_uint256 zawy_TSA_EMA(int32_t height,int32_t tipdiff,arith_uint256 prevTarg
 
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params)
 {
- LogPrintf("Current nHeight = %d nAdaptativePoWActivationThreshold = %d\n", pindexLast->nHeight, params.nAdaptativePoWActivationThreshold);
+ // LogPrintf("Current nHeight = %d nAdaptativePoWActivationThreshold = %d\n", pindexLast->nHeight, params.nAdaptativePoWActivationThreshold);
     if (pindexLast->nHeight + 1 <= params.nAdaptativePoWActivationThreshold) {
         LogPrintf("OLD Diff algo\n");
      
@@ -493,7 +493,7 @@ unsigned int lwmaGetNextWorkRequired(const CBlockIndex* pindexLast, const CBlock
 
 unsigned int lwmaCalculateNextWorkRequired(const CBlockIndex* pindexLast, const Consensus::Params& params)
 {
-    LogPrintf("lwmaCalculateNextWorkRequired\n");
+    //LogPrintf("lwmaCalculateNextWorkRequired\n");
     arith_uint256 nextTarget {0}, sumTarget {0}, bnTmp, bnLimit;
     //if (ASSETCHAINS_ALGO == ASSETCHAINS_EQUIHASH)
         bnLimit = UintToArith256(params.powLimit);
@@ -502,7 +502,7 @@ unsigned int lwmaCalculateNextWorkRequired(const CBlockIndex* pindexLast, const 
 
     unsigned int nProofOfWorkLimit = bnLimit.GetCompact();
     
-    LogPrintf("PoWLimit: %u\n", nProofOfWorkLimit);
+    //LogPrintf("PoWLimit: %u\n", nProofOfWorkLimit);
 
     // Find the first block in the averaging interval as we total the linearly weighted average
     const CBlockIndex* pindexFirst = pindexLast;
@@ -723,10 +723,10 @@ LogPrintf("OLD CalculateNextWorkRequired\n");
         int32_t i;
         for (i=31; i>=0; i--)
             printf("%02x",((uint8_t *)&bnNew)[i]);
-        LogPrintf("bnNew vs limit ");
+        //LogPrintf("bnNew vs limit ");
         for (i=31; i>=0; i--)
             printf("%02x",((uint8_t *)&bnPowLimit)[i]);
-        LogPrintf("\n");
+        //LogPrintf("\n");
     }
     if (bnNew > bnPowLimit)
         bnNew = bnPowLimit;
