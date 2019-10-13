@@ -493,6 +493,7 @@ unsigned int lwmaGetNextWorkRequired(const CBlockIndex* pindexLast, const CBlock
 
 unsigned int lwmaCalculateNextWorkRequired(const CBlockIndex* pindexLast, const Consensus::Params& params)
 {
+    LogPrintf("lwmaCalculateNextWorkRequired\n");
     arith_uint256 nextTarget {0}, sumTarget {0}, bnTmp, bnLimit;
     //if (ASSETCHAINS_ALGO == ASSETCHAINS_EQUIHASH)
         bnLimit = UintToArith256(params.powLimit);
@@ -501,7 +502,7 @@ unsigned int lwmaCalculateNextWorkRequired(const CBlockIndex* pindexLast, const 
 
     unsigned int nProofOfWorkLimit = bnLimit.GetCompact();
     
-    //printf("PoWLimit: %u\n", nProofOfWorkLimit);
+    LogPrintf("PoWLimit: %u\n", nProofOfWorkLimit);
 
     // Find the first block in the averaging interval as we total the linearly weighted average
     const CBlockIndex* pindexFirst = pindexLast;
@@ -558,6 +559,7 @@ bool DoesHashQualify(const CBlockIndex *pbindex)
 // and requires that the averaging window be quite long.
 uint32_t lwmaGetNextPOSRequired(const CBlockIndex* pindexLast, const Consensus::Params& params)
 {
+    LogPrintf("lwmaGetNextPOSRequired\n");
     arith_uint256 nextTarget {0}, sumTarget {0}, bnTmp, bnLimit;
  /*
     bnLimit = UintToArith256(params.posLimit);
@@ -721,10 +723,10 @@ LogPrintf("OLD CalculateNextWorkRequired\n");
         int32_t i;
         for (i=31; i>=0; i--)
             printf("%02x",((uint8_t *)&bnNew)[i]);
-        printf("bnNew vs limit ");
+        LogPrintf("bnNew vs limit ");
         for (i=31; i>=0; i--)
             printf("%02x",((uint8_t *)&bnPowLimit)[i]);
-        printf("\n");
+        LogPrintf("\n");
     }
     if (bnNew > bnPowLimit)
         bnNew = bnPowLimit;
@@ -739,9 +741,9 @@ unsigned int CalculateNextWorkRequired(arith_uint256 bnAvg,
     // Limit adjustment step
     // Use medians to prevent time-warp attacks
     int64_t nActualTimespan = nLastBlockTime - nFirstBlockTime;
-    printf("NEW pow   nActualTimespan = %d  before dampening\n", nActualTimespan);
+    LogPrintf("NEW pow   nActualTimespan = %d  before dampening\n", nActualTimespan);
     nActualTimespan = params.AveragingWindowTimespan() + (nActualTimespan - params.AveragingWindowTimespan())/4;
-    printf("pow   nActualTimespan = %d  before bounds\n", nActualTimespan);
+    LogPrintf("pow   nActualTimespan = %d  before bounds\n", nActualTimespan);
 
     if ( 1 <= 0 )
     {
@@ -766,16 +768,18 @@ unsigned int CalculateNextWorkRequired(arith_uint256 bnAvg,
         bnNew = bnPowLimit;
 
     /// debug print
-    printf("pow GetNextWorkRequired RETARGET\n");
-    printf("pow params.AveragingWindowTimespan() = %d    nActualTimespan = %d\n", params.AveragingWindowTimespan(), nActualTimespan);
-    printf("pow Current average: %08x  %s\n", bnAvg.GetCompact(), bnAvg.ToString());
-    printf("pow After:  %08x  %s\n", bnNew.GetCompact(), bnNew.ToString());
+    LogPrintf("pow GetNextWorkRequired RETARGET\n");
+    LogPrintf("pow params.AveragingWindowTimespan() = %d    nActualTimespan = %d\n", params.AveragingWindowTimespan(), nActualTimespan);
+    LogPrintf("pow Current average: %08x  %s\n", bnAvg.GetCompact(), bnAvg.ToString());
+    LogPrintf("pow After:  %08x  %s\n", bnNew.GetCompact(), bnNew.ToString());
 
     return bnNew.GetCompact();
 }
 
 bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params& params)
 {
+    LogPrintf("CheckProofOfWork with hash 
+              %08x  %s
     bool fNegative;
     bool fOverflow;
     arith_uint256 bnTarget;
@@ -789,10 +793,10 @@ bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params&
         tmp = UintToArith256(params.powLimit);
         for (i=31; i>=0; i--)
             printf("%02x",((uint8_t *)&bnTarget)[i]);
-        printf(" bntarget vs powlimit ");
+        LogPrintf(" bntarget vs powlimit ");
         for (i=31; i>=0; i--)
             printf("%02x",((uint8_t *)&tmp)[i]);
-        printf("overflow or bad target\n");
+        LogPrintf("overflow or bad target\n");
         return false;
     }
     // Check proof of work matches claimed amount
