@@ -134,7 +134,7 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
             ++pblock->nNonce;
             --nMaxTries;
             pindexPrev = chainActive.Tip(); // in case there is a new block on the network
-            UpdateTime(pblock, chainparams.GetConsensus(), pindexPrev); // in case nBits changed due to huge delay without block
+            UpdateTime(pblock, Params().GetConsensus(), pindexPrev); // in case nBits changed due to huge delay without block
         }
         if (nMaxTries == 0) {
             break;
