@@ -3013,6 +3013,8 @@ static bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state,
     if (fCheckPOW && !CheckProofOfWork(block.GetHash(), block.nBits, consensusParams))
         return state.DoS(50, false, REJECT_INVALID, "high-hash", false, "proof of work failed");
 
+    /*
+    // TO DO: I need the blockheight here to check the following condition only for APOW:
     if ( block.nHeight > consensusParams.nAdaptativePoWActivationThreshold )
     {
         if (block.GetBlockTime() > GetAdjustedTime() + 4)
@@ -3021,6 +3023,7 @@ static bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state,
             return false;
         }
     }
+    */
     
     return true;
 }
