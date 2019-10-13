@@ -40,7 +40,7 @@ uint64_t nLastBlockWeight = 0;
 
 int64_t UpdateTime(CBlockHeader* pblock, const Consensus::Params& consensusParams, const CBlockIndex* pindexPrev)
 {
-    LogPrintf("UpdateTime pindexPrev->nHeight %d\n", pindexPrev->nHeight);
+//    LogPrintf("UpdateTime pindexPrev->nHeight %d\n", pindexPrev->nHeight);
     int64_t nOldTime = pblock->nTime;
     int64_t nNewTime;
     if (pindexPrev->nHeight + 1 <= consensusParams.nAdaptativePoWActivationThreshold)
@@ -56,7 +56,7 @@ int64_t UpdateTime(CBlockHeader* pblock, const Consensus::Params& consensusParam
     // Updating time can change work required on testnet and apow (?):
     if (consensusParams.fPowAllowMinDifficultyBlocks || pindexPrev->nHeight + 1 > consensusParams.nAdaptativePoWActivationThreshold)    {
         pblock->nBits = GetNextWorkRequired(pindexPrev, pblock, consensusParams);
-        LogPrintf(">>>>>>> miner pblock->nBits %x\n",pblock->nBits);
+        //LogPrintf(">>>>>>> miner pblock->nBits %x\n",pblock->nBits);
     }
     
     return nNewTime - nOldTime;
