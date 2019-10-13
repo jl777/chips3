@@ -42,17 +42,21 @@ int64_t UpdateTime(CBlockHeader* pblock, const Consensus::Params& consensusParam
 {
     LogPrintf("UpdateTime pindexPrev->nHeight %d\n", pindexPrev->nHeight);
     int64_t nOldTime = pblock->nTime;
-    int64_t nNewTime = std::max(pindexPrev->GetMedianTimePast()+1, GetAdjustedTime());
+    if (pindexLast->nHeight + 1 <= consensusParams.nAdaptativePoWActivationThreshold)
+        int64_t nNewTime = std::max(pindexPrev->GetMedianTimePast()+1, GetAdjustedTime());
+    else
+        pblock->nTime = std::max((int64_t)(pindexPrev->nTime+1), GetAdjustedTime());
 
-    if (nOldTime < nNewTime)
-        pblock->nTime = nNewTime;
+//    if (nOldTime < nNewTime && pindexLast->nHeight + 1 <= consensusParams.nAdaptativePoWActivationThreshold)
+        pblock->nTime = nNewTime;        
 
-    LogPrintf("UpdateTime before call to GetNextWorkRequired\n");
+    // LogPrintf("UpdateTime before call to GetNextWorkRequired\n");
                         
     // Updating time can change work required on testnet and apow (?):
-    // if (consensusParams.fPowAllowMinDifficultyBlocks)
+    if (consensusParams.fPowAllowMinDifficultyBlocks || pindexLast->nHeight + 1 > consensusParams.nAdaptativePoWActivationThreshold)    {
         pblock->nBits = GetNextWorkRequired(pindexPrev, pblock, consensusParams);
-    LogPrintf(">>>>>>> miner pblock->nBits %x\n",pblock->nBits);
+        LogPrintf(">>>>>>> miner pblock->nBits %x\n",pblock->nBits);
+    }
     
     return nNewTime - nOldTime;
 }
@@ -160,6 +164,9 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
     coinbaseTx.vout.resize(1);
     coinbaseTx.vout[0].scriptPubKey = scriptPubKeyIn;
     coinbaseTx.vout[0].nValue = nFees + GetBlockSubsidy(nHeight, chainparams.GetConsensus());
+    if ( pindexLast->nHeight + 1 <= consensusParams.nAdaptativePoWActivationThreshold )
+        coinbaseTx.nLockTime = std::max(pindexPrev->GetMedianTimePast()+1, GetAdjustedTime());
+    else coinbaseTx.nLockTime = std::max((int64_t)(pindexPrev->nTime+1), GetAdjustedTime());
     coinbaseTx.vin[0].scriptSig = CScript() << nHeight << OP_0;
     pblock->vtx[0] = MakeTransactionRef(std::move(coinbaseTx));
     pblocktemplate->vchCoinbaseCommitment = GenerateCoinbaseCommitment(*pblock, pindexPrev, chainparams.GetConsensus());
