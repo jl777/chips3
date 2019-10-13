@@ -778,8 +778,8 @@ unsigned int CalculateNextWorkRequired(arith_uint256 bnAvg,
 
 bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params& params)
 {
-    LogPrintf("CheckProofOfWork with hash 
-              %08x  %s
+    LogPrintf("CheckProofOfWork with hash ");
+              // %08x  %s
     bool fNegative;
     bool fOverflow;
     arith_uint256 bnTarget;
