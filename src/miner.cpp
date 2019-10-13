@@ -42,10 +42,11 @@ int64_t UpdateTime(CBlockHeader* pblock, const Consensus::Params& consensusParam
 {
     LogPrintf("UpdateTime pindexPrev->nHeight %d\n", pindexPrev->nHeight);
     int64_t nOldTime = pblock->nTime;
+    int64_t nNewTime;
     if (pindexPrev->nHeight + 1 <= consensusParams.nAdaptativePoWActivationThreshold)
-        int64_t nNewTime = std::max(pindexPrev->GetMedianTimePast()+1, GetAdjustedTime());
+        nNewTime = std::max(pindexPrev->GetMedianTimePast()+1, GetAdjustedTime());
     else
-        int64_t nNewTime = std::max((int64_t)(pindexPrev->nTime+1), GetAdjustedTime());
+        nNewTime = std::max((int64_t)(pindexPrev->nTime+1), GetAdjustedTime());
 
 //    if (nOldTime < nNewTime && pindexLast->nHeight + 1 <= consensusParams.nAdaptativePoWActivationThreshold)
         pblock->nTime = nNewTime;        
