@@ -350,7 +350,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     memset(ctinv,0,sizeof(ctinv));
     memset(zflags,0,sizeof(zflags));
     if ( pindexLast != 0 )
-        height = (int32_t)pindexLast->GetHeight() + 1;
+        height = (int32_t)pindexLast->nHeight + 1;
     if ( /*ASSETCHAINS_ADAPTIVEPOW > 0 &&*/ pindexFirst != 0 && pblock != 0 && height >= (int32_t)(sizeof(ct)/sizeof(*ct)) )
     {
         tipdiff = (pblock->nTime - pindexFirst->nTime);
@@ -380,7 +380,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     for (i = 0; pindexFirst && i < params.nPowAveragingWindow; i++)
     {
         bnTmp.SetCompact(pindexFirst->nBits);
-        if ( /*ASSETCHAINS_ADAPTIVEPOW > 0*/ && pblock != 0 )
+        if ( /*ASSETCHAINS_ADAPTIVEPOW > 0 &&*/ pblock != 0 )
         {
             blocktime = pindexFirst->nTime;
             diff = (pblock->nTime - blocktime);
@@ -407,7 +407,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
 
     bool fNegative,fOverflow; int32_t past,zawyflag = 0; arith_uint256 easy,origtarget,bnAvg {bnTot / params.nPowAveragingWindow};
     nbits = CalculateNextWorkRequired(bnAvg, pindexLast->GetMedianTimePast(), pindexFirst->GetMedianTimePast(), params);
-    if ( /*ASSETCHAINS_ADAPTIVEPOW > 0*/ )
+    if ( 1 /*ASSETCHAINS_ADAPTIVEPOW > 0*/ )
     {
         bnTarget = arith_uint256().SetCompact(nbits);
         if ( height > (int32_t)(sizeof(ct)/sizeof(*ct)) && pblock != 0 && tipdiff > 0 )
