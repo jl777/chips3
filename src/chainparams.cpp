@@ -94,7 +94,7 @@ public:
         consensus.nPowTargetTimespan = 17 * consensus.nPowTargetSpacing;
         consensus.fPowNoRetargeting = false;
         consensus.nRuleChangeActivationThreshold = 1916; // 95% of 2016
-        consensus.nAdaptativePoWActivationThreshold = 4835515;
+        consensus.nAdaptativePoWActivationThreshold = 5835515;
         consensus.nMinerConfirmationWindow = 17; // 2016 before changed ; nPowTargetTimespan / nPowTargetSpacing
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 1199145601; // January 1, 2008
