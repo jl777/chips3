@@ -313,15 +313,15 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
  else {
   // LogPrintf("New Diff algo\n");
 //    if (ASSETCHAINS_ALGO != ASSETCHAINS_EQUIHASH && ASSETCHAINS_STAKED == 0)
-     return lwmaGetNextWorkRequired(pindexLast, pblock, params);
- }
+//     return lwmaGetNextWorkRequired(pindexLast, pblock, params);
+
  
-/*
+
     arith_uint256 bnLimit;
-    if (ASSETCHAINS_ALGO == ASSETCHAINS_EQUIHASH)
+    //if (ASSETCHAINS_ALGO == ASSETCHAINS_EQUIHASH)
         bnLimit = UintToArith256(params.powLimit);
-    else
-        bnLimit = UintToArith256(params.powAlternate);
+    //else
+    //    bnLimit = UintToArith256(params.powAlternate);
     unsigned int nProofOfWorkLimit = bnLimit.GetCompact();
     // Genesis block
     if (pindexLast == NULL )
@@ -351,10 +351,10 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     memset(zflags,0,sizeof(zflags));
     if ( pindexLast != 0 )
         height = (int32_t)pindexLast->GetHeight() + 1;
-    if ( ASSETCHAINS_ADAPTIVEPOW > 0 && pindexFirst != 0 && pblock != 0 && height >= (int32_t)(sizeof(ct)/sizeof(*ct)) )
+    if ( /*ASSETCHAINS_ADAPTIVEPOW > 0 &&*/ pindexFirst != 0 && pblock != 0 && height >= (int32_t)(sizeof(ct)/sizeof(*ct)) )
     {
         tipdiff = (pblock->nTime - pindexFirst->nTime);
-        mult = tipdiff - 7 * ASSETCHAINS_BLOCKTIME;
+        mult = tipdiff - 7 * params.nPowTargetSpacing; // ASSETCHAINS_BLOCKTIME
         bnPrev.SetCompact(pindexFirst->nBits);
         for (i=0; pindexFirst != 0 && i<(int32_t)(sizeof(ct)/sizeof(*ct)); i++)
         {
@@ -368,7 +368,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
             if ( zflags[i] == 1 || zflags[i] == 2 ) // I, O and if TSA made it harder
                 ct[i] = zawy_ctB(ct[i],ts[i] - ts[i+1]);
         }
-        if ( ASSETCHAINS_ADAPTIVEPOW == 2 ) // TSA
+        if ( 0 ) // ASSETCHAINS_ADAPTIVEPOW == 2 ) // TSA
         {
             bnTarget = zawy_TSA_EMA(height,tipdiff,ct[0],ts[0] - ts[1]);
             nbits = bnTarget.GetCompact();
@@ -380,14 +380,14 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     for (i = 0; pindexFirst && i < params.nPowAveragingWindow; i++)
     {
         bnTmp.SetCompact(pindexFirst->nBits);
-        if ( ASSETCHAINS_ADAPTIVEPOW > 0 && pblock != 0 )
+        if ( /*ASSETCHAINS_ADAPTIVEPOW > 0*/ && pblock != 0 )
         {
             blocktime = pindexFirst->nTime;
             diff = (pblock->nTime - blocktime);
             //fprintf(stderr,"%d ",diff);
             if ( i < 6 )
             {
-                diff -= (8+i)*ASSETCHAINS_BLOCKTIME;
+                diff -= (8+i)*params.nPowTargetSpacing; // ASSETCHAINS_BLOCKTIME
                 if ( diff > mult )
                 {
                     //fprintf(stderr,"i.%d diff.%d (%u - %u - %dx)\n",i,(int32_t)diff,pblock->nTime,pindexFirst->nTime,(8+i));
@@ -407,12 +407,12 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
 
     bool fNegative,fOverflow; int32_t past,zawyflag = 0; arith_uint256 easy,origtarget,bnAvg {bnTot / params.nPowAveragingWindow};
     nbits = CalculateNextWorkRequired(bnAvg, pindexLast->GetMedianTimePast(), pindexFirst->GetMedianTimePast(), params);
-    if ( ASSETCHAINS_ADAPTIVEPOW > 0 )
+    if ( /*ASSETCHAINS_ADAPTIVEPOW > 0*/ )
     {
         bnTarget = arith_uint256().SetCompact(nbits);
         if ( height > (int32_t)(sizeof(ct)/sizeof(*ct)) && pblock != 0 && tipdiff > 0 )
         {
-            easy.SetCompact(KOMODO_MINDIFF_NBITS & (~3),&fNegative,&fOverflow);
+            easy.SetCompact(0x1e007fff & (~3),&fNegative,&fOverflow); // KOMODO_MINDIFF_NBITS
             if ( pblock != 0 )
             {
                 origtarget = bnTarget;
@@ -463,7 +463,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
                 {
                     bnTarget = easy;
                     fprintf(stderr,"cmp.%d mult.%d ht.%d -> easy target\n",mult>1,(int32_t)mult,height);
-                    return(KOMODO_MINDIFF_NBITS & (~3));
+                    return(0x1e007fff & (~3)); // KOMODO_MINDIFF_NBITS
                 }
                 {
                     int32_t z;
@@ -483,7 +483,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
         nbits = (nbits & 0xfffffffc) | zawyflag;
     }
     return(nbits);
-    */
+  }
 }
 
 unsigned int lwmaGetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params)
