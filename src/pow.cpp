@@ -394,8 +394,8 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
                     mult = diff;
                 }
             }
-            //if ( zflags[i] != 0 && zflags[0] != 0 )
-            //    bnTmp = (ct[i] / arith_uint256(3));
+            if ( zflags[i] != 0 && zflags[0] != 0 )
+                bnTmp = (ct[i] / arith_uint256(3));
         }
         bnTot += bnTmp;
         pindexFirst = pindexFirst->pprev;
