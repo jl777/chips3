@@ -123,10 +123,8 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
     while (nHeight < nHeightEnd)
     {
         std::unique_ptr<CBlockTemplate> pblocktemplate(BlockAssembler(Params()).CreateNewBlock(coinbaseScript->reserveScript));
-        if (!pblocktemplate.get())  {
-            LogPrintf("Couldn't create new block");
+        if (!pblocktemplate.get())
             throw JSONRPCError(RPC_INTERNAL_ERROR, "Couldn't create new block");
-            }
         CBlock *pblock = &pblocktemplate->block;
         {
             LOCK(cs_main);
@@ -137,8 +135,6 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
         while (nMaxTries > 0 && pblock->nNonce < nInnerLoopCount && !CheckProofOfWork(pblock->GetHash(), pblock->nBits, Params().GetConsensus())) {
             ++pblock->nNonce;
             --nMaxTries;
-            //pindexPrev = chainActive.Tip(); // in case there is a new block on the network
-            //UpdateTime(pblock, Params().GetConsensus(), pindexPrev); // in case nBits changed due to huge delay without block
         }
         if (nMaxTries == 0) {
             break;
@@ -147,10 +143,8 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
             continue;
         }
         std::shared_ptr<const CBlock> shared_pblock = std::make_shared<const CBlock>(*pblock);
-        if (!ProcessNewBlock(Params(), shared_pblock, true, nullptr))   {
-            LogPrintf("ProcessNewBlock, block not accepted");
+        if (!ProcessNewBlock(Params(), shared_pblock, true, nullptr))
             throw JSONRPCError(RPC_INTERNAL_ERROR, "ProcessNewBlock, block not accepted");
-            }
         ++nHeight;
         blockHashes.push_back(pblock->GetHash().GetHex());
 
