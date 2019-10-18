@@ -134,9 +134,21 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
     if (chainparams.MineBlocksOnDemand())
         pblock->nVersion = gArgs.GetArg("-blockversion", pblock->nVersion);
 
-    pblock->nTime = GetAdjustedTime();
     const int64_t nMedianTimePast = pindexPrev->GetMedianTimePast();
-
+    uint32_t proposedTime = GetAdjustedTime();
+        if (proposedTime == nMedianTimePast)
+        {
+            // too fast or stuck, this addresses the too fast issue, while moving
+            // forward as quickly as possible
+            for (int i; i < 100; i++)
+            {
+                proposedTime = GetAdjustedTime();
+                if (proposedTime == nMedianTimePast)
+                    MilliSleep(10);
+            }
+        }
+    pblock->nTime = GetAdjustedTime();
+    
     nLockTimeCutoff = (STANDARD_LOCKTIME_VERIFY_FLAGS & LOCKTIME_MEDIAN_TIME_PAST)
                        ? nMedianTimePast
                        : pblock->GetBlockTime();
