@@ -272,9 +272,7 @@ arith_uint256 zawy_TSA_EMA(int32_t height,int32_t tipdiff,arith_uint256 prevTarg
 
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params)
 {
- // LogPrintf("Current nHeight = %d nAdaptativePoWActivationThreshold = %d\n", pindexLast->nHeight, params.nAdaptativePoWActivationThreshold);
     if (pindexLast->nHeight + 1 <= params.nAdaptativePoWActivationThreshold) {
-        LogPrintf("OLD Diff algo\n");
      
         assert(pindexLast != nullptr);
         unsigned int nProofOfWorkLimit = UintToArith256(params.powLimit).GetCompact();
@@ -311,17 +309,10 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
  
  }
  else {
-  // LogPrintf("New Diff algo\n");
-//    if (ASSETCHAINS_ALGO != ASSETCHAINS_EQUIHASH && ASSETCHAINS_STAKED == 0)
-//     return lwmaGetNextWorkRequired(pindexLast, pblock, params);
-
- 
-
+  
     arith_uint256 bnLimit;
-    //if (ASSETCHAINS_ALGO == ASSETCHAINS_EQUIHASH)
-        bnLimit = UintToArith256(params.powLimit);
-    //else
-    //    bnLimit = UintToArith256(params.powAlternate);
+    bnLimit = UintToArith256(params.powLimit);
+
     unsigned int nProofOfWorkLimit = bnLimit.GetCompact();
     // Genesis block
     if (pindexLast == NULL )
@@ -486,222 +477,9 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
   }
 }
 
-unsigned int lwmaGetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params)
-{
-    return lwmaCalculateNextWorkRequired(pindexLast, params);
-}
-
-unsigned int lwmaCalculateNextWorkRequired(const CBlockIndex* pindexLast, const Consensus::Params& params)
-{
-    //LogPrintf("lwmaCalculateNextWorkRequired\n");
-    arith_uint256 nextTarget {0}, sumTarget {0}, bnTmp, bnLimit;
-    //if (ASSETCHAINS_ALGO == ASSETCHAINS_EQUIHASH)
-        bnLimit = UintToArith256(params.powLimit);
-    //else
-    //    bnLimit = UintToArith256(params.powAlternate);
-
-    unsigned int nProofOfWorkLimit = bnLimit.GetCompact();
-    
-    //LogPrintf("PoWLimit: %u\n", nProofOfWorkLimit);
-
-    // Find the first block in the averaging interval as we total the linearly weighted average
-    const CBlockIndex* pindexFirst = pindexLast;
-    const CBlockIndex* pindexNext;
-    int64_t t = 0, solvetime, k = params.nLwmaAjustedWeight, N = params.nPowAveragingWindow;
-
-    for (int i = 0, j = N - 1; pindexFirst && i < N; i++, j--) {
-        pindexNext = pindexFirst;
-        pindexFirst = pindexFirst->pprev;
-        if (!pindexFirst)
-            break;
-
-        solvetime = pindexNext->GetBlockTime() - pindexFirst->GetBlockTime();
-
-        // weighted sum
-        t += solvetime * j;
-
-        // Target sum divided by a factor, (k N^2).
-        // The factor is a part of the final equation. However we divide 
-        // here to avoid potential overflow.
-        bnTmp.SetCompact(pindexNext->nBits);
-        sumTarget += bnTmp / (k * N * N);
-    }
-
-    // Check we have enough blocks
-    if (!pindexFirst)
-        return nProofOfWorkLimit;
-
-    // Keep t reasonable in case strange solvetimes occurred.
-    if (t < N * k / 3)
-        t = N * k / 3;
-
-    bnTmp = bnLimit;
-    nextTarget = t * sumTarget;
-    if (nextTarget > bnTmp)
-        nextTarget = bnTmp;
-
-    return nextTarget.GetCompact();
-}
-
-bool DoesHashQualify(const CBlockIndex *pbindex)
-{
-    // if it fails hash test and PoW validation, consider it POS. it could also be invalid
-    arith_uint256 hash = UintToArith256(pbindex->GetBlockHash());
-    // to be considered POS, we first can't qualify as POW
-    if (hash > hash.SetCompact(pbindex->nBits))
-    {
-        return false;
-    }
-    return true;
-}
-
-// the goal is to keep POS at a solve time that is a ratio of block time units. the low resolution makes a stable solution more challenging
-// and requires that the averaging window be quite long.
-uint32_t lwmaGetNextPOSRequired(const CBlockIndex* pindexLast, const Consensus::Params& params)
-{
-    LogPrintf("lwmaGetNextPOSRequired\n");
-    arith_uint256 nextTarget {0}, sumTarget {0}, bnTmp, bnLimit;
- /*
-    bnLimit = UintToArith256(params.posLimit);
-    uint32_t nProofOfStakeLimit = bnLimit.GetCompact();
-    int64_t t = 0, solvetime = 0;
-    int64_t k = params.nLwmaPOSAjustedWeight;
-    int64_t N = params.nPOSAveragingWindow;
-
-    struct solveSequence {
-        int64_t solveTime;
-        bool consecutive;
-        uint32_t nBits;
-        solveSequence()
-        {
-            consecutive = 0;
-            solveTime = 0;
-            nBits = 0;
-        }
-    };
-
-    // Find the first block in the averaging interval as we total the linearly weighted average
-    // of POS solve times
-    const CBlockIndex* pindexFirst = pindexLast;
-
-    // we need to make sure we have a starting nBits reference, which is either the last POS block, or the default
-    // if we have had no POS block in the threshold number of blocks, we must return the default, otherwise, we'll now have
-    // a starting point
-    uint32_t nBits = nProofOfStakeLimit;
-    for (int64_t i = 0; i < VERUS_NOPOS_THRESHHOLD; i++)
-    {
-        if (!pindexFirst)
-            return nProofOfStakeLimit;
-
-        CBlockHeader hdr = pindexFirst->GetBlockHeader();
-
-        if (hdr.IsVerusPOSBlock())
-        {
-            nBits = hdr.GetVerusPOSTarget();
-            break;
-        }
-        pindexFirst = pindexFirst->pprev;
-    }
-
-    pindexFirst = pindexLast;
-    std::vector<solveSequence> idx = std::vector<solveSequence>();
-    idx.resize(N);
-
-    for (int64_t i = N - 1; i >= 0; i--)
-    {
-        // we measure our solve time in passing of blocks, where one bock == VERUS_BLOCK_POSUNITS units
-        // consecutive blocks in either direction have their solve times exponentially multiplied or divided by power of 2
-        int x;
-        for (x = 0; x < VERUS_CONSECUTIVE_POS_THRESHOLD; x++)
-        {
-            pindexFirst = pindexFirst->pprev;
-
-            if (!pindexFirst)
-                return nProofOfStakeLimit;
-
-            CBlockHeader hdr = pindexFirst->GetBlockHeader();
-            if (hdr.IsVerusPOSBlock())
-            {
-                nBits = hdr.GetVerusPOSTarget();
-                break;
-            }
-        }
-
-        if (x)
-        {
-            idx[i].consecutive = false;
-            if (!memcmp(ASSETCHAINS_SYMBOL, "VRSC", 4) && pindexLast->GetHeight() < 67680)
-            {
-                idx[i].solveTime = VERUS_BLOCK_POSUNITS * (x + 1);
-            }
-            else
-            {
-                int64_t lastSolveTime = 0;
-                idx[i].solveTime = VERUS_BLOCK_POSUNITS;
-                for (int64_t j = 0; j < x; j++)
-                {
-                    lastSolveTime = VERUS_BLOCK_POSUNITS + (lastSolveTime >> 1);
-                    idx[i].solveTime += lastSolveTime;
-                }
-            }
-            idx[i].nBits = nBits;
-        }
-        else
-        {
-            idx[i].consecutive = true;
-            idx[i].nBits = nBits;
-            // go forward and halve the minimum solve time for all consecutive blocks in this run, to get here, our last block is POS,
-            // and if there is no POS block in front of it, it gets the normal solve time of one block
-            uint32_t st = VERUS_BLOCK_POSUNITS;
-            for (int64_t j = i; j < N; j++)
-            {
-                if (idx[j].consecutive == true)
-                {
-                    idx[j].solveTime = st;
-                    if ((j - i) >= VERUS_CONSECUTIVE_POS_THRESHOLD)
-                    {
-                        // if this is real time, return zero
-                        if (j == (N - 1))
-                        {
-                            // target of 0 (virtually impossible), if we hit max consecutive POS blocks
-                            nextTarget.SetCompact(0);
-                            return nextTarget.GetCompact();
-                        }
-                    }
-                    st >>= 1;
-                }
-                else
-                    break;
-            }
-        }
-    }
-
-    for (int64_t i = N - 1; i >= 0; i--) 
-    {
-        // weighted sum
-        t += idx[i].solveTime * i;
-
-        // Target sum divided by a factor, (k N^2).
-        // The factor is a part of the final equation. However we divide 
-        // here to avoid potential overflow.
-        bnTmp.SetCompact(idx[i].nBits);
-        sumTarget += bnTmp / (k * N * N);
-    }
-
-    // Keep t reasonable in case strange solvetimes occurred.
-    if (t < N * k / 3)
-        t = N * k / 3;
-
-    nextTarget = t * sumTarget;
-    if (nextTarget > bnLimit)
-        nextTarget = bnLimit;
-*/
-    return nextTarget.GetCompact();
-}
 
 unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nFirstBlockTime, const Consensus::Params& params)
 {
-LogPrintf("OLD CalculateNextWorkRequired\n");
     if (params.fPowNoRetargeting)
         return pindexLast->nBits;
 
@@ -778,8 +556,6 @@ unsigned int CalculateNextWorkRequired(arith_uint256 bnAvg,
 
 bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params& params)
 {
-    // LogPrintf("CheckProofOfWork with hash ");
-              // %08x  %s
     bool fNegative;
     bool fOverflow;
     arith_uint256 bnTarget;
