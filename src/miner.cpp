@@ -40,7 +40,6 @@ uint64_t nLastBlockWeight = 0;
 
 int64_t UpdateTime(CBlockHeader* pblock, const Consensus::Params& consensusParams, const CBlockIndex* pindexPrev)
 {
-//    LogPrintf("UpdateTime pindexPrev->nHeight %d\n", pindexPrev->nHeight);
     int64_t nOldTime = pblock->nTime;
     int64_t nNewTime;
     if (pindexPrev->nHeight + 1 <= consensusParams.nAdaptativePoWActivationThreshold)
@@ -48,16 +47,11 @@ int64_t UpdateTime(CBlockHeader* pblock, const Consensus::Params& consensusParam
     else
         nNewTime = std::max((int64_t)(pindexPrev->nTime+1), GetAdjustedTime());
 
-//    if (nOldTime < nNewTime && pindexLast->nHeight + 1 <= consensusParams.nAdaptativePoWActivationThreshold)
         pblock->nTime = nNewTime;        
 
-    // LogPrintf("UpdateTime before call to GetNextWorkRequired\n");
-                        
     // Updating time can change work required on testnet and apow (?):
-    if (consensusParams.fPowAllowMinDifficultyBlocks || pindexPrev->nHeight + 1 > consensusParams.nAdaptativePoWActivationThreshold)    {
+    if (consensusParams.fPowAllowMinDifficultyBlocks || pindexPrev->nHeight + 1 > consensusParams.nAdaptativePoWActivationThreshold)
         pblock->nBits = GetNextWorkRequired(pindexPrev, pblock, consensusParams);
-        //LogPrintf(">>>>>>> miner pblock->nBits %x\n",pblock->nBits);
-    }
     
     return nNewTime - nOldTime;
 }
@@ -189,21 +183,13 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
 
     // Fill in header
     pblock->hashPrevBlock  = pindexPrev->GetBlockHash();
-    LogPrintf("CreateNewBlock(): GetBlockHash ok\n");
     UpdateTime(pblock, chainparams.GetConsensus(), pindexPrev);
-    LogPrintf("CreateNewBlock(): UpdateTime ok\n");
     pblock->nBits          = GetNextWorkRequired(pindexPrev, pblock, chainparams.GetConsensus());
-    LogPrintf(">>>>>>>> miner: pblock->nBits %x\n",pblock->nBits);
-        pblock->nNonce         = 0;
+    pblock->nNonce         = 0;
     pblocktemplate->vTxSigOpsCost[0] = WITNESS_SCALE_FACTOR * GetLegacySigOpCount(*pblock->vtx[0]);
-    LogPrintf("CreateNewBlock(): GetLegacySigOpCount ok\n");
-    
     CValidationState state;
-    if (!TestBlockValidity(state, chainparams, *pblock, pindexPrev, false, false)) {
-        LogPrintf("%s: TestBlockValidity failed: %s", __func__, FormatStateMessage(state));
+    if (!TestBlockValidity(state, chainparams, *pblock, pindexPrev, false, false))
         throw std::runtime_error(strprintf("%s: TestBlockValidity failed: %s", __func__, FormatStateMessage(state)));
-    }
-    LogPrintf("CreateNewBlock(): TestBlockValidity ok\n");
     int64_t nTime2 = GetTimeMicros();
 
     LogPrintf("CreateNewBlock() packages: %.2fms (%d packages, %d updated descendants), validity: %.2fms (total %.2fms)\n", 0.001 * (nTime1 - nTimeStart), nPackagesSelected, nDescendantsUpdated, 0.001 * (nTime2 - nTime1), 0.001 * (nTime2 - nTimeStart));
