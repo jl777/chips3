@@ -205,7 +205,7 @@ UniValue genminingCSV(const JSONRPCRequest& request)
     if ( (fp= fopen(fname,"wb")) != 0 )
     {
         fprintf(fp,"height,nTime,nBits,bnTarget,bnTargetB,diff,solvetime\n");
-        height = komodo_nextheight();
+        height = chainActive.Height(); //komodo_nextheight();
         for (i=0; i<height; i++)
         {
             if ( (pindex= komodo_chainactive(i)) != 0 )
