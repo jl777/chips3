@@ -195,7 +195,6 @@ CBlockIndex *komodo_chainactive(int32_t height);
 arith_uint256 zawy_ctB(arith_uint256 bnTarget,uint32_t solvetime);
 
 UniValue genminingCSV(const JSONRPCRequest& request)
-    (const UniValue& params, bool fHelp, const CPubKey& mypk)
 {
     int32_t i,z,height; uint32_t solvetime,prevtime=0; FILE *fp; char str[65],str2[65],fname[256]; uint256 hash; arith_uint256 bnTarget; CBlockIndex *pindex; bool fNegative,fOverflow; UniValue result(UniValue::VOBJ);
     if (request.fHelp || request.params.size() != 0)
