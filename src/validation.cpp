@@ -3355,7 +3355,7 @@ bool CChainState::AcceptBlockHeader(const CBlockHeader& block, CValidationState&
                     {
                         pindex->nStatus |= BLOCK_FAILED_MASK;
                         fprintf(stderr,"known block.%d found invalid prevblock\n",(int32_t)pindex->nHeight);
-                        return state.DoS(100, error("%s: prev block invalid", __func__), REJECT_INVALID, "bad-prevblk");
+                        return state.DoS(100, error("%s: prev block invalid 1", __func__), REJECT_INVALID, "bad-prevblk");
                     }
                 }
                 if (!ContextualCheckBlockHeader(block, state, chainparams, pindexPrev, GetAdjustedTime()))
@@ -3378,7 +3378,7 @@ bool CChainState::AcceptBlockHeader(const CBlockHeader& block, CValidationState&
             return state.DoS(10, error("%s: prev block not found", __func__), 0, "prev-blk-not-found");
         pindexPrev = (*mi).second;
         if (pindexPrev->nStatus & BLOCK_FAILED_MASK)
-            return state.DoS(100, error("%s: prev block invalid", __func__), REJECT_INVALID, "bad-prevblk");
+            return state.DoS(100, error("%s: prev block invalid 2", __func__), REJECT_INVALID, "bad-prevblk");
         if (!ContextualCheckBlockHeader(block, state, chainparams, pindexPrev, GetAdjustedTime()))
             return error("%s: Consensus::ContextualCheckBlockHeader: %s, %s", __func__, hash.ToString(), FormatStateMessage(state));
 
@@ -3392,7 +3392,7 @@ bool CChainState::AcceptBlockHeader(const CBlockHeader& block, CValidationState&
                         setDirtyBlockIndex.insert(invalid_walk);
                         invalid_walk = invalid_walk->pprev;
                     }
-                    return state.DoS(100, error("%s: prev block invalid", __func__), REJECT_INVALID, "bad-prevblk");
+                    return state.DoS(100, error("%s: prev block invalid 3", __func__), REJECT_INVALID, "bad-prevblk");
                 }
             }
         }
