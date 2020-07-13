@@ -197,7 +197,7 @@ arith_uint256 zawy_ctB(arith_uint256 bnTarget,uint32_t solvetime);
 UniValue genminingCSV(const JSONRPCRequest& request)
 {
     int32_t i,z,height; uint32_t solvetime,prevtime=0; FILE *fp; char str[65],str2[65],fname[256]; uint256 hash; arith_uint256 bnTarget; CBlockIndex *pindex; bool fNegative,fOverflow; UniValue result(UniValue::VOBJ);
-    if (request.fHelp || request.params.size() != 0)
+    if (request.fHelp || request.params.size() != 1)
         throw std::runtime_error(
             "genminingCSV\n");
     LOCK(cs_main);
@@ -206,7 +206,7 @@ UniValue genminingCSV(const JSONRPCRequest& request)
     {
         fprintf(fp,"height,nTime,nBits,bnTarget,bnTargetB,diff,solvetime\n");
         height = chainActive.Height(); //komodo_nextheight();
-        for (i=0; i<height; i++)
+        for (i=request.params[0].get_int(); i<height; i++)
         {
             if ( (pindex= komodo_chainactive(i)) != 0 )
             {
