@@ -273,7 +273,7 @@ arith_uint256 zawy_TSA_EMA(int32_t height,int32_t tipdiff,arith_uint256 prevTarg
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params)
 {
     if (pindexLast->nHeight + 1 <= params.nAdaptativePoWActivationThreshold) {
-     
+        // Original Chips/Bitcoin DDA     
         assert(pindexLast != nullptr);
         unsigned int nProofOfWorkLimit = UintToArith256(params.powLimit).GetCompact();
 
@@ -309,7 +309,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
  
  }
  else {
-  
+    // apow DDA (first implementation by jl777 and zawy12)
     arith_uint256 bnLimit;
     bnLimit = UintToArith256(params.powLimit);
 
@@ -546,10 +546,10 @@ unsigned int CalculateNextWorkRequired(arith_uint256 bnAvg,
         bnNew = bnPowLimit;
 
     /// debug print
-    LogPrintf("pow GetNextWorkRequired RETARGET\n");
-    LogPrintf("pow params.AveragingWindowTimespan() = %d    nActualTimespan = %d\n", params.AveragingWindowTimespan(), nActualTimespan);
-    LogPrintf("pow Current average: %08x  %s\n", bnAvg.GetCompact(), bnAvg.ToString());
-    LogPrintf("pow After:  %08x  %s\n", bnNew.GetCompact(), bnNew.ToString());
+    // LogPrintf("pow GetNextWorkRequired RETARGET\n");
+    // LogPrintf("pow params.AveragingWindowTimespan() = %d    nActualTimespan = %d\n", params.AveragingWindowTimespan(), nActualTimespan);
+    // LogPrintf("pow Current average: %08x  %s\n", bnAvg.GetCompact(), bnAvg.ToString());
+    // LogPrintf("pow After:  %08x  %s\n", bnNew.GetCompact(), bnNew.ToString());
 
     return bnNew.GetCompact();
 }
