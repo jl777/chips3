@@ -3171,7 +3171,7 @@ static bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationSta
     
     // Check proof of work
     const Consensus::Params& consensusParams = params.GetConsensus();
-    LogPrintf(" === ContextualCheckBlockHeader: block.nBits = %d GetNextWorkRequired = %d\n", block.nBits, GetNextWorkRequired(pindexPrev, &block, consensusParams));
+    // LogPrintf(" [apow test] === ContextualCheckBlockHeader: block.nBits = %d GetNextWorkRequired = %d\n", block.nBits, GetNextWorkRequired(pindexPrev, &block, consensusParams));
     if (block.nBits != GetNextWorkRequired(pindexPrev, &block, consensusParams))
         return state.DoS(100, false, REJECT_INVALID, "bad-diffbits", false, "incorrect proof of work");
 
@@ -3576,7 +3576,7 @@ bool TestBlockValidity(CValidationState& state, const CChainParams& chainparams,
         return error("%s: Consensus::ContextualCheckBlockHeader: %s", __func__, FormatStateMessage(state));
     if (!CheckBlock(block, pindexPrev->nHeight+1, state, chainparams.GetConsensus(), fCheckPOW, fCheckMerkleRoot))
         return error("%s: Consensus::CheckBlock: %s", __func__, FormatStateMessage(state));
-    if (!ContextualCheckBlock(block, pindexPrev->nHeight+1, state, chainparams.GetConsensus(), pindexPrev))
+    if (!ContextualCheckBlock(block, state, chainparams.GetConsensus(), pindexPrev))
         return error("%s: Consensus::ContextualCheckBlock: %s", __func__, FormatStateMessage(state));
     if (!g_chainstate.ConnectBlock(block, state, &indexDummy, viewNew, chainparams, true))
         return false;
