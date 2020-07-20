@@ -135,7 +135,7 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
 
     const int64_t nMedianTimePast = pindexPrev->GetMedianTimePast();
     uint32_t proposedTime = GetAdjustedTime();
-    if (pindexPrev->nHeight + 1 > consensusParams.nAdaptativePoWActivationThreshold)
+    if (pindexPrev->nHeight + 1 > Params().GetConsensus().nAdaptativePoWActivationThreshold)
     {
         if (proposedTime == nMedianTimePast)
         {
