@@ -5,7 +5,7 @@
 
 // AUTHORS, DEVELOPER-AGREEMENT and LICENSE files at https://github.com/jl777/komodo
 /******************************************************************************
- * Copyright © 2014-2019 The SuperNET Developers.                             *
+ * Copyright © 2014-2020 The SuperNET Developers.                             *
  *                                                                            *
  * See the AUTHORS, DEVELOPER-AGREEMENT and LICENSE files at                  *
  * the top-level directory of this distribution for the individual copyright  *
@@ -277,46 +277,45 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
         assert(pindexLast != nullptr);
         unsigned int nProofOfWorkLimit = UintToArith256(params.powLimit).GetCompact();
 
-    // Only change once per difficulty adjustment interval
-    if ((pindexLast->nHeight+1) % params.DifficultyAdjustmentInterval() != 0)
-    {
-        if (params.fPowAllowMinDifficultyBlocks)
+        // Only change once per difficulty adjustment interval
+        if ((pindexLast->nHeight+1) % params.DifficultyAdjustmentInterval() != 0)
         {
-            // Special difficulty rule for testnet:
-            // If the new block's timestamp is more than 2* 10 minutes
-            // then allow mining of a min-difficulty block.
-            if (pblock->GetBlockTime() > pindexLast->GetBlockTime() + params.nPowTargetSpacing*2)
-                return nProofOfWorkLimit;
-            else
+            if (params.fPowAllowMinDifficultyBlocks)
             {
-                // Return the last non-special-min-difficulty-rules-block
-                const CBlockIndex* pindex = pindexLast;
-                while (pindex->pprev && pindex->nHeight % params.DifficultyAdjustmentInterval() != 0 && pindex->nBits == nProofOfWorkLimit)
-                    pindex = pindex->pprev;
-                return pindex->nBits;
+                // Special difficulty rule for testnet:
+                // If the new block's timestamp is more than 2* 10 minutes
+                // then allow mining of a min-difficulty block.
+                if (pblock->GetBlockTime() > pindexLast->GetBlockTime() + params.nPowTargetSpacing*2)
+                    return nProofOfWorkLimit;
+                else
+                {
+                    // Return the last non-special-min-difficulty-rules-block
+                    const CBlockIndex* pindex = pindexLast;
+                    while (pindex->pprev && pindex->nHeight % params.DifficultyAdjustmentInterval() != 0 && pindex->nBits == nProofOfWorkLimit)
+                        pindex = pindex->pprev;
+                    return pindex->nBits;
+                }
             }
+            return pindexLast->nBits;
         }
-        return pindexLast->nBits;
+
+        // Go back by what we want to be 14 days worth of blocks
+        int nHeightFirst = pindexLast->nHeight - (params.DifficultyAdjustmentInterval()-1);
+        assert(nHeightFirst >= 0);
+        const CBlockIndex* pindexFirst = pindexLast->GetAncestor(nHeightFirst);
+        assert(pindexFirst);
+
+        return CalculateNextWorkRequired(pindexLast, pindexFirst->GetBlockTime(), params);
     }
+    else {
+        // apow DDA (first implementation by jl777 and zawy12)
+        arith_uint256 bnLimit;
+        bnLimit = UintToArith256(params.powLimit);
 
-    // Go back by what we want to be 14 days worth of blocks
-    int nHeightFirst = pindexLast->nHeight - (params.DifficultyAdjustmentInterval()-1);
-    assert(nHeightFirst >= 0);
-    const CBlockIndex* pindexFirst = pindexLast->GetAncestor(nHeightFirst);
-    assert(pindexFirst);
-
-    return CalculateNextWorkRequired(pindexLast, pindexFirst->GetBlockTime(), params);
- 
- }
- else {
-    // apow DDA (first implementation by jl777 and zawy12)
-    arith_uint256 bnLimit;
-    bnLimit = UintToArith256(params.powLimit);
-
-    unsigned int nProofOfWorkLimit = bnLimit.GetCompact();
-    // Genesis block
-    if (pindexLast == NULL )
-        return nProofOfWorkLimit;
+        unsigned int nProofOfWorkLimit = bnLimit.GetCompact();
+        // Genesis block
+        if (pindexLast == NULL )
+            return nProofOfWorkLimit;
 
     //{
         // Comparing to pindexLast->nHeight with >= because this function
@@ -477,7 +476,6 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
   }
 }
 
-
 unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nFirstBlockTime, const Consensus::Params& params)
 {
     if (params.fPowNoRetargeting)
@@ -569,10 +567,10 @@ bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params&
         tmp = UintToArith256(params.powLimit);
         for (i=31; i>=0; i--)
             printf("%02x",((uint8_t *)&bnTarget)[i]);
-        LogPrintf(" bntarget vs powlimit ");
+        printf(" bntarget vs powlimit ");
         for (i=31; i>=0; i--)
             printf("%02x",((uint8_t *)&tmp)[i]);
-        LogPrintf("overflow or bad target\n");
+        printf("overflow or bad target\n");
         return false;
     }
     // Check proof of work matches claimed amount
