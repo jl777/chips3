@@ -43,13 +43,18 @@ int64_t UpdateTime(CBlockHeader* pblock, const Consensus::Params& consensusParam
     int64_t nOldTime = pblock->nTime;
     int64_t nNewTime;
     if (pindexPrev->nHeight + 1 <= consensusParams.nAdaptativePoWActivationThreshold)
+    {
         nNewTime = std::max(pindexPrev->GetMedianTimePast()+1, GetAdjustedTime());
+        if (nOldTime < nNewTime)
+            pblock->nTime = nNewTime;
+    }
     else
+    {
         nNewTime = std::max((int64_t)(pindexPrev->nTime+1), GetAdjustedTime());
+        pblock->nTime = nNewTime;
+    }
 
-        pblock->nTime = nNewTime;        
-
-    // Updating time can change work required on testnet and apow (?):
+    // Updating time can change work required on testnet and apow:
     if (consensusParams.fPowAllowMinDifficultyBlocks || pindexPrev->nHeight + 1 > consensusParams.nAdaptativePoWActivationThreshold)
         pblock->nBits = GetNextWorkRequired(pindexPrev, pblock, consensusParams);
     
@@ -130,6 +135,8 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
 
     const int64_t nMedianTimePast = pindexPrev->GetMedianTimePast();
     uint32_t proposedTime = GetAdjustedTime();
+    if (pindexPrev->nHeight + 1 > consensusParams.nAdaptativePoWActivationThreshold)
+    {
         if (proposedTime == nMedianTimePast)
         {
             // too fast or stuck, this addresses the too fast issue, while moving
@@ -141,6 +148,8 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
                     MilliSleep(10);
             }
         }
+    }
+
     pblock->nTime = GetAdjustedTime();
     
     nLockTimeCutoff = (STANDARD_LOCKTIME_VERIFY_FLAGS & LOCKTIME_MEDIAN_TIME_PAST)
