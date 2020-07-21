@@ -517,9 +517,9 @@ unsigned int CalculateNextWorkRequired(arith_uint256 bnAvg,
     // Limit adjustment step
     // Use medians to prevent time-warp attacks
     int64_t nActualTimespan = nLastBlockTime - nFirstBlockTime;
-    LogPrintf("NEW pow   nActualTimespan = %d  before dampening\n", nActualTimespan);
+    // LogPrintf("NEW pow   nActualTimespan = %d  before dampening\n", nActualTimespan);
     nActualTimespan = params.AveragingWindowTimespan() + (nActualTimespan - params.AveragingWindowTimespan())/4;
-    LogPrintf("pow   nActualTimespan = %d  before bounds\n", nActualTimespan);
+    // LogPrintf("pow   nActualTimespan = %d  before bounds\n", nActualTimespan);
 
     if ( 1 <= 0 )
     {
