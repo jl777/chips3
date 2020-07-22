@@ -3017,9 +3017,8 @@ static bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state,
     {
         if (block.GetBlockTime() > GetAdjustedTime() + 4)
         {
-            LogPrintf("CheckBlockHeader block from future %d error",block.GetBlockTime() - GetAdjustedTime());
+            // LogPrintf("CheckBlockHeader block from future %d error",block.GetBlockTime() - GetAdjustedTime());
             return state.DoS(50, false, REJECT_INVALID, "block-from-future", false, "CheckBlockHeader block from future");
-            // return false;
         }
     }
     
