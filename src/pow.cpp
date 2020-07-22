@@ -274,7 +274,7 @@ arith_uint256 zawy_TSA_EMA(int32_t height,int32_t tipdiff,arith_uint256 prevTarg
 
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params)
 {
-    if (pindexLast->nHeight + 1 <= params.nAdaptativePoWActivationThreshold) {
+    if (pindexLast->nHeight + 1 <= params.nAdaptivePoWActivationThreshold) {
         // Original Chips/Bitcoin DDA     
         assert(pindexLast != nullptr);
         unsigned int nProofOfWorkLimit = UintToArith256(params.powLimit).GetCompact();
