@@ -1642,8 +1642,8 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         if (!vRecv.empty()) {
             vRecv >> nStartingHeight;
         }
-        // LogPrintf("[apow] nVersion %d | MIN_PEER_PROTO_VERSION_AFTER_APOW %d | nHeight %d | chainparams.GetConsensus().nAdaptativePoWActivationThreshold = %d\n", nVersion, MIN_PEER_PROTO_VERSION_AFTER_APOW, nStartingHeight, chainparams.GetConsensus().nAdaptativePoWActivationThreshold);
-        if (chainActive.Height() > chainparams.GetConsensus().nAdaptativePoWActivationThreshold && 
+        // LogPrintf("[apow] nVersion %d | MIN_PEER_PROTO_VERSION_AFTER_APOW %d | nHeight %d | chainparams.GetConsensus().nAdaptivePoWActivationThreshold = %d\n", nVersion, MIN_PEER_PROTO_VERSION_AFTER_APOW, nStartingHeight, chainparams.GetConsensus().nAdaptivePoWActivationThreshold);
+        if (chainActive.Height() > chainparams.GetConsensus().nAdaptivePoWActivationThreshold && 
             nVersion < MIN_PEER_PROTO_VERSION_AFTER_APOW)
         {
             // disconnect from peers older than this proto version
