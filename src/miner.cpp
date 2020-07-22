@@ -42,7 +42,7 @@ int64_t UpdateTime(CBlockHeader* pblock, const Consensus::Params& consensusParam
 {
     int64_t nOldTime = pblock->nTime;
     int64_t nNewTime;
-    if (pindexPrev->nHeight + 1 <= consensusParams.nAdaptativePoWActivationThreshold)
+    if (pindexPrev->nHeight + 1 <= consensusParams.nAdaptivePoWActivationThreshold)
     {
         nNewTime = std::max(pindexPrev->GetMedianTimePast()+1, GetAdjustedTime());
         if (nOldTime < nNewTime)
@@ -55,7 +55,7 @@ int64_t UpdateTime(CBlockHeader* pblock, const Consensus::Params& consensusParam
     }
 
     // Updating time can change work required on testnet and apow:
-    if (consensusParams.fPowAllowMinDifficultyBlocks || pindexPrev->nHeight + 1 > consensusParams.nAdaptativePoWActivationThreshold)
+    if (consensusParams.fPowAllowMinDifficultyBlocks || pindexPrev->nHeight + 1 > consensusParams.nAdaptivePoWActivationThreshold)
         pblock->nBits = GetNextWorkRequired(pindexPrev, pblock, consensusParams);
     
     return nNewTime - nOldTime;
@@ -135,7 +135,7 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
 
     const int64_t nMedianTimePast = pindexPrev->GetMedianTimePast();
     uint32_t proposedTime = GetAdjustedTime();
-    if (pindexPrev->nHeight + 1 > Params().GetConsensus().nAdaptativePoWActivationThreshold)
+    if (pindexPrev->nHeight + 1 > Params().GetConsensus().nAdaptivePoWActivationThreshold)
     {
         if (proposedTime == nMedianTimePast)
         {
@@ -180,7 +180,7 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
     coinbaseTx.vout.resize(1);
     coinbaseTx.vout[0].scriptPubKey = scriptPubKeyIn;
     coinbaseTx.vout[0].nValue = nFees + GetBlockSubsidy(nHeight, chainparams.GetConsensus());
-    if ( pindexPrev->nHeight + 1 <= chainparams.GetConsensus().nAdaptativePoWActivationThreshold )
+    if ( pindexPrev->nHeight + 1 <= chainparams.GetConsensus().nAdaptivePoWActivationThreshold )
         coinbaseTx.nLockTime = std::max(pindexPrev->GetMedianTimePast()+1, GetAdjustedTime());
     else coinbaseTx.nLockTime = std::max((int64_t)(pindexPrev->nTime+1), GetAdjustedTime());
     coinbaseTx.vin[0].scriptSig = CScript() << nHeight << OP_0;
