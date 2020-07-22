@@ -3013,7 +3013,7 @@ static bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state,
     if (fCheckPOW && !CheckProofOfWork(block.GetHash(), block.nBits, consensusParams))
         return state.DoS(50, false, REJECT_INVALID, "high-hash", false, "proof of work failed");
 
-    if ( chainActive.Height() > consensusParams.nAdaptativePoWActivationThreshold )
+    if ( chainActive.Height() > consensusParams.nAdaptivePoWActivationThreshold )
     {
         if (block.GetBlockTime() > GetAdjustedTime() + 4)
         {
@@ -3195,7 +3195,7 @@ static bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationSta
         }
     }
 
-    if ( pindexPrev->nHeight + 1 <= consensusParams.nAdaptativePoWActivationThreshold || nHeight < 30 )
+    if ( pindexPrev->nHeight + 1 <= consensusParams.nAdaptivePoWActivationThreshold || nHeight < 30 )
     {
         // Check timestamp against prev
         if (block.GetBlockTime() <= pindexPrev->GetMedianTimePast())
