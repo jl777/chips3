@@ -3,13 +3,15 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-// AUTHORS, DEVELOPER-AGREEMENT and LICENSE files at https://github.com/jl777/komodo
 /******************************************************************************
  * Copyright © 2014-2020 The SuperNET Developers.                             *
  *                                                                            *
+ * See the COPYING file at                                                    *
+ * https://github.com/KomodoPlatform/komodo/blob/master/COPYING               *
  * See the AUTHORS, DEVELOPER-AGREEMENT and LICENSE files at                  *
- * the top-level directory of this distribution for the individual copyright  *
- * holder information and the developer policies on copyright and licensing.  *
+ * https://github.com/KomodoPlatform/komodo/tree/master/LEGAL                 *
+ * for the individual copyright holder information and the developer policies *
+ * on copyright and licensing.                                                *
  *                                                                            *
  * Unless otherwise agreed in a custom licensing agreement, no part of the    *
  * SuperNET software, including this file may be copied, modified, propagated *
