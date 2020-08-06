@@ -38,9 +38,9 @@ protected:
     std::vector<CC*> playerConditions();
 public:
     EvalCode disputeCode;
-    std::vector<CPubKey> players;
-    std::vector<unsigned char> vmParams;
     uint32_t waitBlocks;
+    std::vector<unsigned char> vmParams;
+    std::vector<CPubKey> players;
 
     // Utility
     BetProtocol(EvalCode dc, std::vector<CPubKey> ps, uint32_t wb, std::vector<uint8_t> vmp)
