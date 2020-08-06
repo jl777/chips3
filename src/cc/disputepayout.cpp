@@ -58,7 +58,7 @@ bool Eval::DisputePayout(AppVM &vm, std::vector<uint8_t> params, const CTransact
     // verify result from VM
     int maxLength = -1;
     uint256 bestPayout;
-    for (int i=1; i<spends.size(); i++)
+    for (size_t i=1; i<spends.size(); i++)
     {
         std::vector<unsigned char> vmState;
         if (spends[i]->vout.size() == 0) continue;
