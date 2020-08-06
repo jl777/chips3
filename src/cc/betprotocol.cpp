@@ -54,7 +54,7 @@ CMutableTransaction BetProtocol::MakeDisputeTx(uint256 signedSessionTxHash, uint
 {
     CMutableTransaction mtx;
 
-    CC *disputeCond = MakeDisputeCond();
+    //CC *disputeCond = MakeDisputeCond();
     mtx.vin.push_back(CTxIn(signedSessionTxHash, 0, CScript()));
 
     std::vector<unsigned char> result(vmResultHash.begin(), vmResultHash.begin()+32);
