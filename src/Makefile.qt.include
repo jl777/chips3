@@ -400,7 +400,7 @@ endif
 if TARGET_WINDOWS
   qt_bitcoin_qt_SOURCES += $(BITCOIN_RC)
 endif
-qt_bitcoin_qt_LDADD = qt/libbitcoinqt.a $(LIBBITCOIN_SERVER)
+qt_bitcoin_qt_LDADD = qt/libbitcoinqt.a $(LIBBITCOIN_SERVER) $(LIBCRYPTOCONDITIONS)
 if ENABLE_WALLET
 qt_bitcoin_qt_LDADD += $(LIBBITCOIN_WALLET)
 endif
