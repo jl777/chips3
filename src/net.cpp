@@ -1628,6 +1628,7 @@ void CConnman::ThreadDNSAddressSeed()
             std::vector<CAddress> vAdd;
             ServiceFlags requiredServiceBits = GetDesirableServiceFlags(NODE_NONE);
             std::string host = strprintf("x%x.%s", requiredServiceBits, seed);
+            // std::cerr << "Host: " << std::string(host) << ", Seed: " << std::string(seed) << ", Size: " << vSeeds.size() << std::endl;
             CNetAddr resolveSource;
             if (!resolveSource.SetInternal(host)) {
                 continue;
