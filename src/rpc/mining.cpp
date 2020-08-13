@@ -41,7 +41,7 @@ unsigned int ParseConfirmTarget(const UniValue& value)
 
 /**
  * Return average network hashes per second based on the last 'lookup' blocks,
- * or from the last difficulty change if 'lookup' is nonpositive.
+ * or over the difficulty averaging window if 'lookup' is nonpositive.
  * If 'height' is nonnegative, compute the estimate at the time when a given block was found.
  */
 UniValue GetNetworkHashPS(int lookup, int height) {
@@ -53,10 +53,14 @@ UniValue GetNetworkHashPS(int lookup, int height) {
     if (pb == nullptr || !pb->nHeight)
         return 0;
 
-    // If lookup is -1, then use blocks since last difficulty change.
+    // If lookup is -1, then use difficulty averaging window.
     if (lookup <= 0)
-        lookup = pb->nHeight % Params().GetConsensus().DifficultyAdjustmentInterval() + 1;
+        lookup = pb->nHeight % Params().GetConsensus().nPowAveragingWindow;
 
+    // If lookup is still negative, then use blocks since genesis.
+    if (lookup <= 0)
+        lookup = pb->nHeight;
+    
     // If lookup is larger than chain, then set it to chain length.
     if (lookup > pb->nHeight)
         lookup = pb->nHeight;
@@ -87,10 +91,10 @@ UniValue getnetworkhashps(const JSONRPCRequest& request)
         throw std::runtime_error(
             "getnetworkhashps ( nblocks height )\n"
             "\nReturns the estimated network hashes per second based on the last n blocks.\n"
-            "Pass in [blocks] to override # of blocks, -1 specifies since last difficulty change.\n"
+            "Pass in [blocks] to override # of blocks, -1 specifies over difficulty averaging window.\n"
             "Pass in [height] to estimate the network speed at the time when a certain block was found.\n"
             "\nArguments:\n"
-            "1. nblocks     (numeric, optional, default=120) The number of blocks, or -1 for blocks since last difficulty change.\n"
+            "1. nblocks     (numeric, optional, default=120) The number of blocks, or -1 for blocks over difficulty averaging window.\n"
             "2. height      (numeric, optional, default=-1) To estimate at the time of the given height.\n"
             "\nResult:\n"
             "x             (numeric) Hashes per second estimated\n"
@@ -126,6 +130,8 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
             LOCK(cs_main);
             IncrementExtraNonce(pblock, chainActive.Tip(), nExtraNonce);
         }
+        CBlockIndex* pindexPrev = chainActive.Tip();
+        UpdateTime(pblock, Params().GetConsensus(), pindexPrev);
         while (nMaxTries > 0 && pblock->nNonce < nInnerLoopCount && !CheckProofOfWork(pblock->GetHash(), pblock->nBits, Params().GetConsensus())) {
             ++pblock->nNonce;
             --nMaxTries;
@@ -183,6 +189,53 @@ UniValue generatetoaddress(const JSONRPCRequest& request)
     coinbaseScript->reserveScript = GetScriptForDestination(destination);
 
     return generateBlocks(coinbaseScript, nGenerate, nMaxTries, false);
+}
+
+CBlockIndex *komodo_chainactive(int32_t height);
+arith_uint256 zawy_ctB(arith_uint256 bnTarget,uint32_t solvetime);
+
+UniValue genminingCSV(const JSONRPCRequest& request)
+{
+    int32_t i,z,height; uint32_t solvetime,prevtime=0; FILE *fp; char str[65],str2[65],fname[256]; uint256 hash; arith_uint256 bnTarget; CBlockIndex *pindex; bool fNegative,fOverflow; UniValue result(UniValue::VOBJ);
+    if (request.fHelp || request.params.size() > 1)
+        throw std::runtime_error(
+            "genminingCSV beginHeight\n");
+    LOCK(cs_main);
+    sprintf(fname,"%s_mining.csv","CHIPS");
+    if ( (fp= fopen(fname,"wb")) != 0 )
+    {
+        fprintf(fp,"height,nTime,nBits,bnTarget,bnTargetB,diff,solvetime\n");
+        height = chainActive.Height(); //komodo_nextheight();
+        for (i=(!request.params[0].isNull() ? request.params[0].get_int() : height - 2000); i<height; i++)
+        {
+            if ( (pindex= komodo_chainactive(i)) != 0 )
+            {
+                bnTarget.SetCompact(pindex->nBits,&fNegative,&fOverflow);
+                solvetime = (prevtime==0) ? 0 : (int32_t)(pindex->nTime - prevtime);
+                for (z=0; z<16; z++)
+                    sprintf(&str[z<<1],"%02x",((uint8_t *)&bnTarget)[31-z]);
+                str[32] = 0;
+                //hash = pindex->GetBlockHash();
+                memset(&hash,0,sizeof(hash));
+                if ( i >= 64 && (pindex->nBits & 3) != 0 )
+                    hash = ArithToUint256(zawy_ctB(bnTarget,solvetime));
+                for (z=0; z<16; z++)
+                    sprintf(&str2[z<<1],"%02x",((uint8_t *)&hash)[31-z]);
+                str2[32] = 0; fprintf(fp,"%d,%u,%08x,%s,%s,%.1f,%d\n",i,pindex->nTime,pindex->nBits,str,str2,GetDifficulty(pindex),solvetime);
+                prevtime = pindex->nTime;
+            }
+        }
+        fclose(fp);
+        result.push_back(Pair("result", "success"));
+        result.push_back(Pair("created", fname));
+    }
+    else
+    {
+        result.push_back(Pair("result", "success"));
+        result.push_back(Pair("error", "couldnt create mining.csv"));
+        result.push_back(Pair("filename", fname));
+    }
+    return(result);
 }
 
 UniValue getmininginfo(const JSONRPCRequest& request)
@@ -937,6 +990,7 @@ static const CRPCCommand commands[] =
   //  --------------------- ------------------------  -----------------------  ----------
     { "mining",             "getnetworkhashps",       &getnetworkhashps,       {"nblocks","height"} },
     { "mining",             "getmininginfo",          &getmininginfo,          {} },
+    { "mining",             "genminingCSV",           &genminingCSV,           {"beginHeight"} },
     { "mining",             "prioritisetransaction",  &prioritisetransaction,  {"txid","dummy","fee_delta"} },
     { "mining",             "getblocktemplate",       &getblocktemplate,       {"template_request"} },
     { "mining",             "submitblock",            &submitblock,            {"hexdata","dummy"} },

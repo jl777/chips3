@@ -82,11 +82,20 @@ public:
         consensus.BIP66Height = 0;//363725; // 00000000000000000379eaa19dce8c9b722d46ae6a57c2f1a988119488b50931
         consensus.powLimit = uint256S("0000007fffff0000000000000000000000000000000000000000000000000000");
         consensus.nPowTargetSpacing = 10;// * 60;
+        consensus.nLwmaAjustedWeight = 1350;
+
+        consensus.nPowAveragingWindow = 17;
+//      assert(maxUint/UintToArith256(consensus.powLimit) >= consensus.nPowAveragingWindow);
+        consensus.nPowMaxAdjustDown = 32; // 32% adjustment down
+        consensus.nPowMaxAdjustUp = 16; // 16% adjustment up
+        
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.nPowTargetTimespan = 17 * consensus.nPowTargetSpacing;
         consensus.fPowNoRetargeting = false;
         consensus.nRuleChangeActivationThreshold = 1916; // 95% of 2016
+        consensus.nAdaptivePoWActivationThreshold = 6874120; // (approx 23th Aug 2020, 9:00 PM UTC)
         consensus.nMinerConfirmationWindow = 2016; // nPowTargetTimespan / nPowTargetSpacing
+//        consensus.nMinerConfirmationWindowApow = 17; // 17 after apow HF ; nPowTargetTimespan / nPowTargetSpacing
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 1199145601; // January 1, 2008
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = 1230767999; // December 31, 2008
