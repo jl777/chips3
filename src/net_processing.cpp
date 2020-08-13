@@ -1642,6 +1642,17 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         if (!vRecv.empty()) {
             vRecv >> nStartingHeight;
         }
+        // LogPrintf("[apow] nVersion %d | MIN_PEER_PROTO_VERSION_AFTER_APOW %d | nHeight %d | chainparams.GetConsensus().nAdaptivePoWActivationThreshold = %d\n", nVersion, MIN_PEER_PROTO_VERSION_AFTER_APOW, nStartingHeight, chainparams.GetConsensus().nAdaptivePoWActivationThreshold);
+        if (chainActive.Height() > chainparams.GetConsensus().nAdaptivePoWActivationThreshold && 
+            nVersion < MIN_PEER_PROTO_VERSION_AFTER_APOW)
+        {
+            // disconnect from peers older than this proto version
+            LogPrint(BCLog::NET, "[apow hard fork] peer=%d using obsolete version %i; disconnecting\n", pfrom->GetId(), nVersion);
+            connman->PushMessage(pfrom, CNetMsgMaker(INIT_PROTO_VERSION).Make(NetMsgType::REJECT, strCommand, REJECT_OBSOLETE,
+                               strprintf("Version must be %d or greater", MIN_PEER_PROTO_VERSION_AFTER_APOW)));
+            pfrom->fDisconnect = true;
+            return false;
+        }        
         if (!vRecv.empty())
             vRecv >> fRelay;
         // Disconnect if we connected to ourself
