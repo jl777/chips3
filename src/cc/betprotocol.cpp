@@ -11,7 +11,7 @@
 std::vector<CC*> BetProtocol::PlayerConditions()
 {
     std::vector<CC*> subs;
-    for (int i=0; i<players.size(); i++)
+    for (size_t i=0; i<players.size(); i++)
         subs.push_back(CCNewSecp256k1(players[i]));
     return subs;
 }
@@ -41,7 +41,7 @@ CMutableTransaction BetProtocol::MakeSessionTx(CAmount spendFee)
     mtx.vout.push_back(CTxOut(spendFee, CCPubKey(disputeCond)));
     cc_free(disputeCond);
 
-    for (int i=0; i<players.size(); i++) {
+    for (size_t i=0; i<players.size(); i++) {
         CC *cond = CCNewSecp256k1(players[i]);
         mtx.vout.push_back(CTxOut(spendFee, CCPubKey(cond)));
         cc_free(cond);
@@ -54,7 +54,7 @@ CMutableTransaction BetProtocol::MakeDisputeTx(uint256 signedSessionTxHash, uint
 {
     CMutableTransaction mtx;
 
-    CC *disputeCond = MakeDisputeCond();
+    //CC *disputeCond = MakeDisputeCond();
     mtx.vin.push_back(CTxIn(signedSessionTxHash, 0, CScript()));
 
     std::vector<unsigned char> result(vmResultHash.begin(), vmResultHash.begin()+32);
