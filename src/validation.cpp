@@ -2260,6 +2260,15 @@ bool CChainState::DisconnectTip(CValidationState& state, const CChainParams& cha
     CBlock& block = *pblock;
     if (!ReadBlockFromDisk(block, pindexDelete, chainparams.GetConsensus()))
         return AbortNode(state, "Failed to read block");
+    
+    int32_t prevMoMheight; uint256 notarizedhash,txid;
+    komodo_notarized_height(&prevMoMheight,&notarizedhash,&txid);
+    if ( block.GetHash() == notarizedhash )
+    {
+        LogPrintf("DisconnectTip trying to disconnect notarized block at ht.%d\n",(int32_t)pindexDelete->nHeight);
+        return(false);
+    }
+    
     // Apply the block atomically to the chain state.
     int64_t nStart = GetTimeMicros();
     {
