@@ -141,7 +141,7 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
         {
             // too fast or stuck, this addresses the too fast issue, while moving
             // forward as quickly as possible
-            for (int i; i < 100; i++)
+            for (int i = 0; i < 100; i++)
             {
                 proposedTime = GetAdjustedTime();
                 if (proposedTime == nMedianTimePast)
