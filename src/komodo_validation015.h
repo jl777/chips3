@@ -900,7 +900,7 @@ portable_mutex_t komodo_mutex;
 void komodo_importpubkeys()
 {
     int32_t i,n,val,dispflag = 0; std::string addr;
-    for (n = 0; n < NUM_KMD_SEASONS-1; n++) // FIXME: -1 to stop segfault on season 3 until we get keys!
+    for (n = 0; n < NUM_KMD_SEASONS; n++)
     {
         for (i=0; i<NUM_KMD_NOTARIES; i++) 
         {
