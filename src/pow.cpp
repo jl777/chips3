@@ -85,7 +85,7 @@ arith_uint256 oldRT_CST_RST(int32_t height,uint32_t nTime,arith_uint256 bnTarget
     if ( height < 64 )
         return(bnTarget);
     //if ( ((ts[0]-ts[W]) * W * 100)/(W-1) < (T * numerator * 100)/denominator )
-    if ( (ts[0] - ts[W]) < (T * numerator)/denominator )
+    if ( (int32_t) (ts[0] - ts[W]) < (int32_t) (T * numerator)/denominator )
     {
         //bnTarget = ((ct[0]-ct[1])/K) * max(K,(K*(nTime-ts[0])*(ts[0]-ts[W])*denominator/numerator)/T/T);
         bnTarget = ct[0] / arith_uint256(K);
@@ -149,7 +149,7 @@ arith_uint256 oldRT_CST_RST(int32_t height,uint32_t nTime,arith_uint256 bnTarget
 arith_uint256 RT_CST_RST_outer(int32_t height,uint32_t nTime,arith_uint256 bnTarget,uint32_t *ts,arith_uint256 *ct,int32_t numerator,int32_t denominator,int32_t W,int32_t past)
 {
     int64_t outerK; arith_uint256 mintarget = bnTarget / arith_uint256(2);
-    if ( (ts[0] - ts[W]) < (T * numerator)/denominator )
+    if ( (int32_t) (ts[0] - ts[W]) < (int32_t) (T * numerator)/denominator )
     {
         outerK = (K * (nTime-ts[0]) * (ts[0]-ts[W]) * denominator) / (numerator * (T * T));
         if ( outerK < K )
