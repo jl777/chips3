@@ -47,6 +47,10 @@
 #include <boost/algorithm/string/join.hpp>
 #include <boost/thread.hpp>
 
+#include <boost/bind/bind.hpp>
+
+using namespace boost::placeholders;
+
 #if defined(NDEBUG)
 # error "Bitcoin cannot be compiled without assertions."
 #endif

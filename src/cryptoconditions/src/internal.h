@@ -1,3 +1,5 @@
+#pragma once
+
 #include <Condition.h>
 #include <Fulfillment.h>
 #include "include/cJSON.h"
